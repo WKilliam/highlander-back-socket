@@ -5,26 +5,21 @@ import swaggerUi from "swagger-ui-express";
 const port: number = 3000;
 const app = express();
 import cors from 'cors';
+import MapController from "./controller/maps/map.controller";
+import SessionController from "./controller/session/session.controller";
+import CardsController from "./controller/cards/cards.controller";
+import EffectsController from "./controller/effects/effects.controller";
 app.use(express.json());
 const httpServer: Express = require('http').createServer(app);
 const io = require('socket.io')(httpServer, corsApp);
 app.use('/docs', swaggerUi.serve, swaggerDocument);
 require("./controller/socket/socketsController")(io)
-app.use(cors(corsApp))
 app.use(express.json())
 
-// io.on('connection', (socket: { on: (arg0: string, arg1: (message: string) => void) => void; id: string; }) => {
-//     console.log('a user connected');
-//
-//     socket.on('message', (message) => {
-//         console.log(message);
-//         io.emit('message', `${socket.id.substr(0, 2)} said ${message}`);
-//     });
-//
-//     socket.on('disconnect', () => {
-//         console.log('a user disconnected!');
-//     });
-// });
+app.use('/maps', MapController);
+app.use('/sessions', SessionController);
+app.use('/cards',CardsController);
+app.use('/effects',EffectsController);
 
 httpServer.listen(port, () => console.log(`listening on port ${port}`));
 

@@ -63,3 +63,255 @@ Relais Back Socket :
 - Gestion des combats
 - Envoie signal pour premier tour au joueurs de la room
 
+
+```json
+{
+  "PartiesModels":{
+    "Session": {
+      "id":1,
+      "game_key_session":"Test",
+      "created_at":"21/04/2000",
+      "updated_at": "21/04/2000",
+      "status_game":"ON",
+      "status_access":"Public",
+      "password":"",
+      "map":{
+        "backgroundImg":"image.png",
+        "width":200,
+        "height":200,
+        "cells": [
+          {
+            "id":1,
+            "values": 1,
+            "x": 200,
+            "y": 200
+          }
+        ]
+      }
+    },
+    "Teams":{
+      "TeamOne": {
+        "isAlive":true,
+        "teams":[
+          {
+            "id": 1,
+            "playerOne": {
+              "id": 1,
+              "name": "Player1",
+              "isLife": true,
+              "currentHp": 100,
+              "maxHp": 100,
+              "card": {
+                "id": 1,
+                "name": "Card1",
+                "atk": 23,
+                "def": 45,
+                "vit": 33,
+                "luck": 22,
+                "image": "image.png"
+              }
+            }
+          },
+          {
+            "id": 2,
+            "playerOne": {
+              "id": 2,
+              "name": "Player2",
+              "isLife": true,
+              "currentHp": 100,
+              "maxHp": 100,
+              "card": {
+                "id": 1,
+                "name": "Card2",
+                "atk": 23,
+                "def": 45,
+                "vit": 33,
+                "luck": 22,
+                "image": "image.png"
+              }
+            }
+          }
+        ]
+      },
+      "TeamTwo": {
+        "isAlive": true,
+        "teams": [
+          {
+              "id": 1,
+              "name": "Player1",
+              "isLife": true,
+              "currentHp": 100,
+              "maxHp": 100,
+              "card": {
+                "id": 1,
+                "name": "Card1",
+                "atk": 23,
+                "def": 45,
+                "vit": 33,
+                "luck": 22,
+                "image": "image.png"
+              }
+            }
+          },
+          {
+            "id": 2,
+            "playerOne": {
+              "id": 2,
+              "name": "Player2",
+              "isLife": true,
+              "currentHp": 100,
+              "maxHp": 100,
+              "card": {
+                "id": 1,
+                "name": "Card2",
+                "atk": 23,
+                "def": 45,
+                "vit": 33,
+                "luck": 22,
+                "image": "image.png"
+              }
+            }
+          }
+        ]
+      },
+      "TeamThree": {
+        "isAlive": true,
+        "teams": [
+          {
+            "id": 1,
+            "playerOne": {
+              "id": 1,
+              "name": "Player1",
+              "isLife": true,
+              "currentHp": 100,
+              "maxHp": 100,
+              "card": {
+                "id": 1,
+                "name": "Card1",
+                "atk": 23,
+                "def": 45,
+                "vit": 33,
+                "luck": 22,
+                "image": "image.png"
+              }
+            }
+          },
+          {
+            "id": 2,
+            "playerOne": {
+              "id": 2,
+              "name": "Player2",
+              "isLife": true,
+              "currentHp": 100,
+              "maxHp": 100,
+              "card": {
+                "id": 1,
+                "name": "Card2",
+                "atk": 23,
+                "def": 45,
+                "vit": 33,
+                "luck": 22,
+                "image": "image.png"
+              }
+            }
+          }
+        ]
+      },
+      "TeamFor": {
+        "isAlive": true,
+        "teams": [
+          {
+            "id": 1,
+            "playerOne": {
+              "id": 1,
+              "name": "Player1",
+              "isLife": true,
+              "currentHp": 100,
+              "maxHp": 100,
+              "card": {
+                "id": 1,
+                "name": "Card1",
+                "atk": 23,
+                "def": 45,
+                "vit": 33,
+                "luck": 22,
+                "image": "image.png"
+              }
+            }
+          },
+          {
+            "id": 2,
+            "playerOne": {
+              "id": 2,
+              "name": "Player2",
+              "isLife": true,
+              "currentHp": 100,
+              "maxHp": 100,
+              "card": {
+                "id": 1,
+                "name": "Card2",
+                "atk": 23,
+                "def": 45,
+                "vit": 33,
+                "luck": 22,
+                "image": "image.png"
+              }
+            }
+          }
+        ]
+      },
+      "TeamFive": {
+        "isAlive": true,
+        "teams": [
+          {
+            "id": 1,
+            "playerOne": {
+              "id": 1,
+              "name": "Player1",
+              "isLife": true,
+              "currentHp": 100,
+              "maxHp": 100,
+              "card": {
+                "id": 1,
+                "name": "Card1",
+                "atk": 23,
+                "def": 45,
+                "vit": 33,
+                "luck": 22,
+                "image": "image.png"
+              }
+            }
+          },
+          {
+            "id": 2,
+            "playerOne": {
+              "id": 2,
+              "name": "Player2",
+              "isLife": true,
+              "currentHp": 100,
+              "maxHp": 100,
+              "card": {
+                "id": 1,
+                "name": "Card2",
+                "atk": 23,
+                "def": 45,
+                "vit": 33,
+                "luck": 22,
+                "image": "image.png"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "Event": [
+      {
+        "cellId": 1,
+        "message":"toto",
+        "action":""
+      }
+    ]
+  }
+}
+
+```

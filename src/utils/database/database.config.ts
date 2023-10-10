@@ -1,5 +1,11 @@
 import "reflect-metadata"
 import { DataSource } from "typeorm"
+import {CellsDto} from "../../dto/cells.dto";
+import {MapsDto} from "../../dto/maps.dto";
+import {GamekeyDto} from "../../dto/gamekey.dto";
+import {SessionDto} from "../../dto/session.dto";
+import {EffectsDto} from "../../dto/effects.dto";
+import {CardsDto} from "../../dto/cards.dto";
 
 export const AppDataSource  = new DataSource({
     type: "mariadb",
@@ -11,6 +17,12 @@ export const AppDataSource  = new DataSource({
     synchronize: true,
     logging: true,
     entities: [
+        CellsDto,
+        MapsDto,
+        GamekeyDto,
+        SessionDto,
+        EffectsDto,
+        CardsDto
     ],
     subscribers: [],
     migrations: [],

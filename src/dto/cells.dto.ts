@@ -8,7 +8,7 @@ export class CellsDto {
     id: number
 
     @ManyToOne((type) => MapsDto, (map) => map.id, { eager: true, onDelete: 'CASCADE' })
-    @JoinColumn()
+    @JoinColumn({ name: 'map_id' })
     map: MapsDto
 
     @Column()

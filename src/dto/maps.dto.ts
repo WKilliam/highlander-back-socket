@@ -1,4 +1,5 @@
-import {Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {CellsDto} from "./cells.dto";
 
 @Entity('maps')
 export class MapsDto {
@@ -6,8 +7,8 @@ export class MapsDto {
     @PrimaryGeneratedColumn()
     id: number
 
-    @Column({name: 'background_image', type: 'bytea'})
-    backgroundImage: Buffer
+    @Column({name: 'background_image',type: 'varchar', length: 255})
+    backgroundImage: string
 
     @Column()
     width: number;
@@ -15,4 +16,9 @@ export class MapsDto {
     @Column()
     height: number;
 
+    @Column()
+    name: string;
+
+    @OneToMany(() => CellsDto, (cells) => cells.map)
+    cells: CellsDto[];
 }
