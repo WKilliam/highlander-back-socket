@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES6", // Version ECMAScript cible (peut être "ESNext" pour la dernière version)
+    "module": "CommonJS", // Système de module (Node.js utilise généralement CommonJS)
+    "outDir": "./dist", // Répertoire de sortie pour les fichiers JavaScript compilés
+    "rootDir": "./src", // Répertoire source où se trouvent vos fichiers TypeScript
+    "strict": true, // Activer les contrôles stricts de TypeScript
+    "esModuleInterop": true, // Permettre l'interopérabilité des modules ES6
+    "skipLibCheck": true, // Ne pas vérifier les fichiers de définition des bibliothèques
+    "forceConsistentCasingInFileNames": true, // Appliquer une casse cohérente aux noms de fichiers
+    "experimentalDecorators": true, // Ajoutez cette ligne pour activer les décorateurs expérimentaux
+    "emitDecoratorMetadata": true, // Cette option est également nécessaire pour les décorateurs TypeORM
+    "strictPropertyInitialization": false, // Cette option est nécessaire pour les décorateurs TypeORM
+    "moduleResolution": "node"
+  },
+  "include": ["src/**/*.ts", "./global.d.ts"],
+  "exclude": [
+    "node_modules" // Exclure le répertoire node_modules
+  ],
+  "typeRoots": ["node_modules/@types", "./types"] // Chemin vers les fichiers de définition de type
+}
