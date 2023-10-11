@@ -2,6 +2,8 @@ import {DataSource, Repository} from "typeorm";
 import {EffectsModelsRequest} from "../../models/effects.models";
 import {GamekeyDto} from "../../dto/gamekey.dto";
 import {EffectsDto} from "../../dto/effects.dto";
+import {Utils} from "../../utils/utils";
+import {FormatModel} from "../../models/format.model";
 
 export class EffectsServices {
     dataSourceConfig: Promise<DataSource>;
@@ -22,9 +24,10 @@ export class EffectsServices {
                 type: effect.type,
                 action: effect.action
             });
-            return await effectsRepository.save(newEffect);
+            const effectData = await effectsRepository.save(newEffect);
+            return Utils.formatResponse(201,'Created Effects', effectData);
         } catch (error: any) {
-            return error
+            return { error: error.message , code: 500 } as FormatModel;
         }
     }
 

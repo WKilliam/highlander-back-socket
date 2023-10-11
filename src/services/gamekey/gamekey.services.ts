@@ -1,6 +1,7 @@
 import {DataSource, Repository} from "typeorm";
 import {GamekeyDto} from "../../dto/gamekey.dto";
 import {Utils} from "../../utils/utils";
+import {FormatModel} from "../../models/format.model";
 
 export class GamekeyServices{
     dataSourceConfig: Promise<DataSource>;
@@ -16,16 +17,23 @@ export class GamekeyServices{
             let generateKey: string = Utils.createGameKeySession(false);
             const valideKey: string = await this.refreshCanCreateGamekey(generateKey);
             if (valideKey === "-1") {
-                throw new Error("Error: Attempt to create gamekey failed");
+                return Utils.formatResponse(
+                    500,
+                    'Error: Impossible to generate a key',
+                    {error: 'Impossible to generate a key'} );
             }
             console.log(valideKey)
             const gamekeyDto = new GamekeyDto();
             gamekeyDto.key = valideKey;
             gamekeyDto.session = {id: sessionId} as any;
             const create = gamekeyRepository.create(gamekeyDto)
-            return await gamekeyRepository.save(create);
+            const keyGen =  await gamekeyRepository.save(create);
+            return Utils.formatResponse(
+                200,
+                'Key created',
+                keyGen );
         } catch (error: any) {
-            return error;
+            return { error: error.message , code: 500 } as FormatModel;
         }
     }
 
@@ -57,7 +65,7 @@ export class GamekeyServices{
         try {
             const dataSource: DataSource = await this.dataSourceConfig;
             const gamekeyRepository: Repository<GamekeyDto> = dataSource.getRepository(GamekeyDto);
-            return await gamekeyRepository.findOne({
+            const findKey = await gamekeyRepository.findOne({
                 select:{
                     id: true,
                     key: true,
@@ -65,8 +73,12 @@ export class GamekeyServices{
                 where:{
                     id: sessionId
                 }});
-        }catch (error: any) {
-            throw new Error(error);
+            return Utils.formatResponse(
+                200,
+                'Key found',
+                findKey );
+        } catch (error: any) {
+            return { error: error.message , code: 500 } as FormatModel;
         }
     }
 }

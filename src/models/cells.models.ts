@@ -2,7 +2,7 @@ export interface Cellsmodel{
     id:number,
     x:number,
     y:number,
-    value:string,
+    value:number,
 }
 
 export interface CellsConceptionModel{

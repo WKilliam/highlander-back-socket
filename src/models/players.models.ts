@@ -7,3 +7,11 @@ export interface PlayersModels{
     maxHp : number,
     card:CardsModels
 }
+
+export interface PlayersModelsMonster{
+    id : number
+    name : string
+    currentHp : number,
+    maxHp : number,
+    card:CardsModels
+}

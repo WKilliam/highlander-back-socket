@@ -6,6 +6,8 @@ import {GamekeyDto} from "../../dto/gamekey.dto";
 import {SessionDto} from "../../dto/session.dto";
 import {EffectsDto} from "../../dto/effects.dto";
 import {CardsDto} from "../../dto/cards.dto";
+import {EventDto} from "../../dto/event.dto";
+import {DecksDto} from "../../dto/decks.dto";
 
 export const AppDataSource  = new DataSource({
     type: "mariadb",
@@ -22,7 +24,9 @@ export const AppDataSource  = new DataSource({
         GamekeyDto,
         SessionDto,
         EffectsDto,
-        CardsDto
+        CardsDto,
+        EventDto,
+        DecksDto,
     ],
     subscribers: [],
     migrations: [],

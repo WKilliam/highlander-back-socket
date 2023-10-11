@@ -3,6 +3,8 @@ import {MapsDto} from "../../dto/maps.dto";
 import {CellsDto} from "../../dto/cells.dto";
 import {MapModels, MapModelsRequest} from "../../models/map.models";
 import {CellsServices} from "../cellulles/cells.services";
+import {Utils} from "../../utils/utils";
+import {FormatModel} from "../../models/format.model";
 
 export class MapsServices {
     dataSourceConfig: Promise<DataSource>;
@@ -57,9 +59,12 @@ export class MapsServices {
                 cellsGrid: cells,
             };
 
-            return mapModel;
+            return Utils.formatResponse(
+                201,
+                'Created Map',
+                mapModel);
         } catch (error: any) {
-            return error
+            return { error: error.message , code: 500 } as FormatModel;
         }
     }
 }

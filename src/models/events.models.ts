@@ -1,20 +1,16 @@
 import {Cellsmodel} from "./cells.models";
+import {TypeEvent} from "../utils/enum/enum";
 
-export interface EventsModels{
-    events: EventsCellModels[],
-}
+
 
 export interface EventsCellModels{
     cells: Cellsmodel,
     message: string,
-    action: string,
+    typeEvent: TypeEvent,
 }
 
 
 export interface EventsRequestModels{
-    type: string,
+    typeEvent: string,
     message: string,
-    x: number,
-    y: number,
-    action: string,
 }

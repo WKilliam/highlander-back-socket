@@ -63,254 +63,119 @@ Relais Back Socket :
 - Gestion des combats
 - Envoie signal pour premier tour au joueurs de la room
 
-
 ```json
 {
-  "PartiesModels":{
-    "Session": {
-      "id":1,
-      "game_key_session":"Test",
-      "created_at":"21/04/2000",
-      "updated_at": "21/04/2000",
-      "status_game":"ON",
-      "status_access":"Public",
-      "password":"",
-      "map":{
-        "backgroundImg":"image.png",
-        "width":200,
-        "height":200,
-        "cells": [
-          {
-            "id":1,
-            "values": 1,
-            "x": 200,
-            "y": 200
-          }
-        ]
-      }
-    },
-    "Teams":{
-      "TeamOne": {
-        "isAlive":true,
-        "teams":[
-          {
+  "toursCount": 1,
+  "orderTurn": [
+    
+  ],
+  "session": {
+    "id": 1,
+    "game_key_session": "Test",
+    "created_at": "21/04/2000",
+    "updated_at": "21/04/2000",
+    "status_game": "ON",
+    "status_access": "Public",
+    "password": ""
+  },
+  "map": {
+    "id": 1,
+    "name": "Test",
+    "created_at": "21/04/2000",
+    "updated_at": "21/04/2000",
+    "status": "ON",
+    "url": "",
+    "cells": [
+        {
             "id": 1,
-            "playerOne": {
-              "id": 1,
-              "name": "Player1",
-              "isLife": true,
-              "currentHp": 100,
-              "maxHp": 100,
-              "card": {
-                "id": 1,
-                "name": "Card1",
-                "atk": 23,
-                "def": 45,
-                "vit": 33,
-                "luck": 22,
-                "image": "image.png"
-              }
-            }
-          },
-          {
-            "id": 2,
-            "playerOne": {
-              "id": 2,
-              "name": "Player2",
-              "isLife": true,
-              "currentHp": 100,
-              "maxHp": 100,
-              "card": {
-                "id": 1,
-                "name": "Card2",
-                "atk": 23,
-                "def": 45,
-                "vit": 33,
-                "luck": 22,
-                "image": "image.png"
-              }
-            }
-          }
-        ]
-      },
-      "TeamTwo": {
-        "isAlive": true,
-        "teams": [
-          {
-              "id": 1,
-              "name": "Player1",
-              "isLife": true,
-              "currentHp": 100,
-              "maxHp": 100,
-              "card": {
-                "id": 1,
-                "name": "Card1",
-                "atk": 23,
-                "def": 45,
-                "vit": 33,
-                "luck": 22,
-                "image": "image.png"
-              }
-            }
-          },
-          {
-            "id": 2,
-            "playerOne": {
-              "id": 2,
-              "name": "Player2",
-              "isLife": true,
-              "currentHp": 100,
-              "maxHp": 100,
-              "card": {
-                "id": 1,
-                "name": "Card2",
-                "atk": 23,
-                "def": 45,
-                "vit": 33,
-                "luck": 22,
-                "image": "image.png"
-              }
-            }
-          }
-        ]
-      },
-      "TeamThree": {
-        "isAlive": true,
-        "teams": [
-          {
-            "id": 1,
-            "playerOne": {
-              "id": 1,
-              "name": "Player1",
-              "isLife": true,
-              "currentHp": 100,
-              "maxHp": 100,
-              "card": {
-                "id": 1,
-                "name": "Card1",
-                "atk": 23,
-                "def": 45,
-                "vit": 33,
-                "luck": 22,
-                "image": "image.png"
-              }
-            }
-          },
-          {
-            "id": 2,
-            "playerOne": {
-              "id": 2,
-              "name": "Player2",
-              "isLife": true,
-              "currentHp": 100,
-              "maxHp": 100,
-              "card": {
-                "id": 1,
-                "name": "Card2",
-                "atk": 23,
-                "def": 45,
-                "vit": 33,
-                "luck": 22,
-                "image": "image.png"
-              }
-            }
-          }
-        ]
-      },
-      "TeamFor": {
-        "isAlive": true,
-        "teams": [
-          {
-            "id": 1,
-            "playerOne": {
-              "id": 1,
-              "name": "Player1",
-              "isLife": true,
-              "currentHp": 100,
-              "maxHp": 100,
-              "card": {
-                "id": 1,
-                "name": "Card1",
-                "atk": 23,
-                "def": 45,
-                "vit": 33,
-                "luck": 22,
-                "image": "image.png"
-              }
-            }
-          },
-          {
-            "id": 2,
-            "playerOne": {
-              "id": 2,
-              "name": "Player2",
-              "isLife": true,
-              "currentHp": 100,
-              "maxHp": 100,
-              "card": {
-                "id": 1,
-                "name": "Card2",
-                "atk": 23,
-                "def": 45,
-                "vit": 33,
-                "luck": 22,
-                "image": "image.png"
-              }
-            }
-          }
-        ]
-      },
-      "TeamFive": {
-        "isAlive": true,
-        "teams": [
-          {
-            "id": 1,
-            "playerOne": {
-              "id": 1,
-              "name": "Player1",
-              "isLife": true,
-              "currentHp": 100,
-              "maxHp": 100,
-              "card": {
-                "id": 1,
-                "name": "Card1",
-                "atk": 23,
-                "def": 45,
-                "vit": 33,
-                "luck": 22,
-                "image": "image.png"
-              }
-            }
-          },
-          {
-            "id": 2,
-            "playerOne": {
-              "id": 2,
-              "name": "Player2",
-              "isLife": true,
-              "currentHp": 100,
-              "maxHp": 100,
-              "card": {
-                "id": 1,
-                "name": "Card2",
-                "atk": 23,
-                "def": 45,
-                "vit": 33,
-                "luck": 22,
-                "image": "image.png"
-              }
-            }
-          }
-        ]
-      }
-    },
-    "Event": [
-      {
-        "cellId": 1,
-        "message":"toto",
-        "action":""
-      }
+            "x": 1,
+            "y": 1,
+            "z": 1
+        }
     ]
+  },
+  "moster": {
+    "one": {
+      "monster": [
+        
+      ]
+    }
+  },
+  "team": {
+    "one": {
+      "players" : [
+        {
+          "id": 1,
+          "name": "Test",
+          "currentHp":100,
+          "maxHp":100,
+          "card": {
+            "id": 1,
+            "name" : "string",
+            "description" : "string",
+            "image" : "string",
+            "rarity" : "string",
+            "atk" : 1,
+            "def" : 1,
+            "vit" : 1,
+            "luk" : 1,
+            "effects" : [
+              {
+                "name": "string",
+                "description": "string",
+                "type": "string",
+                "icon": "string",
+                "rarity": "string",
+                "action": "string"
+              },
+              {
+                "name": "string",
+                "description": "string",
+                "type": "string",
+                "icon": "string",
+                "rarity": "string",
+                "action": "string"
+              }
+            ]
+          }
+        },
+        {
+          "id": 1,
+          "name": "Test",
+          "currentHp":100,
+          "maxHp":100,
+          "card": {
+            "id": 1,
+            "name" : "string",
+            "description" : "string",
+            "image" : "string",
+            "rarity" : "string",
+            "atk" : 1,
+            "def" : 1,
+            "vit" : 1,
+            "luk" : 1,
+            "effects" : [
+              {
+                "name": "string",
+                "description": "string",
+                "type": "string",
+                "icon": "string",
+                "rarity": "string",
+                "action": "string"
+              },
+              {
+                "name": "string",
+                "description": "string",
+                "type": "string",
+                "icon": "string",
+                "rarity": "string",
+                "action": "string"
+              }
+            ]
+          }
+        }
+      ]
+    }
   }
 }
 

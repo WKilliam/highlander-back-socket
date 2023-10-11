@@ -1,5 +1,6 @@
-import {Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne, PrimaryGeneratedColumn} from "typeorm";
 import {EffectsDto} from "./effects.dto";
+import {DecksDto} from "./decks.dto";
 
 @Entity('cards')
 export class CardsDto {
@@ -34,4 +35,7 @@ export class CardsDto {
     @ManyToMany(() => EffectsDto, effect => effect.cards)
     @JoinTable()
     effects: EffectsDto[];
+
+    @ManyToMany(() => DecksDto, deck => deck.cards, { eager: true, onDelete: 'CASCADE' })
+    decks: DecksDto[];
 }

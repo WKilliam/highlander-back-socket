@@ -28,3 +28,10 @@ export enum Rarity {
     MYTHIQUE,
     EPIC
 }
+
+export enum TypeEvent {
+    NONE = "NONE",
+    MONSTER_TOPPING = "MONSTER_TOPPING",
+    POTION_GIVEN = "POTION_GIVEN",
+    POTION_LOST = "POTION_LOST",
+}

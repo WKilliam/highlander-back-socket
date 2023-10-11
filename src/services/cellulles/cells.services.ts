@@ -1,6 +1,7 @@
 import {DataSource, Repository} from "typeorm";
 import {CellsDto} from "../../dto/cells.dto";
 import {Utils} from "../../utils/utils";
+import {FormatModel} from "../../models/format.model";
 
 export class CellsServices {
     dataSourceConfig: Promise<DataSource>;
@@ -25,7 +26,7 @@ export class CellsServices {
                     await cellsRepository.save(cellDto);
                 }
             }
-            return await cellsRepository.find(
+            const foundCell = await cellsRepository.find(
                 {
                     select: {
                         id: true,
@@ -37,8 +38,9 @@ export class CellsServices {
                         id: mapId,
                     }
                 })
+            return Utils.formatResponse(201,'Created Cells', foundCell);
         } catch (error: any) {
-            return error
+            return { error: error.message , code: 500 } as FormatModel;
         }
     }
 

@@ -5,6 +5,7 @@ import {AppDataSource} from "../../utils/database/database.config";
 import {MapsServices} from "../../services/maps/maps.services";
 import {MapsDto} from "../../dto/maps.dto";
 import {MapModelsRequest} from "../../models/map.models";
+const mapsServices =  new MapsServices(AppDataSource);
 
 /**
  * @swagger
@@ -49,8 +50,7 @@ MapController.post("/", async (
             height: height,
             name: name
         }
-        const create = new MapsServices(AppDataSource);
-        const map: MapsDto = await create.createMap(mapModel);
+        const map: MapsDto = await mapsServices.createMap(mapModel);
         response.status(201).json(map);
     } catch (error: any) {
         console.error(error);

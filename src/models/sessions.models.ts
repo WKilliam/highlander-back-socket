@@ -11,7 +11,6 @@ export interface SessionModel{
     password:string,
     freeplace: number,
     name: string,
-    map?: MapModels
 }
 
 export interface SessionModelRequest{

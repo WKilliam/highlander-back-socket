@@ -1,10 +1,8 @@
 import {Router} from "express";
-import MapController from "../maps/map.controller";
-import {SessionModelRequest, StatusAccess, StatusGame} from "../../models/sessions.models";
+import {SessionModelRequest} from "../../models/sessions.models";
 import {SessionsServices} from "../../services/sessions/sessions.services";
 import {AppDataSource} from "../../utils/database/database.config";
-import {GamekeyServices} from "../../services/gamekey/gamekey.services";
-import {JsonconceptorService} from "../../services/jsonconceptor/jsonconceptor.service";
+const sessionsServices: SessionsServices = new SessionsServices(AppDataSource);
 
 const SessionController = Router();
 
@@ -72,7 +70,7 @@ SessionController.post("/", async (
             password: password,
             mapId: mapId
         }
-        const create = new SessionsServices(AppDataSource).createSession(sessionModel);
+        const create = await sessionsServices.createSession(sessionModel);
         return response.status(200).json(create);
     } catch (error: any) {
 

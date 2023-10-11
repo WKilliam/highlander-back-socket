@@ -57,7 +57,7 @@ EffectsController.post("/", async (
             type: type,
             action: action
         }
-        const create = effectsServices.createEffect(effectsModel);
+        const create = await effectsServices.createEffect(effectsModel);
         response.status(201).json(create);
     } catch (error: any) {
         console.error(error);

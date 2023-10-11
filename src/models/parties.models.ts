@@ -1,9 +1,14 @@
 import {SessionModel} from "./sessions.models";
-import {TeamsModels} from "./teams.models";
-import {EventsModels} from "./events.models";
+import {MonstersModels, TeamsModels} from "./teams.models";
+import {EventsCellModels} from "./events.models";
+import {MapModels} from "./map.models";
 
 export interface PartiesModels {
-    session : SessionModel
-    teams : TeamsModels
-    events : EventsModels
+    toursCount: number,
+    orderTurn:Array<number>
+    sessions: SessionModel,
+    map: MapModels,
+    teams: TeamsModels,
+    monsters: MonstersModels,
+    events: EventsCellModels[],
 }
