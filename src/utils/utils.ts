@@ -126,7 +126,7 @@ export class Utils {
     static createTeamBodyModelsInit(players: Array<PlayersModels>): Array<TeamBodyModels> {
         let teamBodyModelsArray: Array<TeamBodyModels> = [];
 
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 4; i++) {
             let teamBodyModels: TeamBodyModels;
             teamBodyModels = {
                 isAlive: true,
@@ -135,7 +135,6 @@ export class Utils {
             }
             teamBodyModelsArray.push(teamBodyModels);
         }
-
         return teamBodyModelsArray;
     }
 

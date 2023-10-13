@@ -37,3 +37,9 @@ export enum StatusAccess{
     PUBLIC = "PUBLIC",
     PRIVATE = "PRIVATE"
 }
+
+
+export interface SessionJsonTeamUpdate{
+    isAlive?: boolean,
+    name?: string,
+}

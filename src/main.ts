@@ -12,6 +12,7 @@ import EventsController from "./controller/events/events.controller";
 import DecksController from "./controller/decks/decks.controller";
 import UsersController from "./controller/users/users.controller";
 import cors from "cors";
+import JsonController from "./controller/json/json";
 app.use(express.json());
 app.use(cors(corsApp));
 const httpServer: Express = require('http').createServer(app);
@@ -28,6 +29,7 @@ app.use('/effects',EffectsController);
 app.use('/events',EventsController);
 app.use('/decks',DecksController);
 app.use('/user',UsersController);
+app.use('/json',JsonController)
 
 httpServer.listen(port, () => console.log(`listening on port ${port}`));
 

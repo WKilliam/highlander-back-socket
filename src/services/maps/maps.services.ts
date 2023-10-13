@@ -5,6 +5,7 @@ import {MapModels, MapModelsRequest} from "../../models/map.models";
 import {CellsServices} from "../cellulles/cells.services";
 import {Utils} from "../../utils/utils";
 import {FormatModel} from "../../models/format.model";
+import {JsonconceptorService} from "../jsonconceptor/jsonconceptor.service";
 
 export class MapsServices {
     dataSourceConfig: Promise<DataSource>;

@@ -50,38 +50,46 @@ const SessionController = Router();
 SessionController.post("/", async (
     request,
     response) => {
-    try {
-        const {
-            ownerId,
-            statusAccess,
-            password,
-            name,
-            mapId,
-            teamNameOne,
-            teamNameTwo,
-            teamNameThree,
-            teamNameFour,
-        } = request.body;
+    console.log("request.body", request.body)
+    response.status(200).json({message: "ok"})
+    // try {
+    //     const {
+    //         ownerId,
+    //         statusAccess,
+    //         password,
+    //         name,
+    //         mapId,
+    //         teamNameOne,
+    //         teamNameTwo,
+    //         teamNameThree,
+    //         teamNameFour,
+    //     } = request.body;
+    //
+    //     let sessionModel :SessionModelRequest = {
+    //         ownerId: ownerId,
+    //         createdAt: new Date().toLocaleString(),
+    //         name: name,
+    //         updatedAt: new Date().toLocaleString(),
+    //         statusAccess: statusAccess,
+    //         password: password,
+    //         mapId: mapId,
+    //         teamNameOne: teamNameOne,
+    //         teamNameTwo: teamNameTwo,
+    //         teamNameThree: teamNameThree,
+    //         teamNameFour: teamNameFour,
+    //     }
+    //     const create = await sessionsServices.createSession(sessionModel);
+    //
+    //     return response.status(200).json(create);
+    // } catch (error: any) {
+    //
+    // }
+})
 
-        let sessionModel :SessionModelRequest = {
-            ownerId: ownerId,
-            createdAt: new Date().toLocaleString(),
-            name: name,
-            updatedAt: new Date().toLocaleString(),
-            statusAccess: statusAccess,
-            password: password,
-            mapId: mapId,
-            teamNameOne: teamNameOne,
-            teamNameTwo: teamNameTwo,
-            teamNameThree: teamNameThree,
-            teamNameFour: teamNameFour,
-        }
-        const create = await sessionsServices.createSession(sessionModel);
-
-        return response.status(200).json(create);
-    } catch (error: any) {
-
-    }
+SessionController.get("/", async (
+    request,
+    response) => {
+    return response.status(200).json({message: "ok"})
 })
 
 export default SessionController;

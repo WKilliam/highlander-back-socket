@@ -63,8 +63,6 @@ export class SessionsServices {
                 monsters: monsterModels,
                 events: []
             }
-            JsonconceptorService.createDirectory(key.data.key)
-            JsonconceptorService.createJsonFile(`${key.data.key}/parties.json`, partiesModels)
 
             return Utils.formatResponse(201,'Created', partiesModels);
         } catch (error: any) {
