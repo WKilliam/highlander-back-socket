@@ -24,6 +24,6 @@ export interface MonstersModels{
 
 export interface TeamsMonstersModels{
     isAlive: boolean;
-    avatar: string;
+    name: string;
     players : Array<PlayersModelsMonster>
 }

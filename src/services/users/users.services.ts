@@ -1,4 +1,5 @@
 import {DataSource} from "typeorm";
+import {UserSubscription} from "../../models/users.models";
 
 export class UsersServices{
 
@@ -8,7 +9,7 @@ export class UsersServices{
         this.dataSourceConfig = dataSourceConfig;
     }
 
-    async createUser(){
+    async createUser(userSubscription: UserSubscription){
         try {
 
         }catch (error:any){

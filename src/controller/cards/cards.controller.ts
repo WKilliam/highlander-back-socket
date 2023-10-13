@@ -5,6 +5,7 @@ import {CardsModelsRequest} from "../../models/cards.models";
 import {AppDataSource} from "../../utils/database/database.config";
 import {CardsServices} from "../../services/cards/cards.services";
 import {FormatModel} from "../../models/format.model";
+import {Utils} from "../../utils/utils";
 
 const cardsServices = new CardsServices(AppDataSource);
 
@@ -62,35 +63,30 @@ const cardsServices = new CardsServices(AppDataSource);
 CardsController.post("/", async (
     request,
     response) => {
-    try {
-        const {
-            name,
-            description,
-            image,
-            rarity,
-            atk,
-            def,
-            vit,
-            luk,
-            effects
-        } = request.body;
-        let cardsModel: CardsModelsRequest = {
-            name: name,
-            description: description,
-            image: image,
-            rarity: rarity,
-            atk: atk,
-            def: def,
-            vit: vit,
-            luk: luk,
-            effects: effects
-        }
-        const create = cardsServices.createCard(cardsModel);
-        response.status(201).json(create);
-    } catch (error: any) {
-        console.error(error);
-        response.status(500).send(error);
+    const {
+        name,
+        description,
+        image,
+        rarity,
+        atk,
+        def,
+        vit,
+        luk,
+        effects
+    } = request.body;
+    let cardsModel: CardsModelsRequest = {
+        name: name,
+        description: description,
+        image: image,
+        rarity: rarity,
+        atk: atk,
+        def: def,
+        vit: vit,
+        luk: luk,
+        effects: effects
     }
+    const create = await cardsServices.createCard(cardsModel);
+    return Utils.requestFormatCommon(response, create);
 })
 /**
  * @swagger
@@ -108,13 +104,8 @@ CardsController.post("/", async (
 CardsController.get("/allcards", async (
     request,
     response) => {
-    try {
-        const create: FormatModel = await cardsServices.getAllCards();
-        response.status(create.code).json(create);
-    } catch (error: any) {
-        console.error(error);
-        response.status(500).send(error);
-    }
+    const create: FormatModel = await cardsServices.getAllCards();
+    return Utils.requestFormatCommon(response, create);
 })
 
 
@@ -174,35 +165,31 @@ CardsController.get("/allcards", async (
 CardsController.patch("/", async (
     request,
     response) => {
-    try {
-        const {
-            name,
-            description,
-            image,
-            rarity,
-            atk,
-            def,
-            vit,
-            luk,
-            effects
-        } = request.body;
-        let cardsModel: CardsModelsRequest = {
-            name: name,
-            description: description,
-            image: image,
-            rarity: rarity,
-            atk: atk,
-            def: def,
-            vit: vit,
-            luk: luk,
-            effects: effects
-        }
-        const create: FormatModel = await cardsServices.patchCard(cardsModel);
-        response.status(create.code).json(create);
-    } catch (error: any) {
-        console.error(error);
-        response.status(500).send(error);
+
+    const {
+        name,
+        description,
+        image,
+        rarity,
+        atk,
+        def,
+        vit,
+        luk,
+        effects
+    } = request.body;
+    let cardsModel: CardsModelsRequest = {
+        name: name,
+        description: description,
+        image: image,
+        rarity: rarity,
+        atk: atk,
+        def: def,
+        vit: vit,
+        luk: luk,
+        effects: effects
     }
+    const create: FormatModel = await cardsServices.patchCard(cardsModel);
+    return Utils.requestFormatCommon(response, create);
 })
 
 

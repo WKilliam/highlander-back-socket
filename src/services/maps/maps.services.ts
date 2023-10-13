@@ -25,10 +25,10 @@ export class MapsServices {
                 name: mapRequest.name
             })
             let mapInit = await mapRepository.save(creating)
-            await new CellsServices(this.dataSourceConfig).createCells(mapInit.id)
-            return mapInit
+            await new CellsServices(this.dataSourceConfig).createCells(mapInit.id,mapInit.width,mapInit.height)
+            return Utils.formatResponse(201,'Created', mapInit);
         } catch (error: any) {
-            return error
+            return Utils.formatResponse(500, 'Internal Server Error', null, error)
         }
     }
 
@@ -65,6 +65,19 @@ export class MapsServices {
                 mapModel);
         } catch (error: any) {
             return { error: error.message , code: 500 } as FormatModel;
+        }
+    }
+
+    async getMapInfo() {
+        try {
+            const dataSource: DataSource = await this.dataSourceConfig;
+            const mapRepository: Repository<MapsDto> = dataSource.getRepository(MapsDto);
+            const map = await mapRepository.find({
+                select: ["id", "backgroundImage", "name"],
+            })
+            return Utils.formatResponse(200,'Data found', map);
+        } catch (error: any) {
+            return Utils.formatResponse(500, 'Internal Server Error', null, error)
         }
     }
 }

@@ -6,6 +6,7 @@ import {AppDataSource} from "../../utils/database/database.config";
 import {CardsServices} from "../../services/cards/cards.services";
 import {DecksModelsRequest} from "../../models/decks.models";
 import {DecksServices} from "../../services/decks/decks.services";
+import {Utils} from "../../utils/utils";
 
 const decksService = new DecksServices(AppDataSource);
 
@@ -57,32 +58,29 @@ const decksService = new DecksServices(AppDataSource);
 DecksController.post("/", async (
     request,
     response) => {
-    try {
-        const {
-            name,
-            description,
-            image,
-            type,
-            rarity,
-            createdAt,
-            count,
-            cards,
-        } = request.body;
-        let decksModel: DecksModelsRequest = {
-            name: name,
-            description: description,
-            image: image,
-            type: type,
-            rarity: rarity,
-            createdAt: createdAt,
-            count: count,
-            cards: cards
-        }
-        const create = await decksService.createDeck(decksModel);
-        return response.status(201).json(create);
-    } catch (error: any) {
-        return response.status(500).json({error: error.message});
+
+    const {
+        name,
+        description,
+        image,
+        type,
+        rarity,
+        createdAt,
+        count,
+        cards,
+    } = request.body;
+    let decksModel: DecksModelsRequest = {
+        name: name,
+        description: description,
+        image: image,
+        type: type,
+        rarity: rarity,
+        createdAt: createdAt,
+        count: count,
+        cards: cards
     }
+    const received = await decksService.createDeck(decksModel);
+    return Utils.requestFormatCommon(response, received);
 })
 
 

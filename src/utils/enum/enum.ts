@@ -23,9 +23,8 @@ export enum Rarity {
     COMMUN,
     PEU_COMMUN,
     RARE,
-    TRES_RARE,
+    SUPER_RARE,
     LEGENDAIRE,
-    MYTHIQUE,
     EPIC
 }
 

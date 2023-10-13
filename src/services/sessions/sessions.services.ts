@@ -42,7 +42,6 @@ export class SessionsServices {
             })
             const saving = await sessionRepository.save(creating)
             const key = await this.gamekeyServices.createGamekey(saving.id)
-            // JsonconceptorService.createDirectory(key.key)
             const map = await this.mapServices.getMapCompleted(sessionModel.mapId)
             const partiesModels: PartiesModels = {
                 toursCount: 0,
@@ -66,6 +65,7 @@ export class SessionsServices {
             }
             JsonconceptorService.createDirectory(key.data.key)
             JsonconceptorService.createJsonFile(`${key.data.key}/parties.json`, partiesModels)
+
             return Utils.formatResponse(201,'Created', partiesModels);
         } catch (error: any) {
             return { error: error.message , code: 500 } as FormatModel;

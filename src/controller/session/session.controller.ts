@@ -53,24 +53,31 @@ SessionController.post("/", async (
     try {
         const {
             ownerId,
-            createdAt,
-            updatedAt,
             statusAccess,
             password,
             name,
-            mapId
+            mapId,
+            teamNameOne,
+            teamNameTwo,
+            teamNameThree,
+            teamNameFour,
         } = request.body;
 
         let sessionModel :SessionModelRequest = {
             ownerId: ownerId,
-            createdAt: createdAt,
+            createdAt: new Date().toLocaleString(),
             name: name,
-            updatedAt: updatedAt,
+            updatedAt: new Date().toLocaleString(),
             statusAccess: statusAccess,
             password: password,
-            mapId: mapId
+            mapId: mapId,
+            teamNameOne: teamNameOne,
+            teamNameTwo: teamNameTwo,
+            teamNameThree: teamNameThree,
+            teamNameFour: teamNameFour,
         }
         const create = await sessionsServices.createSession(sessionModel);
+
         return response.status(200).json(create);
     } catch (error: any) {
 

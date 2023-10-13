@@ -10,11 +10,11 @@ export class CellsServices {
         this.dataSourceConfig = dataSourceConfig;
     }
 
-    async createCells(mapId: number) {
+    async createCells(mapId: number,mapWidth: number,mapHeight: number) {
         try {
             const dataSource: DataSource = await this.dataSourceConfig;
             const cellsRepository: Repository<CellsDto> = dataSource.getRepository(CellsDto);
-            let cellsGrid = Utils.createGrid()
+            let cellsGrid = Utils.createGrid(mapWidth,mapHeight)
             for (const row of cellsGrid) {
                 for (const cell of row) {
                     const cellDto = new CellsDto();

@@ -23,7 +23,7 @@ export class EventsServices{
             const event =  await eventsRepository.save(newEvents);
             return Utils.formatResponse(201,'Created', event);
         } catch (error: any) {
-            return { error: error.message , code: 500 } as FormatModel;
+            return Utils.formatResponse(500, 'Internal Server Error', null, error)
         }
     }
 }

@@ -4,6 +4,8 @@ const EffectsController = Router();
 import {AppDataSource} from "../../utils/database/database.config";
 import {EffectsServices} from "../../services/effects/effects.services";
 import {EffectsModelsRequest} from "../../models/effects.models";
+import {Utils} from "../../utils/utils";
+
 const effectsServices = new EffectsServices(AppDataSource);
 
 /**
@@ -47,22 +49,17 @@ const effectsServices = new EffectsServices(AppDataSource);
 EffectsController.post("/", async (
     request,
     response) => {
-    try {
-        const {name, description, icon, rarity, type, action} = request.body;
-        let effectsModel : EffectsModelsRequest = {
-            name: name,
-            description: description,
-            icon: icon,
-            rarity: rarity,
-            type: type,
-            action: action
-        }
-        const create = await effectsServices.createEffect(effectsModel);
-        response.status(201).json(create);
-    } catch (error: any) {
-        console.error(error);
-        response.status(500).send(error);
+    const {name, description, icon, rarity, type, action} = request.body;
+    let effectsModel: EffectsModelsRequest = {
+        name: name,
+        description: description,
+        icon: icon,
+        rarity: rarity,
+        type: type,
+        action: action
     }
+    const received = await effectsServices.createEffect(effectsModel);
+    return Utils.requestFormatCommon(response, received);
 })
 
 

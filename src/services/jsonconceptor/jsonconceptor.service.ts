@@ -21,22 +21,37 @@ export class JsonconceptorService {
 
     static readJsonFile(path: string): any {
         try {
-            const json = fse.readFileSync(`parties/${path}`, 'utf8');
+            console.log(path)
+            const json = fse.readFileSync(`parties/${path}/parties.json`, 'utf8');
             return JSON.parse(json);
         } catch (error:any) {
             return error
         }
     }
 
-    static updateJsonFile(path: string, key: string, value: any): void {
+    static updateJsonKey(obj, keyPath, value) {
+        const keys = keyPath.split('.');
+        let currentObj = obj;
+
+        for (let i = 0; i < keys.length - 1; i++) {
+            if (!currentObj[keys[i]]) {
+                currentObj[keys[i]] = {};
+            }
+            currentObj = currentObj[keys[i]];
+        }
+
+        currentObj[keys[keys.length - 1]] = value;
+    }
+
+    static updateJsonFile(path, keyPath, value) {
         try {
             const json = fse.readFileSync(`parties/${path}`, 'utf8');
             const data = JSON.parse(json);
-            data[key] = value;
+            updateJsonKey(data, keyPath, value);
             const updatedJson = JSON.stringify(data);
             fse.writeFileSync(`parties/${path}`, updatedJson);
-        } catch (error:any) {
-            return error
+        } catch (error) {
+            return error;
         }
     }
 }

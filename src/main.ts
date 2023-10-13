@@ -10,6 +10,7 @@ import CardsController from "./controller/cards/cards.controller";
 import EffectsController from "./controller/effects/effects.controller";
 import EventsController from "./controller/events/events.controller";
 import DecksController from "./controller/decks/decks.controller";
+import UsersController from "./controller/users/users.controller";
 import cors from "cors";
 app.use(express.json());
 app.use(cors(corsApp));
@@ -18,12 +19,15 @@ const io = require('socket.io')(httpServer, corsApp);
 app.use('/docs', swaggerUi.serve, swaggerDocument);
 require("./controller/socket/socketsController")(io)
 app.use(express.json())
+
+
 app.use('/maps', MapController);
 app.use('/sessions', SessionController);
 app.use('/cards',CardsController);
 app.use('/effects',EffectsController);
 app.use('/events',EventsController);
 app.use('/decks',DecksController);
+app.use('/user',UsersController);
 
 httpServer.listen(port, () => console.log(`listening on port ${port}`));
 

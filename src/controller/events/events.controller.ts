@@ -5,6 +5,7 @@ import {AppDataSource} from "../../utils/database/database.config";
 import {EventsServices} from "../../services/events/events.services";
 import {EffectsModelsRequest} from "../../models/effects.models";
 import {EventsRequestModels} from "../../models/events.models";
+import {Utils} from "../../utils/utils";
 
 const eventsServices = new EventsServices(AppDataSource);
 
@@ -40,22 +41,16 @@ const eventsServices = new EventsServices(AppDataSource);
 EventsController.post("/", async (
     request,
     response) => {
-    try {
-        const {
-            typeEvent,
-            message,
-            actionEvent
-        } = request.body;
-        let eventsModel: EventsRequestModels = {
-            typeEvent: typeEvent,
-            message: message,
-        }
-        const create = await eventsServices.createEvents(eventsModel)
-        console.log(create)
-        response.status(201).json(create);
-    } catch (error: any) {
-        console.error(error);
-        response.status(500).send(error);
+    const {
+        typeEvent,
+        message,
+        actionEvent
+    } = request.body;
+    let eventsModel: EventsRequestModels = {
+        typeEvent: typeEvent,
+        message: message,
     }
+    const received = await eventsServices.createEvents(eventsModel)
+    return Utils.requestFormatCommon(response, received);
 });
 export default EventsController;

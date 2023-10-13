@@ -9,25 +9,20 @@ import {EventsCellModels} from "../models/events.models";
 
 export class Utils {
 
-    static createGrid(): CellsConceptionModel[][] {
-        const mapWidth: number = 970
-        const mapHeight: number = 512
+    static createGrid(mapWidth: number,mapHeight: number): CellsConceptionModel[][] {
         const cellWidth = 32;
         const cellHeight = 32;
-
         const numCols = Math.floor(mapWidth / cellWidth);
         const numRows = Math.floor(mapHeight / cellHeight);
-
         const gridCellData: CellsConceptionModel[][] = [];
-        let cellId = 1; // Initialize the cell ID to 1
-
+        let cellId = 1;
         for (let row = 0; row < numRows; row++) {
             const rowArray: CellsConceptionModel[] = [];
 
             for (let col = 0; col < numCols; col++) {
                 const cell: CellsConceptionModel = {
-                    x: col * cellWidth + 5,
-                    y: row * cellHeight + 5,
+                    x: col * cellWidth,
+                    y: row * cellHeight,
                     value: 1,
                 };
                 rowArray.push(cell);
@@ -150,7 +145,7 @@ export class Utils {
             let teamBodyModels: TeamsMonstersModels;
             teamBodyModels = {
                 isAlive: true,
-                avatar: "",
+                name: "",
                 players: monster.slice(i * 2, (i * 2) + 2)
             }
             teamBodyModelsArray.push(teamBodyModels);
@@ -201,9 +196,15 @@ export class Utils {
     }
 
 
-
-
-
+    static requestFormatCommon(response: any,format:FormatModel): any {
+        if (format === undefined) {
+            return response.status(500).json({message: "Erreur interne du serveur."})
+        } else if (format.data !== null || format.data) {
+            return response.status(format.code).json(format.data);
+        } else {
+            return response.status(format.code).json(format.error);
+        }
+    }
 
 
 

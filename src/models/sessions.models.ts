@@ -20,7 +20,11 @@ export interface SessionModelRequest{
     updatedAt: string,
     statusAccess:StatusAccess,
     password:string,
-    mapId: number
+    mapId: number,
+    teamNameOne: string,
+    teamNameTwo: string,
+    teamNameThree: string,
+    teamNameFour: string,
 }
 
 
