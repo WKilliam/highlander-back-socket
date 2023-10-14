@@ -19,14 +19,19 @@ export class SessionsServices {
         this.mapServices = new MapsServices(dataSourceConfig);
     }
 
-
     async createSession(sessionModel:SessionModelRequest) {
         try {
             const dataSource: DataSource = await this.dataSourceConfig;
             const sessionRepository: Repository<SessionDto> = dataSource.getRepository(SessionDto);
             let players = Utils.createPlayersModelsInit()
             let monster = Utils.createPlayersModelsMonsterInit(5)
-            let teamPlayer =Utils.createTeamBodyModelsInit(players)
+            let arrayNameTeam: Array<string> = [
+                sessionModel.teamNameOne,
+                sessionModel.teamNameTwo,
+                sessionModel.teamNameThree,
+                sessionModel.teamNameFour
+            ];
+            let teamPlayer =Utils.createTeamBodyModelsInit(players,arrayNameTeam)
             let teamModels = Utils.createTeamsModelsInit(teamPlayer)
             let teamMonster =Utils.createTeamsMonstersModelsInit(monster,5)
             let monsterModels = Utils.createMonstersModelsInit(teamMonster)
@@ -63,10 +68,10 @@ export class SessionsServices {
                 monsters: monsterModels,
                 events: []
             }
-
+            
             return Utils.formatResponse(201,'Created', partiesModels);
         } catch (error: any) {
-            return { error: error.message , code: 500 } as FormatModel;
+            return Utils.formatResponse(500,'Internal Server Error', error);
         }
     }
 }

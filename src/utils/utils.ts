@@ -123,14 +123,14 @@ export class Utils {
         return playersModelsArray;
     }
 
-    static createTeamBodyModelsInit(players: Array<PlayersModels>): Array<TeamBodyModels> {
+    static createTeamBodyModelsInit(players: Array<PlayersModels>,nameTeam : Array<string>): Array<TeamBodyModels> {
         let teamBodyModelsArray: Array<TeamBodyModels> = [];
 
         for (let i = 0; i < 4; i++) {
             let teamBodyModels: TeamBodyModels;
             teamBodyModels = {
                 isAlive: true,
-                avatar: "",
+                name: nameTeam[i],
                 players: players.slice(i * 2, (i * 2) + 2)
             }
             teamBodyModelsArray.push(teamBodyModels);

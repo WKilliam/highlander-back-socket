@@ -2,13 +2,14 @@ import {Router} from "express";
 import {SessionModelRequest} from "../../models/sessions.models";
 import {SessionsServices} from "../../services/sessions/sessions.services";
 import {AppDataSource} from "../../utils/database/database.config";
+
 const sessionsServices: SessionsServices = new SessionsServices(AppDataSource);
 
 const SessionController = Router();
 
 /**
  * @swagger
- * /sessions:
+ * /sessions/new:
  *   post:
  *     summary: Créer une nouvelle session.
  *     tags:
@@ -47,49 +48,41 @@ const SessionController = Router();
  *       '500':
  *         description: Erreur interne du serveur.
  */
-SessionController.post("/", async (
+SessionController.post("/new", async (
     request,
     response) => {
-    console.log("request.body", request.body)
-    response.status(200).json({message: "ok"})
-    // try {
-    //     const {
-    //         ownerId,
-    //         statusAccess,
-    //         password,
-    //         name,
-    //         mapId,
-    //         teamNameOne,
-    //         teamNameTwo,
-    //         teamNameThree,
-    //         teamNameFour,
-    //     } = request.body;
-    //
-    //     let sessionModel :SessionModelRequest = {
-    //         ownerId: ownerId,
-    //         createdAt: new Date().toLocaleString(),
-    //         name: name,
-    //         updatedAt: new Date().toLocaleString(),
-    //         statusAccess: statusAccess,
-    //         password: password,
-    //         mapId: mapId,
-    //         teamNameOne: teamNameOne,
-    //         teamNameTwo: teamNameTwo,
-    //         teamNameThree: teamNameThree,
-    //         teamNameFour: teamNameFour,
-    //     }
-    //     const create = await sessionsServices.createSession(sessionModel);
-    //
-    //     return response.status(200).json(create);
-    // } catch (error: any) {
-    //
-    // }
+    const {
+        ownerId,
+        statusAccess,
+        password,
+        name,
+        mapId,
+        teamNameOne,
+        teamNameTwo,
+        teamNameThree,
+        teamNameFour,
+    } = request.body;
+
+    let sessionModel: SessionModelRequest = {
+        ownerId: ownerId,
+        createdAt: new Date().toLocaleString(),
+        name: name,
+        updatedAt: new Date().toLocaleString(),
+        statusAccess: statusAccess,
+        password: password,
+        mapId: mapId,
+        teamNameOne: teamNameOne,
+        teamNameTwo: teamNameTwo,
+        teamNameThree: teamNameThree,
+        teamNameFour: teamNameFour,
+    }
+    const received = await sessionsServices.createSession(sessionModel);
+    if (received.code >= 200 && received.code < 300) {
+        response.status(received.code).json(received.data);
+    } else {
+        response.status(received.code).json(received.message);
+    }
 })
 
-SessionController.get("/", async (
-    request,
-    response) => {
-    return response.status(200).json({message: "ok"})
-})
 
 export default SessionController;

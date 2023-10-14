@@ -10,7 +10,7 @@ export interface TeamsModels{
 
 export interface TeamBodyModels{
     isAlive: boolean;
-    avatar: string;
+    name: string;
     players : Array<PlayersModels>
 }
 
