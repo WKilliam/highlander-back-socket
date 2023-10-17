@@ -1,4 +1,5 @@
 import {MapModels} from "./map.models";
+import {ClientDto} from "../dto/clients.dto";
 
 export interface SessionModel{
     id:number,
@@ -11,6 +12,7 @@ export interface SessionModel{
     password:string,
     freeplace: number,
     name: string,
+    currentUserIngame:Array<ClientDto>,
 }
 
 export interface SessionModelRequest{

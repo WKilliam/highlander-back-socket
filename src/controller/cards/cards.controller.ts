@@ -12,34 +12,34 @@ const cardsServices = new CardsServices(AppDataSource);
 
 /**
  * @swagger
- * /cards:
- *   post:
+ * /cards/new:
+ *   post :
  *     summary: Créer une nouvelle carte.
- *     tags:
+ *     tags :
  *       - Cards
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               description:
- *                 type: string
- *               image:
- *                 type: string
- *               rarity:
- *                 type: string
- *               atk:
- *                 type: number
- *               def:
- *                 type: number
- *               vit:
- *                 type: number
+ *     requestBody :
+ *       required : true
+ *       content :
+ *         application/json :
+ *           schema :
+ *             type : object
+ *             properties :
+ *               name :
+ *                 type : string
+ *               description :
+ *                 type : string
+ *               image :
+ *                 type : string
+ *               rarity :
+ *                 type : string
+ *               atk :
+ *                 type : number
+ *               def :
+ *                 type : number
+ *               vit :
+ *                 type : number
  *               luk:
- *                 type: number
+ *                 type : number
  *               effects:
  *                 type: array
  *                 items:
@@ -60,7 +60,7 @@ const cardsServices = new CardsServices(AppDataSource);
  *       '500':
  *         description: Erreur interne du serveur.
  */
-CardsController.post("/", async (
+CardsController.post("/new", async (
     request,
     response) => {
     const {

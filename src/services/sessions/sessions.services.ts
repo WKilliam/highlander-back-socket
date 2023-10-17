@@ -7,6 +7,7 @@ import {PartiesModels} from "../../models/parties.models";
 import {MapsServices} from "../maps/maps.services";
 import {Utils} from "../../utils/utils";
 import {FormatModel} from "../../models/format.model";
+import {ClientDto} from "../../dto/clients.dto";
 
 export class SessionsServices {
     dataSourceConfig: Promise<DataSource>;
@@ -43,9 +44,18 @@ export class SessionsServices {
                 statusAccess: sessionModel.statusAccess,
                 password: sessionModel.password,
                 name: sessionModel.name,
-                freeplace: 10
+                freeplace: 8,
             })
             const saving = await sessionRepository.save(creating)
+            const userRepository: Repository<ClientDto> = dataSource.getRepository(ClientDto);
+            const user = await userRepository.findOne({
+                select: ["id", "avatar","pseudo" ],
+                where: {id: sessionModel.ownerId}
+            })
+            if (!user) return Utils.formatResponse(404,'Not User Found', 'User not found');
+            let arrayUser = [
+                user
+            ]
             const key = await this.gamekeyServices.createGamekey(saving.id)
             const map = await this.mapServices.getMapCompleted(sessionModel.mapId)
             const partiesModels: PartiesModels = {
@@ -61,14 +71,16 @@ export class SessionsServices {
                     statusAccess: saving.statusAccess,
                     password: saving.password,
                     name: saving.name,
-                    freeplace: saving.freeplace,
+                    freeplace: saving.freeplace - arrayUser.length,
+                    currentUserIngame:arrayUser
                 },
                 map: map.data,
                 teams: teamModels,
                 monsters: monsterModels,
                 events: []
             }
-            
+            JsonconceptorService.createDirectory(`${key.data.key}`)
+            JsonconceptorService.createJsonFile(`${key.data.key}/parties.json`, partiesModels)
             return Utils.formatResponse(201,'Created', partiesModels);
         } catch (error: any) {
             return Utils.formatResponse(500,'Internal Server Error', error);

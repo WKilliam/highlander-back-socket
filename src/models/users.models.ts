@@ -2,9 +2,12 @@ export interface UserSubscription {
     pseudo : string,
     password : string,
     email : string,
-    createdAt : string,
     avatar : string,
-    role : Role
+}
+
+export interface UserLogin {
+    email : string,
+    password : string,
 }
 
 export enum Role {

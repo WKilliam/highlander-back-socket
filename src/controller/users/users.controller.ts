@@ -1,39 +1,85 @@
 import {Router} from "express";
 import {AppDataSource} from "../../utils/database/database.config";
 import {UsersServices} from "../../services/users/users.services";
-import SessionController from "../session/session.controller";
-import {UserSubscription} from "../../models/users.models";
+import {UserLogin, UserSubscription} from "../../models/users.models";
 
 const userService: UsersServices = new UsersServices(AppDataSource);
-
 const UsersController = Router();
 
-SessionController.post("/", async (
+
+/**
+ * @swagger
+ * /user/new:
+ *   post:
+ *     summary: Créer un nouvel utilisateur
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               pseudo:
+ *                 type: string
+ *                 description: Le pseudo de l'utilisateur.
+ *               password:
+ *                 type: string
+ *                 description: Le mot de passe de l'utilisateur.
+ *               email:
+ *                 type: string
+ *                 description: L'adresse e-mail de l'utilisateur.
+ *               avatar:
+ *                 type: string
+ *                 description: L'avatar de l'utilisateur.
+ *             example:
+ *               pseudo: "JohnDoe"
+ *               password: "motdepasse"
+ *               email: "john.doe@example.com"
+ *               avatar: "https://www.w3schools.com/howto/img_avatar.png"
+ */
+UsersController.post("/new", async (
     request,
     response) => {
-    try {
-        const {
-            pseudo,
-            password,
-            email,
-            createdAt,
-            avatar,
-            role
-        } = request.body;
-        let userSubscription :UserSubscription = {
-            pseudo,
-            password,
-            email,
-            createdAt,
-            avatar,
-            role
-        }
-        const create = await userService.createUser(userSubscription)
-        return response.status(200).json(create);
-    } catch (error: any) {
-
+    const {
+        pseudo,
+        password,
+        email,
+        avatar
+    } = request.body;
+    let userSubscription: UserSubscription = {
+        pseudo,
+        password,
+        email,
+        avatar
+    }
+    const received = await userService.createUser(userSubscription)
+    console.log(received)
+    if (received.code >= 200 && received.code < 300) {
+        response.status(received.code).json(received.data)
+    } else {
+        response.status(received.code).json(received.data)
     }
 })
 
+UsersController.post("/login", async (
+    request,
+    response) => {
+    const {
+        email,
+        password
+    } = request.body;
+    let userLogin: UserLogin = {
+        email,
+        password
+    }
+    const received = await userService.getUserByEmailAndPassword(userLogin)
+    if (received.code >= 200 && received.code < 300) {
+        response.status(received.code).json(received.data)
+    } else {
+        response.status(received.code).json(received.message)
+    }
+})
 
 export default UsersController;

@@ -4,14 +4,14 @@ import {FormatModel} from "../../models/format.model";
 
 export class JsonconceptorService {
 
-    // static createDirectory(path: string): FormatModel {
-    //     try {
-    //         fse.ensureDirSync(`parties/${path}`);
-    //         return Utils.formatResponse(200, 'Directory created', null);
-    //     } catch (error:any) {
-    //         return Utils.formatResponse(500, 'Internal Server Error', error);
-    //     }
-    // }
+    static createDirectory(path: string): FormatModel {
+        try {
+            fse.ensureDirSync(`parties/${path}`);
+            return Utils.formatResponse(200, 'Directory created', null);
+        } catch (error:any) {
+            return Utils.formatResponse(500, 'Internal Server Error', error);
+        }
+    }
 
     static createJsonFile(path: string, data: any): FormatModel {
         try {
