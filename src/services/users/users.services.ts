@@ -18,7 +18,7 @@ export class UsersServices{
             const dataSource: DataSource = await this.dataSourceConfig;
             const userRepository:Repository<ClientDto> = dataSource.getRepository(ClientDto);
             const cardRepository:Repository<CardsDto> = dataSource.getRepository(CardsDto);
-            const cardsStarter = [3,4]
+            const cardsStarter = [1,2,3]
             const cards = await cardRepository.find({where: {id: In(cardsStarter)}});
             const newUser = userRepository.create({
                 pseudo: userSubscription.pseudo,

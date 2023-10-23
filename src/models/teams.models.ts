@@ -1,29 +1,26 @@
-import {PlayersModels, PlayersModelsMonster} from "./players.models";
+import {CardsModels, CardsModelsRequest} from "./cards.models";
+import {PlayersGameModels} from "./players.models";
 
-export interface TeamsModels{
-    one :TeamBodyModels
-    two :TeamBodyModels
-    three :TeamBodyModels
-    four :TeamBodyModels
-    five :TeamBodyModels
+export interface TeamsModels {
+    teamOne: TeamBodyModels;
+    teamTwo: TeamBodyModels;
+    teamThree: TeamBodyModels;
+    teamFour: TeamBodyModels;
 }
 
-export interface TeamBodyModels{
+export interface TeamBodyModels {
+    freeplace: number;
+    teamName: string;
+    commonLife: number;
+    commonMaxLife: number;
+    commonAttack: number;
+    commonDefense: number;
+    commonLuck: number;
+    commonSpeed: number;
     isAlive: boolean;
-    name: string;
-    players : Array<PlayersModels>
-}
-
-export interface MonstersModels{
-    one :TeamsMonstersModels
-    two :TeamsMonstersModels
-    three :TeamsMonstersModels
-    four :TeamsMonstersModels
-    five :TeamsMonstersModels
-}
-
-export interface TeamsMonstersModels{
-    isAlive: boolean;
-    name: string;
-    players : Array<PlayersModelsMonster>
+    isReady: boolean;
+    playerOne: PlayersGameModels;
+    playerTwo: PlayersGameModels;
+    cardOne: CardsModelsRequest;
+    cardTwo: CardsModelsRequest;
 }

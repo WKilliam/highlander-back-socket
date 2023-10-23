@@ -1,17 +1,16 @@
 import {CardsModels} from "./cards.models";
+import {CardsDto} from "../dto/cards.dto";
 
-export interface PlayersModels{
-    id : number
-    name : string
-    currentHp : number,
-    maxHp : number,
-    card:CardsModels
+export interface PlayersLobbyModels{
+    avatar: string,
+    pseudo: string,
+    cards: Array<CardsDto>,
 }
 
-export interface PlayersModelsMonster{
-    id : number
-    name : string
-    currentHp : number,
-    maxHp : number,
-    card:CardsModels
+export interface PlayersGameModels{
+    avatar: string,
+    pseudo: string,
+    life: number,
+    maxLife: number,
+    cardsPosessed: Array<number>,
 }

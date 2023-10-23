@@ -45,6 +45,6 @@ export class CardsDto {
 
     @ManyToMany(() => ClientDto, userposse => userposse.cardspossession)
     @JoinTable()
-    userposse: ClientDto[];
+    cardspossession: ClientDto[];
 
 }

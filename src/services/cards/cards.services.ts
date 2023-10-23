@@ -25,6 +25,7 @@ export class CardsServices {
                     description: card.description,
                     image: card.image,
                     rarity: card.rarity,
+                    createdAt: new Date().toLocaleDateString(),
                     atk: card.atk,
                     def: card.def,
                     vit: card.vit,

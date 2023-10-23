@@ -10,9 +10,8 @@ export interface SessionModel{
     statusGame:StatusGame,
     statusAccess:StatusAccess,
     password:string,
-    freeplace: number,
-    name: string,
-    currentUserIngame:Array<ClientDto>,
+    freeplace: number
+    name: string
 }
 
 export interface SessionModelRequest{

@@ -1,15 +1,17 @@
 import {CellsConceptionModel, Cellsmodel} from "../models/cells.models";
 import {FormatModel} from "../models/format.model";
-import {PlayersModels, PlayersModelsMonster} from "../models/players.models";
-import {CardsModels} from "../models/cards.models";
-import {Rarity, TypeEvent} from "./enum/enum";
-import {EffectsModelsRequest} from "../models/effects.models";
-import {MonstersModels, TeamBodyModels, TeamsModels, TeamsMonstersModels} from "../models/teams.models";
+import {PlayersGameModels, PlayersLobbyModels} from "../models/players.models";
+import {TypeEvent} from "./enum/enum";
 import {EventsCellModels} from "../models/events.models";
+import {GameModels, PartiesModelsJson} from "../models/parties.models";
+import {MapModels} from "../models/map.models";
+import {SessionModel, StatusAccess, StatusGame} from "../models/sessions.models";
+import {CardsModelsRequest} from "../models/cards.models";
+import {TeamBodyModels, TeamsModels} from "../models/teams.models";
 
 export class Utils {
 
-    static createGrid(mapWidth: number,mapHeight: number): CellsConceptionModel[][] {
+    static createGrid(mapWidth: number, mapHeight: number): CellsConceptionModel[][] {
         const cellWidth = 32;
         const cellHeight = 32;
         const numCols = Math.floor(mapWidth / cellWidth);
@@ -69,114 +71,6 @@ export class Utils {
         }
     }
 
-    static createPlayersModelsInit(): Array<PlayersModels> {
-        let playersModelsArray: Array<PlayersModels> = [];
-        for (let i = 0; i < 10; i++) {
-            let playersModels: PlayersModels;
-            playersModels = {
-                id: 1,
-                name: "",
-                currentHp: 100,
-                maxHp: 100,
-                card: {
-                    id: 0,
-                    name: "",
-                    description: "",
-                    image: "",
-                    rarity: Rarity.COMMUN,
-                    atk: 0,
-                    def: 0,
-                    vit: 0,
-                    luk: 0,
-                    effects: []
-                }
-            }
-            playersModelsArray.push(playersModels);
-        }
-        return playersModelsArray;
-    }
-
-    static createPlayersModelsMonsterInit(many: number): Array<PlayersModelsMonster> {
-        let playersModelsArray: Array<PlayersModelsMonster> = [];
-        for (let i = 0; i < many; i++) {
-            let playersModels: PlayersModelsMonster;
-            playersModels = {
-                id: 1,
-                name: "",
-                currentHp: 100,
-                maxHp: 100,
-                card: {
-                    id: 0,
-                    name: "",
-                    description: "",
-                    image: "",
-                    rarity: Rarity.COMMUN,
-                    atk: 0,
-                    def: 0,
-                    vit: 0,
-                    luk: 0,
-                    effects: []
-                }
-            }
-            playersModelsArray.push(playersModels);
-        }
-        return playersModelsArray;
-    }
-
-    static createTeamBodyModelsInit(players: Array<PlayersModels>,nameTeam : Array<string>): Array<TeamBodyModels> {
-        let teamBodyModelsArray: Array<TeamBodyModels> = [];
-
-        for (let i = 0; i < 4; i++) {
-            let teamBodyModels: TeamBodyModels;
-            teamBodyModels = {
-                isAlive: true,
-                name: nameTeam[i],
-                players: players.slice(i * 2, (i * 2) + 2)
-            }
-            teamBodyModelsArray.push(teamBodyModels);
-        }
-        return teamBodyModelsArray;
-    }
-
-    static createTeamsMonstersModelsInit(monster: Array<PlayersModelsMonster>, many: number): Array<TeamsMonstersModels> {
-        let teamBodyModelsArray: Array<TeamsMonstersModels> = [];
-        for (let i = 0; i < many; i++) {
-            let teamBodyModels: TeamsMonstersModels;
-            teamBodyModels = {
-                isAlive: true,
-                name: "",
-                players: monster.slice(i * 2, (i * 2) + 2)
-            }
-            teamBodyModelsArray.push(teamBodyModels);
-        }
-        return teamBodyModelsArray;
-    }
-
-    static createMonstersModelsInit(arrayTeamsMonstersModels: Array<TeamsMonstersModels>): MonstersModels {
-        let monstersModels: MonstersModels;
-        monstersModels = {
-            one: arrayTeamsMonstersModels[0],
-            two: arrayTeamsMonstersModels[1],
-            three: arrayTeamsMonstersModels[2],
-            four: arrayTeamsMonstersModels[3],
-            five: arrayTeamsMonstersModels[4]
-        }
-        return monstersModels;
-    }
-
-    static createTeamsModelsInit(arrayTeamBodyModels: Array<TeamBodyModels>): TeamsModels {
-        let teamsModels: TeamsModels;
-        teamsModels = {
-            one: arrayTeamBodyModels[0],
-            two: arrayTeamBodyModels[1],
-            three: arrayTeamBodyModels[2],
-            four: arrayTeamBodyModels[3],
-            five: arrayTeamBodyModels[4]
-        }
-        return teamsModels;
-    }
-
-
     static createEventsCellModelsInit(
         cellsmodel: Cellsmodel, messages: string, typeEvent: TypeEvent
     ): EventsCellModels {
@@ -194,8 +88,7 @@ export class Utils {
         return eventsCellModels;
     }
 
-
-    static requestFormatCommon(response: any,format:FormatModel): any {
+    static requestFormatCommon(response: any, format: FormatModel): any {
         if (format === undefined) {
             return response.status(500).json({message: "Erreur interne du serveur."})
         } else if (format.data !== null || format.data) {
@@ -205,44 +98,63 @@ export class Utils {
         }
     }
 
+    static initialiserCardsModelsRequest(): CardsModelsRequest {
+        return {
+            id: undefined, // Vous pouvez laisser cette propriété non définie pour un nouvel objet
+            name: '',
+            description: '',
+            image: '',
+            rarity: '',
+            atk: 0,
+            def: 0,
+            vit: 0,
+            luk: 0,
+            effects: []
+        };
+    }
 
+    static initialiserPlayersGameModels(): PlayersGameModels {
+        return {
+            avatar: '',
+            pseudo: '',
+            life: 0,
+            maxLife: 0,
+            cardsPosessed: []
+        };
+    }
 
+    static initialiserTeamBodyModels(): TeamBodyModels {
+        return {
+            freeplace: 0,
+            teamName: '',
+            commonLife: 0,
+            commonMaxLife: 0,
+            commonAttack: 0,
+            commonDefense: 0,
+            commonLuck: 0,
+            commonSpeed: 0,
+            isAlive: false,
+            isReady: false,
+            playerOne: this.initialiserPlayersGameModels(),
+            playerTwo: this.initialiserPlayersGameModels(),
+            cardOne: this.initialiserCardsModelsRequest(),
+            cardTwo: this.initialiserCardsModelsRequest()
+        };
+    }
 
+    static initialiserTeamsModels(): TeamsModels {
+        return {
+            teamOne: this.initialiserTeamBodyModels(),
+            teamTwo: this.initialiserTeamBodyModels(),
+            teamThree: this.initialiserTeamBodyModels(),
+            teamFour: this.initialiserTeamBodyModels()
+        };
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    static initialiserGameModels(): GameModels {
+        return {
+            lobby: [],
+            teams: this.initialiserTeamsModels()
+        };
+    }
 }

@@ -3,10 +3,9 @@ import {SessionModelRequest, StatusGame} from "../../models/sessions.models";
 import {SessionDto} from "../../dto/session.dto";
 import {GamekeyServices} from "../gamekey/gamekey.services";
 import {JsonconceptorService} from "../jsonconceptor/jsonconceptor.service";
-import {PartiesModels} from "../../models/parties.models";
+import { PartiesModelsJson} from "../../models/parties.models";
 import {MapsServices} from "../maps/maps.services";
 import {Utils} from "../../utils/utils";
-import {FormatModel} from "../../models/format.model";
 import {ClientDto} from "../../dto/clients.dto";
 
 export class SessionsServices {
@@ -20,22 +19,11 @@ export class SessionsServices {
         this.mapServices = new MapsServices(dataSourceConfig);
     }
 
-    async createSession(sessionModel:SessionModelRequest) {
+    async createSession(sessionModel: SessionModelRequest) {
         try {
             const dataSource: DataSource = await this.dataSourceConfig;
             const sessionRepository: Repository<SessionDto> = dataSource.getRepository(SessionDto);
-            let players = Utils.createPlayersModelsInit()
-            let monster = Utils.createPlayersModelsMonsterInit(5)
-            let arrayNameTeam: Array<string> = [
-                sessionModel.teamNameOne,
-                sessionModel.teamNameTwo,
-                sessionModel.teamNameThree,
-                sessionModel.teamNameFour
-            ];
-            let teamPlayer =Utils.createTeamBodyModelsInit(players,arrayNameTeam)
-            let teamModels = Utils.createTeamsModelsInit(teamPlayer)
-            let teamMonster =Utils.createTeamsMonstersModelsInit(monster,5)
-            let monsterModels = Utils.createMonstersModelsInit(teamMonster)
+            const userRepository: Repository<ClientDto> = dataSource.getRepository(ClientDto);
             const creating = sessionRepository.create({
                 ownerId: sessionModel.ownerId,
                 createdAt: sessionModel.createdAt,
@@ -44,23 +32,18 @@ export class SessionsServices {
                 statusAccess: sessionModel.statusAccess,
                 password: sessionModel.password,
                 name: sessionModel.name,
-                freeplace: 8,
+                freeplace: 7,
             })
             const saving = await sessionRepository.save(creating)
-            const userRepository: Repository<ClientDto> = dataSource.getRepository(ClientDto);
-            const user = await userRepository.findOne({
-                select: ["id", "avatar","pseudo" ],
+            const user : ClientDto | null = await userRepository.findOne({
+                select: ["avatar", "pseudo", "cardspossession"],
                 where: {id: sessionModel.ownerId}
             })
-            if (!user) return Utils.formatResponse(404,'Not User Found', 'User not found');
-            let arrayUser = [
-                user
-            ]
+            if (!user) return Utils.formatResponse(404, 'Not User Found', 'User not found');
             const key = await this.gamekeyServices.createGamekey(saving.id)
             const map = await this.mapServices.getMapCompleted(sessionModel.mapId)
-            const partiesModels: PartiesModels = {
-                toursCount: 0,
-                orderTurn: [],
+            let partiesModels: PartiesModelsJson = {
+                map: map.data,
                 sessions: {
                     id: saving.id,
                     ownerId: saving.ownerId,
@@ -71,19 +54,25 @@ export class SessionsServices {
                     statusAccess: saving.statusAccess,
                     password: saving.password,
                     name: saving.name,
-                    freeplace: saving.freeplace - arrayUser.length,
-                    currentUserIngame:arrayUser
+                    freeplace: saving.freeplace,
                 },
-                map: map.data,
-                teams: teamModels,
-                monsters: monsterModels,
-                events: []
+                game : Utils.initialiserGameModels(),
+                infoGame: {
+                    turnCount: 0,
+                    orderTurn: [],
+                }
             }
+            console.log(user.cardspossession)
+            partiesModels.game.lobby.push({
+                avatar: user.avatar,
+                pseudo: user.pseudo,
+                cards: user.cardspossession,
+            })
             JsonconceptorService.createDirectory(`${key.data.key}`)
             JsonconceptorService.createJsonFile(`${key.data.key}/parties.json`, partiesModels)
             return Utils.formatResponse(201,'Created', partiesModels);
         } catch (error: any) {
-            return Utils.formatResponse(500,'Internal Server Error', error);
+            return Utils.formatResponse(500, 'Internal Server Error', error);
         }
     }
 }
