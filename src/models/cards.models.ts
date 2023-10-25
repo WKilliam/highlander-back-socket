@@ -9,7 +9,7 @@ export interface CardsModelsRequest{
     rarity : string
     atk : number
     def : number
-    vit : number
+    spd : number
     luk : number,
     effects : Array<number>
 }
@@ -22,7 +22,7 @@ export interface CardsModels{
     rarity : Rarity
     atk : number
     def : number
-    vit : number
+    spd : number
     luk : number,
     effects : Array<EffectsModelsRequest>
 }

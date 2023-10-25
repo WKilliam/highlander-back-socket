@@ -107,7 +107,7 @@ export class Utils {
             rarity: '',
             atk: 0,
             def: 0,
-            vit: 0,
+            spd: 0,
             luk: 0,
             effects: []
         };
@@ -154,7 +154,8 @@ export class Utils {
     static initialiserGameModels(): GameModels {
         return {
             lobby: [],
-            teams: this.initialiserTeamsModels()
+            teams: this.initialiserTeamsModels(),
+            monsters: this.initialiserTeamsModels()
         };
     }
 }

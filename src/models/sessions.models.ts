@@ -44,3 +44,8 @@ export interface SessionJsonTeamUpdate{
     isAlive?: boolean,
     name?: string,
 }
+
+
+export interface GameKeySession{
+    key: string
+}

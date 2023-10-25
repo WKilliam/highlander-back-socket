@@ -70,7 +70,7 @@ CardsController.post("/new", async (
         rarity,
         atk,
         def,
-        vit,
+        spd,
         luk,
         effects
     } = request.body;
@@ -81,7 +81,7 @@ CardsController.post("/new", async (
         rarity: rarity,
         atk: atk,
         def: def,
-        vit: vit,
+        spd: spd,
         luk: luk,
         effects: effects
     }
@@ -173,7 +173,7 @@ CardsController.patch("/", async (
         rarity,
         atk,
         def,
-        vit,
+        spd,
         luk,
         effects
     } = request.body;
@@ -184,7 +184,7 @@ CardsController.patch("/", async (
         rarity: rarity,
         atk: atk,
         def: def,
-        vit: vit,
+        spd: spd,
         luk: luk,
         effects: effects
     }

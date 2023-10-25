@@ -1,18 +1,19 @@
-import {SessionModel} from "./sessions.models";
+import {GameKeySession, SessionModel} from "./sessions.models";
 import {TeamsModels} from "./teams.models";
 import {MapModels} from "./map.models";
 import {PlayersLobbyModels} from "./players.models";
 
 export interface PartiesModelsJson {
     map: MapModels
-    sessions: SessionModel
+    gameKeySession: GameKeySession
     game: GameModels
     infoGame: PartiesInfoGameModels
 }
 
 export interface GameModels {
     lobby: Array<PlayersLobbyModels>;
-    teams: TeamsModels
+    teams: TeamsModels,
+    monsters:TeamsModels,
 }
 
 export interface PartiesInfoGameModels {

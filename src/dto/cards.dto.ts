@@ -31,7 +31,7 @@ export class CardsDto {
     def : number
 
     @Column()
-    vit : number
+    spd : number
 
     @Column()
     luk : number
@@ -43,8 +43,8 @@ export class CardsDto {
     @ManyToMany(() => DecksDto, deck => deck.cards, { eager: true, onDelete: 'CASCADE' })
     decks: DecksDto[];
 
-    @ManyToMany(() => ClientDto, userposse => userposse.cardspossession)
+    @ManyToMany(() => ClientDto, client => client.cards)
     @JoinTable()
-    cardspossession: ClientDto[];
+    clients: ClientDto[];
 
 }

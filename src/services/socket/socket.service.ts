@@ -29,4 +29,20 @@ export class SocketService{
         }
     }
 
+    contentJsonInfo(gamekey: string){
+        try {
+            let map = JsonconceptorService.getJsonFile(gamekey, 'map')
+            let sessionKey = JsonconceptorService.getJsonFile(gamekey, 'sessions.gameKeySession')
+            let infosGame = JsonconceptorService.getJsonFile(gamekey, 'infosGame')
+            let game = JsonconceptorService.getJsonFile(gamekey, 'game')
+            return Utils.formatResponse(200, 'Directory created', {
+                map:map,
+                sessionKey:sessionKey,
+                infosGame:infosGame,
+                game:game
+            });
+        }catch(error){
+            return Utils.formatResponse(500, `Internal Server Error`, error);
+        }
+    }
 }

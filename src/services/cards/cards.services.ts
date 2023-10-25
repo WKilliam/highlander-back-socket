@@ -28,7 +28,7 @@ export class CardsServices {
                     createdAt: new Date().toLocaleDateString(),
                     atk: card.atk,
                     def: card.def,
-                    vit: card.vit,
+                    spd: card.spd,
                     luk: card.luk,
                     effects: effects
                 }
@@ -45,7 +45,7 @@ export class CardsServices {
             const dataSource: DataSource = await this.dataSourceConfig;
             const cardRepository: Repository<CardsDto> = dataSource.getRepository(CardsDto);
             const cards = await cardRepository.find({
-                select: ["id", "name", "description", "image", "rarity", "atk", "def", "vit", "luk"],
+                select: ["id", "name", "description", "image", "rarity", "atk", "def", "spd", "luk"],
             });
             return Utils.formatResponse(200,'All cards', cards );
         } catch (error: any) {
@@ -68,7 +68,7 @@ export class CardsServices {
                 rarity: card.rarity,
                 atk: card.atk,
                 def: card.def,
-                vit: card.vit,
+                spd: card.spd,
                 luk: card.luk,
                 effects: effects
             })

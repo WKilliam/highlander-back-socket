@@ -27,7 +27,7 @@ export class UsersServices{
                 avatar: userSubscription.avatar,
                 createdAt: new Date().toLocaleDateString(),
                 role: "user",
-                cardspossession: cards
+                cards: cards
             });
             const user = await userRepository.save(newUser);
             return Utils.formatResponse(200, "User created", user)
@@ -41,7 +41,7 @@ export class UsersServices{
             const dataSource: DataSource = await this.dataSourceConfig;
             const userRepository:Repository<ClientDto> = dataSource.getRepository(ClientDto);
             const userFound = await userRepository.findOne({
-                select: ["id", "pseudo","email", "avatar", "bearcoin", "cardspossession"],
+                select: ["id", "pseudo","email", "avatar", "bearcoin", "cards"],
                 where: {email: user.email, password: user.password}
             });
             if (userFound) {

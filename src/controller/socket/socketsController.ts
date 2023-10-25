@@ -8,18 +8,22 @@ module.exports = (io: any) => {
     io.on('connection', (socket: Socket) => {
         console.log(`${socket.id} connected!`)
 
+        socket.on('message', (data: { message: string }) => {
+            console.log('message', data);
+            io.emit('message', data.message);
+        })
 
-        socket.on('join', (data:{
+        socket.on('join', (data: {
             joinnedRoom: string,
-            oldRoom?:string
+            oldRoom?: string
         }) => {
-            if(data.oldRoom) {
+            if (data.oldRoom) {
                 console.log(`${socket.id} joined room: ${data.joinnedRoom} and left room: ${data.oldRoom}`);
                 socket.leave(data.oldRoom);
                 socket.join(data.joinnedRoom);
                 console.log(`${socket.id} joined room: ${data.joinnedRoom} and send message to : joined-room-${data.joinnedRoom}`);
                 io.to(data.joinnedRoom).emit('send-alerte', `${socket.id} joined room: ${data.joinnedRoom}`);
-            }else{
+            } else {
                 console.log(`${socket.id} joined room: ${data.joinnedRoom}`)
                 socket.join(data.joinnedRoom);
                 console.log(`${socket.id} joined room: ${data.joinnedRoom} and send message to : joined-room-${data.joinnedRoom}`);
@@ -27,7 +31,12 @@ module.exports = (io: any) => {
             }
         })
 
-        socket.on('messageFromClient', (data:{message:string,room:string}) => {
+        socket.on('game-info', (data: { sessionskey: string }) => {
+            console.log('game-info', data);
+            io.emit(`game-info-${data.sessionskey}`, socketService.contentJsonInfo(data.sessionskey));
+        })
+
+        socket.on('messageFromClient', (data: { message: string, room: string }) => {
             console.log('Message from client:', data);
             io.to(data.room).emit('messageFromServer', data.message);
         })

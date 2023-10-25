@@ -55,7 +55,6 @@ UsersController.post("/new", async (
         avatar
     }
     const received = await userService.createUser(userSubscription)
-    console.log(received)
     if (received.code >= 200 && received.code < 300) {
         response.status(received.code).json(received.data)
     } else {

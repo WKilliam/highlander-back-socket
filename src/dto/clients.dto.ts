@@ -29,5 +29,5 @@ export class ClientDto {
     bearcoin: number = 0;
 
     @ManyToMany(() => CardsDto, card => card.id)
-    cardspossession: CardsDto[];
+    cards: CardsDto[];
 }
