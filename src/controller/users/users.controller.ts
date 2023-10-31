@@ -2,6 +2,7 @@ import {Router} from "express";
 import {AppDataSource} from "../../utils/database/database.config";
 import {UsersServices} from "../../services/users/users.services";
 import {UserLogin, UserSubscription} from "../../models/users.models";
+import {FormatModel} from "../../models/format.model";
 
 const userService: UsersServices = new UsersServices(AppDataSource);
 const UsersController = Router();
@@ -54,7 +55,7 @@ UsersController.post("/new", async (
         email,
         avatar
     }
-    const received = await userService.createUser(userSubscription)
+    const received:FormatModel = await userService.createUser(userSubscription)
     if (received.code >= 200 && received.code < 300) {
         response.status(received.code).json(received.data)
     } else {
@@ -73,7 +74,7 @@ UsersController.post("/login", async (
         email,
         password
     }
-    const received = await userService.getUserByEmailAndPassword(userLogin)
+    const received:FormatModel = await userService.getUserByEmailAndPassword(userLogin)
     if (received.code >= 200 && received.code < 300) {
         response.status(received.code).json(received.data)
     } else {

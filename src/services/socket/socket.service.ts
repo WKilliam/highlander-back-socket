@@ -1,48 +1,27 @@
-import {Socket_GetTeamInfos} from "../../models/sockets.models";
+import {SessionsServices} from "../sessions/sessions.services";
+import {AppDataSource} from "../../utils/database/database.config";
+import {SocketJoinSession, SocketJoinTeamCard} from "../../models/sockets.models";
 import {JsonconceptorService} from "../jsonconceptor/jsonconceptor.service";
 import {Utils} from "../../utils/utils";
 
 export class SocketService{
 
-    getTeamContent(message: Socket_GetTeamInfos) {
+    joinTeam(socketJoinTeamCard: SocketJoinTeamCard) {
         try {
-            let data: any;
-            switch (message.teamId) {
-                case 1:
-                    data = JsonconceptorService.getJsonFile(message.sessionKey, 'teams.one')
-                    break
-                case 2:
-                    data = JsonconceptorService.getJsonFile(message.sessionKey, 'teams.two')
-                    break
-                case 3:
-                    data = JsonconceptorService.getJsonFile(message.sessionKey, 'teams.three')
-                    break
-                case 4:
-                    data = JsonconceptorService.getJsonFile(message.sessionKey, 'teams.four')
-                    break
-                default:
-                    return Utils.formatResponse(500, `Internal Server Error`, null)
-            }
-            return Utils.formatResponse(200, 'Directory created', data);
+            // let value = JsonconceptorService.changeTeamCard(socketJoinTeamCard);
+            return Utils.formatResponse(200, 'Directory created', "value");
         }catch (error){
-            return Utils.formatResponse(500, `Internal Server Error`, error);
+            return Utils.formatResponse(500, 'Internal Server Error', error);
         }
     }
 
-    contentJsonInfo(gamekey: string){
+    joinSession(joinSession:SocketJoinSession) {
         try {
-            let map = JsonconceptorService.getJsonFile(gamekey, 'map')
-            let sessionKey = JsonconceptorService.getJsonFile(gamekey, 'sessions.gameKeySession')
-            let infosGame = JsonconceptorService.getJsonFile(gamekey, 'infosGame')
-            let game = JsonconceptorService.getJsonFile(gamekey, 'game')
-            return Utils.formatResponse(200, 'Directory created', {
-                map:map,
-                sessionKey:sessionKey,
-                infosGame:infosGame,
-                game:game
-            });
-        }catch(error){
-            return Utils.formatResponse(500, `Internal Server Error`, error);
+            // let value = JsonconceptorService.changeSession(joinSession);
+            return Utils.formatResponse(200, 'Directory created', "value");
+        }catch (error){
+            return Utils.formatResponse(500, 'Internal Server Error', error);
         }
     }
+
 }

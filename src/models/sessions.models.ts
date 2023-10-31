@@ -28,6 +28,12 @@ export interface SessionModelRequest{
     teamNameFour: string,
 }
 
+export interface SessionGamePlace {
+    gameKeySession: string,
+    avatar: string,
+    pseudo: string,
+}
+
 
 export enum StatusGame{
     ON = "ON",
@@ -48,4 +54,5 @@ export interface SessionJsonTeamUpdate{
 
 export interface GameKeySession{
     key: string
+    statusGame: StatusGame
 }

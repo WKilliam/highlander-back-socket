@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {JsonServices} from "../../services/json/json.services";
+import {JsonServices} from "../../services/jsonconceptor/json.services";
 import {Utils} from "../../utils/utils";
 import {SessionJsonTeamUpdate} from "../../models/sessions.models";
 import {FormatModel} from "../../models/format.model";
@@ -12,7 +12,7 @@ JsonController.get("/getMapCells", async (
     request,
     response) => {
     const sessionKey = request.query.session as string;
-    const received = await jsonServices.getJson(sessionKey, 'map.cellsGrid')
+    const received: FormatModel = JsonServices.getKeyJson(sessionKey, 'map.cellsGrid')
     if (received.code >= 200 || received.code <= 299) {
         return response.status(received.code).json(received.data);
     } else {
@@ -20,49 +20,47 @@ JsonController.get("/getMapCells", async (
     }
 });
 
-JsonController.patch("/teamsUpdate", async (
+JsonController.post("/content", (
     request,
     response) => {
     const {
-        sessionKey,
-        team,
-        name,
-        isAlive,
+        sessionKey
     } = request.body;
-    let sessionTeamUpdate: SessionJsonTeamUpdate = {
-        name: name,
-        isAlive: isAlive,
-    }
-    let received:FormatModel ;
-    switch (team) {
-        case 1:
-             received = await jsonServices.patchJson(sessionKey, 'teams.one', sessionTeamUpdate)
-            break;
-        case 2:
-            received = await jsonServices.patchJson(sessionKey, 'teams.two', sessionTeamUpdate)
-            break;
-        case 3:
-            received = await jsonServices.patchJson(sessionKey, 'teams.three', sessionTeamUpdate)
-            break;
-        case 4:
-            received = await jsonServices.patchJson(sessionKey, 'teams.four', sessionTeamUpdate)
-            break;
-        default:
-            received = Utils.formatResponse(500, 'Internal Server Error', null, 'Team not found')
-            break;
-    }
+    const received: FormatModel = JsonServices.checkSessionOnJson(sessionKey)
     if (received.code >= 200 || received.code <= 299) {
-        return response.status(received.code).json(received.message);
-    }else {
+        return response.status(received.code).json(received.data);
+    } else {
         return response.status(received.code).json(received);
     }
 });
 
-
-JsonController.get("/test", async (
+JsonController.post("/addAllPlayers", (
     request,
     response) => {
-    response.status(200).json('ok');
+    const {
+        sessionKey,
+        avatar,
+        pseudo,
+        teamTag,
+        cardsTag,
+        position,
+        cardsId
+    } = request.body;
+    const received: FormatModel = JsonServices.setCardTeam(
+        sessionKey,
+        avatar,
+        pseudo,
+        teamTag,
+        cardsTag,
+        position,
+        cardsId
+    )
+    if (received.code >= 200 || received.code <= 299) {
+        return response.status(received.code).json(received.data);
+    } else {
+        return response.status(received.code).json(received);
+    }
 });
+
 
 export default JsonController;

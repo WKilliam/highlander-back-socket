@@ -1,75 +1,62 @@
 import fse from 'fs-extra';
 import {Utils} from "../../utils/utils";
 import {FormatModel} from "../../models/format.model";
+import {PlayersLittleModels, PlayersLobbyModels} from "../../models/players.models";
+import {SocketJoinSession, SocketJoinTeamCard} from "../../models/sockets.models";
+import {TeamBodyModels} from "../../models/teams.models";
+import * as fs from "fs";
+import {GameModels, PartiesFullBodyModels} from "../../models/parties.models";
+import {InfoGame} from "../../models/infoGame";
+import {MapModels} from "../../models/map.models";
 
 export class JsonconceptorService {
 
-    static createDirectory(path: string): FormatModel {
+    static createDirectoryAndJsonFile(path: string, data: any): FormatModel {
         try {
+            // Crée le répertoire
             fse.ensureDirSync(`parties/${path}`);
-            return Utils.formatResponse(200, 'Directory created', null);
-        } catch (error:any) {
-            return Utils.formatResponse(500, 'Internal Server Error', error);
-        }
-    }
 
-    static createJsonFile(path: string, data: any): FormatModel {
-        try {
+            // Crée le fichier JSON dans le répertoire
             const json = JSON.stringify(data);
-            fse.writeFileSync(`parties/${path}`, json);
-            return Utils.formatResponse(200, 'Directory created', null);
-        } catch (error:any) {
-            return Utils.formatResponse(500, 'Internal Server Error', error);
+            fse.writeFileSync(`parties/${path}/parties.json`, json);
+
+            return Utils.formatResponse(200, 'Répertoire et fichier JSON créés avec succès', null);
+        } catch (error: any) {
+            return Utils.formatResponse(500, 'Erreur interne du serveur', error);
         }
     }
 
     static readJsonFile(path: string): FormatModel {
         try {
-            console.log(path)
-            const json = fse.readFileSync(`parties/${path}/parties.json`, 'utf8');
-            return Utils.formatResponse(200, 'Directory created', json);
-        } catch (error:any) {
+            const filePath = `parties/${path}`;
+            if (fs.existsSync(filePath)) {
+                console.log('File found')
+                const json = fse.readFileSync(filePath, 'utf8');
+                return Utils.formatResponse(200, 'File found', json);
+            } else {
+                return Utils.formatResponse(404, 'File not found', null);
+            }
+        } catch (error: any) {
             return Utils.formatResponse(500, 'Internal Server Error', error);
         }
     }
 
-    static getJsonFile(pathKeySession: string,keyJson:string): FormatModel {
+    static getJsonFile(pathKeySession: string, keyJson: string): FormatModel {
         try {
-            const json = fse.readJsonSync(`parties/${pathKeySession}/parties.json`);
-            const data = keyJson.split('.').reduce((obj, key) => obj[key], json);
-            return Utils.formatResponse(200, 'Directory created', data);
+            // Vérifiez si le répertoire existe
+            if (fse.existsSync(`parties/${pathKeySession}`)) {
+                // Le répertoire existe, vous pouvez maintenant essayer de lire le fichier JSON
+                const json = fse.readJsonSync(`parties/${pathKeySession}`);
+                const data = keyJson.split('.').reduce((obj, key) => obj[key], json);
+                return Utils.formatResponse(200, 'Directory created', data);
+            } else {
+                // Le répertoire n'existe pas, retournez une réponse d'erreur
+                return Utils.formatResponse(404, 'Directory not found', null);
+            }
         } catch (error) {
             return Utils.formatResponse(500, `Internal Server Error`, error);
         }
     }
-
-
-    // static updateJsonKey(obj: any, keyPath: string, value: any): void {
-    //     const keys = keyPath.split('.');
-    //     let currentObj = obj;
-    //
-    //     for (let i = 0; i < keys.length - 1; i++) {
-    //         if (!currentObj[keys[i]]) {
-    //             currentObj[keys[i]] = {};
-    //         }
-    //         currentObj = currentObj[keys[i]];
-    //     }
-    //
-    //     currentObj[keys[keys.length - 1]] = value;
-    // }
-    //
-    // static updateJsonFile(path: string, keyPath: string, value: any): FormatModel {
-    //     try {
-    //         const json = fse.readFileSync(`parties/${path}/parties.json`, 'utf8');
-    //         const data = JSON.parse(json);
-    //         this.updateJsonKey(data, keyPath, value);
-    //         const updatedJson = JSON.stringify(data);
-    //         fse.writeFileSync(`parties/${path}/parties.json`, updatedJson);
-    //         return Utils.formatResponse(200, 'Directory created', null);
-    //     } catch (error) {
-    //         return Utils.formatResponse(500, 'Internal Server Error', error);
-    //     }
-    // }
 
     static mergeJsonData(target: any, source: any): void {
         for (const key in source) {
@@ -86,7 +73,7 @@ export class JsonconceptorService {
 
     static updateJsonFile(path: string, keyPath: string, value: any): FormatModel {
         try {
-            const json = fse.readFileSync(`parties/${path}/parties.json`, 'utf8');
+            const json = fse.readFileSync(`parties/${path}`, 'utf8');
             const data = JSON.parse(json);
 
             // Obtenez la partie des données que vous souhaitez mettre à jour en utilisant la clé keyPath
@@ -96,8 +83,8 @@ export class JsonconceptorService {
             this.mergeJsonData(targetData, value);
 
             const updatedJson = JSON.stringify(data);
-            fse.writeFileSync(`parties/${path}/parties.json`, updatedJson);
-            return Utils.formatResponse(200, 'Directory created', null);
+            fse.writeFileSync(`parties/${path}`, updatedJson);
+            return Utils.formatResponse(200, 'Directory created', JSON.parse(updatedJson));
         } catch (error) {
             return Utils.formatResponse(500, 'Internal Server Error', error);
         }

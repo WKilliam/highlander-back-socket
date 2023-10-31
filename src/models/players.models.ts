@@ -14,3 +14,9 @@ export interface PlayersGameModels{
     maxLife: number,
     cardsPosessed: Array<number>,
 }
+
+export interface PlayersLittleModels{
+    avatar: string,
+    pseudo: string,
+    teamTag: string,
+}

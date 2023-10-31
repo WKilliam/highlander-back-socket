@@ -1,7 +1,8 @@
 import {Router} from "express";
-import {SessionModelRequest} from "../../models/sessions.models";
+import { SessionGamePlace, SessionModelRequest} from "../../models/sessions.models";
 import {SessionsServices} from "../../services/sessions/sessions.services";
 import {AppDataSource} from "../../utils/database/database.config";
+import {FormatModel} from "../../models/format.model";
 
 const sessionsServices: SessionsServices = new SessionsServices(AppDataSource);
 
@@ -83,6 +84,27 @@ SessionController.post("/new", async (
         response.status(received.code).json(received.message);
     }
 })
+
+// SessionController.post("/sessionGamePlace", async (
+//     request,
+//     response) => {
+//     const {
+//         gameKeySession,
+//         avatar,
+//         pseudo,
+//     } = request.body;
+//     let sessionGameKeyFreeplace : SessionGamePlace = {
+//         gameKeySession: gameKeySession,
+//         avatar: avatar,
+//         pseudo: pseudo,
+//     }
+//     const received :FormatModel = await sessionsServices.checkFreePlaceSessionToGamekey(sessionGameKeyFreeplace);
+//     if (received.code >= 200 && received.code < 300) {
+//         response.status(received.code).json(received);
+//     } else {
+//         response.status(received.code).json(received.message);
+//     }
+// })
 
 
 export default SessionController;
