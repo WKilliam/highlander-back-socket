@@ -21,7 +21,7 @@ export interface TeamBodyModels {
     commonSpeed: number;
     isAlive: boolean;
     isReady: boolean;
-    state: string;
+    keyTag: string;
     cellPosition: CellsConceptionModel;
     playerOne: PlayersGameModels;
     playerTwo: PlayersGameModels;

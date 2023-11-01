@@ -23,3 +23,15 @@ export interface SocketJoinSession {
     userAvatar: string;
     userPseudo: string;
 }
+
+export interface SocketBody {
+
+}
+
+export interface SocketSelectPlaceTeam {
+    room:string,
+    avatar:string,
+    pseudo:string,
+    teamTag:string,
+    position:number
+}

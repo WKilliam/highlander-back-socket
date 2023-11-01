@@ -130,18 +130,20 @@ export class Utils {
         pseudo?:string,
         life?:number,
         maxLife?:number,
-        cardsPosessed?:Array<number>
+        cardsPosessed?:Array<number>,
+        key?:string,
     ): PlayersGameModels {
         return {
             avatar: avatar || '',
             pseudo: pseudo || '',
             life: life || 0,
             maxLife: maxLife || 0,
+            state: '',
             cardsPosessed: cardsPosessed || []
         };
     }
 
-    static initialiserTeamBodyModels(teamTag:string): TeamBodyModels {
+    static initialiserTeamBodyModels(teamTag:string,keyTag?:string): TeamBodyModels {
         return {
             freeplace: 0,
             teamName: teamTag,
@@ -151,10 +153,10 @@ export class Utils {
             commonDefense: 0,
             commonLuck: 0,
             commonSpeed: 0,
+            keyTag: keyTag || "",
             cellPosition: this.initCellsmodel(),
             isAlive: false,
             isReady: false,
-            state:'',
             playerOne: this.initialiserPlayersGameModels(),
             playerTwo: this.initialiserPlayersGameModels(),
             cardOne: this.initialiserCardsModelsRequest(),
@@ -164,10 +166,10 @@ export class Utils {
 
     static initialiserTeamsModels(teamOne:string,teamTwo:string,teamThree:string,teamFour:string): TeamsModels {
         return {
-            teamOne: this.initialiserTeamBodyModels(teamOne),
-            teamTwo: this.initialiserTeamBodyModels(teamTwo),
-            teamThree: this.initialiserTeamBodyModels(teamThree),
-            teamFour: this.initialiserTeamBodyModels(teamFour)
+            teamOne: this.initialiserTeamBodyModels(teamOne,`teamOne`),
+            teamTwo: this.initialiserTeamBodyModels(teamTwo,`teamTwo`),
+            teamThree: this.initialiserTeamBodyModels(teamThree,`teamThree`),
+            teamFour: this.initialiserTeamBodyModels(teamFour,`teamFour`),
         };
     }
 
@@ -191,7 +193,7 @@ export class Utils {
         allPlayers.push(this.initLittlePlayerModels(avatar,pseudo))
         return {
             turnCount: 0,
-            freeplace: 7,
+            playerTurn: 7,
             orderTurn: [],
             lobby: [],
             gameKeySession: gameKey,

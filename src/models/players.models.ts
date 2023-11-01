@@ -12,6 +12,7 @@ export interface PlayersGameModels{
     pseudo: string,
     life: number,
     maxLife: number,
+    state: string,
     cardsPosessed: Array<number>,
 }
 

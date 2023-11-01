@@ -44,16 +44,17 @@ JsonController.post("/addAllPlayers", (
         teamTag,
         cardsTag,
         position,
-        cardsId
+        cardsId,
+        cellPosition,
+        state,
+        tag,
+        path,
+        value
     } = request.body;
-    const received: FormatModel = JsonServices.setCardTeam(
+    const received: FormatModel = JsonServices.securityCheckPlayer(
         sessionKey,
-        avatar,
-        pseudo,
         teamTag,
-        cardsTag,
         position,
-        cardsId
     )
     if (received.code >= 200 || received.code <= 299) {
         return response.status(received.code).json(received.data);

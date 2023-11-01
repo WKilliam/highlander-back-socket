@@ -3,7 +3,7 @@ import {PlayersGameModels, PlayersLittleModels, PlayersLobbyModels} from "./play
 
 export interface InfoGame{
     gameKeySession: GameKeySession
-    freeplace: number;
+    playerTurn: number;
     turnCount: number,
     lobby: Array<PlayersLobbyModels>;
     orderTurn: Array<string>

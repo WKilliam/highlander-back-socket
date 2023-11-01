@@ -14,3 +14,14 @@ export interface GameModels {
     teams: TeamsModels,
     monsters:TeamsModels,
 }
+
+
+export enum StatePlayer {
+    LOBBY = "LOBBY",
+    GAME = "GAME",
+    FIGTH = "FIGTH",
+    DONJON = "DONJON",
+    DONJON_FIGTH = "DONJON_FIGTH",
+    WIN = "WIN",
+    LOSE = "LOSE",
+}
