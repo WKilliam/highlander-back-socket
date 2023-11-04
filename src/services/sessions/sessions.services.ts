@@ -60,7 +60,6 @@ export class SessionsServices {
             infoGame.lobby.push({avatar: user.avatar, pseudo: user.pseudo, cards: allCardsUsserPossess,})
             const partiesFullBodyModels: PartiesFullBodyModels = {infoGame: infoGame, game: game, map: map.data}
             JsonconceptorService.createDirectoryAndJsonFile(`${key.data.key}`, partiesFullBodyModels)
-
             return Utils.formatResponse(201, 'Created', partiesFullBodyModels);
         } catch (error: any) {
             return Utils.formatResponse(500, 'Internal Server Error', error);

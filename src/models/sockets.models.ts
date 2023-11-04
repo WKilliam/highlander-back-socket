@@ -11,7 +11,7 @@ export interface SocketJoinTeamTag {
 }
 
 export interface SocketJoinTeamCard {
-    gameKey: string;
+    room: string;
     teamTag: string;
     userAvatar: string;
     userPseudo: string;
@@ -19,7 +19,7 @@ export interface SocketJoinTeamCard {
 }
 
 export interface SocketJoinSession {
-    roomjoin: string;
+    room: string;
     userAvatar: string;
     userPseudo: string;
 }
@@ -35,3 +35,5 @@ export interface SocketSelectPlaceTeam {
     teamTag:string,
     position:number
 }
+
+

@@ -78,10 +78,10 @@ SessionController.post("/new", async (
         teamNameFour: teamNameFour,
     }
     const received = await sessionsServices.createSession(sessionModel);
-    if (received.code >= 200 && received.code < 300) {
-        response.status(received.code).json(received.data);
+    if ((received.code >= 200 && received.code < 300)) {
+        response.status(received.code).json(received);
     } else {
-        response.status(received.code).json(received.message);
+        response.status(received.code).json(received);
     }
 })
 

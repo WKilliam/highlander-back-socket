@@ -78,7 +78,7 @@ MapController.get("/infos", async (
     response) => {
     const received = await mapsServices.getMapInfo();
     if(received.code >= 200 || received.code <= 299){
-        return response.status(received.code).json(received.data);
+        return response.status(received.code).json(received);
     } else {
         return response.status(received.code).json(received);
     }

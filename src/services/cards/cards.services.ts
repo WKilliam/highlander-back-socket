@@ -79,5 +79,12 @@ export class CardsServices {
     }
 
 
+    async getCardById(id: number) {
+        try {
+
+        }catch (error:any){
+            return { error: error.message , code: 500 } as FormatModel;
+        }
+    }
 
 }

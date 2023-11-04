@@ -115,8 +115,8 @@ export class Utils {
             id: undefined, // Vous pouvez laisser cette propriété non définie pour un nouvel objet
             name: '',
             description: '',
-            image: '',
-            rarity: '',
+            image: 'https://cdn.discordapp.com/attachments/1060501071056879618/1168479278174830602/kyrasw_the_frame_of_a_back_tarot_card_game_rpg_in_png_format_or_379c9eb1-9bea-4ea4-bd56-c5629407e849.png?ex=6551ea21&is=653f7521&hm=6c6f2206917ece648f45a5e47c078b653280858dfed24979dedf207d22795991&',
+            rarity: 'common',
             atk: 0,
             def: 0,
             spd: 0,
@@ -234,22 +234,15 @@ export class Utils {
 
     static partiesDataSocket(roomjoin:string){
         try {
-            let game:FormatModel = JsonconceptorService.readJsonFile(`${roomjoin}/game.json`)
-            if (game.code <= 200 && game.code > 300) return Utils.formatResponse(404, 'Not Game Found', 'Game not found');
-            let infoGame:FormatModel = JsonconceptorService.readJsonFile(`${roomjoin}/infogame.json`)
-            if (infoGame.code <= 200 && infoGame.code > 300) return Utils.formatResponse(404, 'Not InfoGame Found', 'InfoGame not found');
-            let map:FormatModel = JsonconceptorService.readJsonFile(`${roomjoin}/map.json`)
-            if (map.code <= 200 && map.code > 300) return Utils.formatResponse(404, 'Not Map Found', 'Map not found');
-            let partiesFullBodyModels: PartiesFullBodyModels = {
-                infoGame: JSON.parse(infoGame.data),
-                game: JSON.parse(game.data),
-                map: JSON.parse(map.data)
-            }
+            let received :FormatModel = JsonconceptorService.readJsonFile(`${roomjoin}/parties.json`)
+            if(!(received.code >= 200 && received.code <= 299)) return Utils.formatResponse(500, 'Internal Server Error', null, received.error);
+            let partiesFullBodyModels: PartiesFullBodyModels = JSON.parse(received.data);
             return Utils.formatResponse(200, 'data body', partiesFullBodyModels);
         }catch (error){
             return Utils.formatResponse(500, 'Internal Server Error', null, error);
         }
     }
+
 
 
 }

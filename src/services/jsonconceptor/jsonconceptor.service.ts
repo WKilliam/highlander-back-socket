@@ -26,15 +26,48 @@ export class JsonconceptorService {
         }
     }
 
+    static getAllDirectoriesAndFiles() {
+        try {
+            const baseDirectory = 'parties'; // Dossier racine contenant les répertoires
+
+            if (fs.existsSync(baseDirectory) && fs.lstatSync(baseDirectory).isDirectory()) {
+                const directories = fs.readdirSync(baseDirectory);
+
+                const result: { session: string; parties: any; }[] = []; // Ajouter un type explicite ici
+
+                for (const directory of directories) {
+                    const dirPath = `${baseDirectory}/${directory}`;
+
+                    if (fs.lstatSync(dirPath).isDirectory()) {
+                        const jsonFilePath = `${dirPath}/parties.json`;
+
+                        if (fs.existsSync(jsonFilePath)) {
+                            const jsonData = fse.readJsonSync(jsonFilePath);
+                            result.push({ session: directory, parties: jsonData });
+                        }
+                    }
+                }
+                return Utils.formatResponse(200, 'Liste des répertoires et fichiers', result);
+            } else {
+                return Utils.formatResponse(404, 'Directory not found', null);
+            }
+        } catch (error) {
+            return Utils.formatResponse(500, 'Erreur interne du serveur', error);
+        }
+    }
+
+
     static readJsonFile(path: string): FormatModel {
         try {
             const filePath = `parties/${path}`;
+            console.log('Reading file:', filePath); // Ajoutez cette ligne pour le débogage
+
             if (fs.existsSync(filePath)) {
-                console.log('File found')
+                console.log('File found');
                 const json = fse.readFileSync(filePath, 'utf8');
-                return Utils.formatResponse(200, 'File found', json);
+                return Utils.formatResponse(200, `File found parties/${path}`, json);
             } else {
-                return Utils.formatResponse(404, 'File not found', null);
+                return Utils.formatResponse(404, `File not found parties/${path}`, null);
             }
         } catch (error: any) {
             return Utils.formatResponse(500, 'Internal Server Error', error);
@@ -84,7 +117,7 @@ export class JsonconceptorService {
 
             const updatedJson = JSON.stringify(data);
             fse.writeFileSync(`parties/${path}`, updatedJson);
-            return Utils.formatResponse(200, 'Directory created', JSON.parse(updatedJson));
+            return Utils.formatResponse(200, `File Update parties/${path}`, JSON.parse(updatedJson));
         } catch (error) {
             return Utils.formatResponse(500, 'Internal Server Error', error);
         }

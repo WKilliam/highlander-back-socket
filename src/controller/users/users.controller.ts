@@ -76,7 +76,7 @@ UsersController.post("/login", async (
     }
     const received:FormatModel = await userService.getUserByEmailAndPassword(userLogin)
     if (received.code >= 200 && received.code < 300) {
-        response.status(received.code).json(received.data)
+        response.status(received.code).json(received)
     } else {
         response.status(received.code).json(received.message)
     }

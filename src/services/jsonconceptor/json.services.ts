@@ -2,10 +2,12 @@ import {FormatModel} from "../../models/format.model";
 import {JsonconceptorService} from "./jsonconceptor.service";
 import {Utils} from "../../utils/utils";
 import {PlayersGameModels, PlayersLittleModels, PlayersLobbyModels} from "../../models/players.models";
-import {GameModels, StatePlayer} from "../../models/parties.models";
+import {PartiesFullBodyModels, StatePlayer} from "../../models/parties.models";
 import {TeamBodyModels} from "../../models/teams.models";
 import {CardsDto} from "../../dto/cards.dto";
 import {Cellsmodel} from "../../models/cells.models";
+import {SocketService} from "../socket/socket.service";
+const socketService : SocketService = new SocketService()
 
 export class JsonServices {
 
@@ -28,6 +30,37 @@ export class JsonServices {
         }
     }
 
+    static checkIfUserInsideONSession(avatar:string, pseudo:string,) {
+        try {
+            let formatModel : FormatModel | null = null;
+            const received: FormatModel = JsonconceptorService.getAllDirectoriesAndFiles()
+            if (!(received.code >= 200 && received.code <= 299)) return Utils.formatResponse(received.code, received.message, received.data, received.error)
+            let sessionKey = "";
+            for (let i = 0; i < received.data.length; i++) {
+                const allPlayers = received.data[i].parties.infoGame.allPlayers
+                for (let j = 0; j < allPlayers.length; j++) {
+                    if(allPlayers[j].avatar === avatar && allPlayers[j].pseudo === pseudo){
+                        sessionKey = received.data[i].session;
+                        formatModel = Utils.formatResponse(200, 'User Inside Session', {isValid: false, sessionKey: received.data[i].session});
+                        break;
+                    }
+                }
+            }
+            if (formatModel === null) {
+                formatModel = Utils.formatResponse(200, 'User not found in any session', {isValid: true});
+            }else{
+                formatModel = Utils.formatResponse(200, 'User Inside Session', {isValid: false, sessionKey: sessionKey});
+            }
+            return formatModel;
+        }catch (error:any){
+            return Utils.formatResponse(500, 'Internal Server Error', null, error)
+        }
+    }
+
+    /**
+     * Player Security, Check, Set and Get
+     */
+
     static addPlayerAllPlayer(sessionKey: string, avatar: string, pseudo: string) {
         try {
             const received: FormatModel = JsonconceptorService.getJsonFile(`${sessionKey}/parties.json`, 'infoGame.allPlayers')
@@ -43,15 +76,29 @@ export class JsonServices {
         }
     }
 
-    /**
-     * Player Security, Check, Set and Get
-     */
+    static setTeamtag(sessionKey: string, avatar: string, pseudo: string, teamTag: string) {
+        try {
+            const received: FormatModel = JsonconceptorService.getJsonFile(`${sessionKey}/parties.json`, 'infoGame.allPlayers')
+            if (!(received.code >= 200 && received.code <= 299)) return Utils.formatResponse(received.code, received.message, received.data, received.error)
+            received.data.filter((item: PlayersLittleModels) => {
+                if (item.pseudo === pseudo && item.avatar === avatar) {
+                    item.teamTag = teamTag
+                }
+            })
+            const update: FormatModel = JsonconceptorService.updateJsonFile(`${sessionKey}/parties.json`, 'infoGame.allPlayers', received.data)
+            if (!(update.code >= 200 && update.code <= 299)) return Utils.formatResponse(update.code, update.message, update.data, update.error)
+            return Utils.formatResponse(update.code, update.message, update.data, update.error);
+        } catch (error: any) {
+            return Utils.formatResponse(500, 'Internal Server Error', null, error)
+        }
+    }
 
     static securityCheckPlayer(sessionKey: string, teamTag: string, position: number) {
         try {
             const map: Map<string, string> = this.mapBody()
             const text = map.get(`${teamTag}-${position}`)
-            if (!text) return Utils.formatResponse(404, 'Not Team Found', 'Team not found')
+            console.log(text)
+            if (!text) return Utils.formatResponse(404, 'Not Text Inside Map Found', 'Not Text Inside Map Found')
             const received: FormatModel = JsonconceptorService.getJsonFile(`${sessionKey}/parties.json`, text)
             if (!(received.code >= 200 && received.code <= 299)) return Utils.formatResponse(received.code, received.message, received.data, received.error)
             if (received.data.pseudo !== "") return Utils.formatResponse(404, 'Team full', 'Team full')
@@ -75,15 +122,15 @@ export class JsonServices {
         }
     }
 
-    static checkIfPlayerIfNotInsideTag(sessionKey: string, avatar: string, pseudo: string){
-        try{
+    static checkIfPlayerIfNotInsideTag(sessionKey: string, avatar: string, pseudo: string) {
+        try {
             const received = JsonconceptorService.getJsonFile(`${sessionKey}/parties.json`, 'infoGame.allPlayers')
             if (!(received.code >= 200 && received.code <= 299)) return Utils.formatResponse(received.code, received.message, received.data, received.error)
             let value: Array<PlayersLittleModels> = received.data
             let playerInTag = value[0].teamTag
-            if(playerInTag === "") return Utils.formatResponse(200, 'Player not Inside Tag', 'Player not Inside Tag')
+            if (playerInTag === "") return Utils.formatResponse(200, 'Player not Inside Tag', 'Player not Inside Tag')
             return Utils.formatResponse(404, 'Player Inside Tag', {teamTag: playerInTag})
-        }catch (error:any){
+        } catch (error: any) {
             return Utils.formatResponse(500, 'Internal Server Error', null, error)
         }
     }
@@ -161,7 +208,6 @@ export class JsonServices {
             if (!(received.code >= 200 && received.code <= 299)) return Utils.formatResponse(received.code, received.message, received.data, received.error)
             let playerPlace: PlayersGameModels = received.data
             if (playerPlace.pseudo !== "") return Utils.formatResponse(404, 'Team full', 'Team full')
-            const checkIfPlayerIfInsideAnotherTeam: FormatModel = this.checkIfPlayerIfInsideAnotherTeam(sessionKey, avatar, pseudo)
             playerPlace.pseudo = pseudo
             playerPlace.avatar = avatar
             playerPlace.life = 100
@@ -239,7 +285,7 @@ export class JsonServices {
             const received: FormatModel = JsonconceptorService.getJsonFile(`${sessionKey}/parties.json`, textPlayer)
             if (!(received.code >= 200 && received.code <= 299)) return Utils.formatResponse(received.code, received.message, received.data, received.error)
             position === 1 ? received.data.playerOne = Utils.initialiserPlayersGameModels() : received.data.playerTwo = Utils.initialiserPlayersGameModels()
-            position === 1 ? received.data.cardOne = Utils.initialiserCardsModelsRequest(): received.data.cardTwo = Utils.initialiserCardsModelsRequest()
+            position === 1 ? received.data.cardOne = Utils.initialiserCardsModelsRequest() : received.data.cardTwo = Utils.initialiserCardsModelsRequest()
             const update: FormatModel = JsonconceptorService.updateJsonFile(`${sessionKey}/parties.json`, textPlayer, received.data)
             if (!(update.code >= 200 && update.code <= 299)) return Utils.formatResponse(update.code, update.message, update.data, update.error)
             return Utils.formatResponse(update.code, update.message, update.data, update.error);
@@ -250,11 +296,11 @@ export class JsonServices {
 
     /*****/
 
-
-    static setCardTeam(sessionKey: string, avatar: string, pseudo: string, teamTag: string, cardsTag: string, position: number, cardsId: number) {
+    static setCardTeam(sessionKey: string, avatar: string, pseudo: string, teamTag: string, position: number, cardsId: number) {
         try {
             const map: Map<string, string> = this.mapBody()
-            const text = map.get(`${teamTag}-${cardsTag}-${position}`)
+            const cardsTag = position == 1 ? "cardOne" : "cardTwo"
+            const text = position == 1 ? map.get(`${teamTag}-cardOne-${position}`) : map.get(`${teamTag}-cardTwo-${position}`)
             if (!text) return Utils.formatResponse(404, 'Card not Found', 'Card not found')
             const received: FormatModel = JsonconceptorService.getJsonFile(`${sessionKey}/parties.json`, text)
             if (!(received.code >= 200 && received.code <= 299)) return Utils.formatResponse(received.code, received.message, received.data, received.error)
@@ -478,6 +524,25 @@ export class JsonServices {
             const updateTurnCount: FormatModel = this.setValueCalculate(sessionKey, 'infoGame', 'turnCount', turnCount.data)
             if (!(updateTurnCount.code >= 200 && updateTurnCount.code <= 300)) return Utils.formatResponse(updateTurnCount.code, updateTurnCount.message, updateTurnCount.data, updateTurnCount.error)
             return Utils.formatResponse(200, 'Next Player', true);
+        } catch (error: any) {
+            return Utils.formatResponse(500, 'Internal Server Error', null, error)
+        }
+    }
+
+    /***
+     * Move
+     **/
+
+    static movePossibility(sessionKey: string, cellId: number, diceValue: number) {
+        try {
+            const map = JsonconceptorService.getJsonFile(`${sessionKey}/parties.json`, 'map.cellsGrid')
+            if (!(map.code >= 200 && map.code <= 299)) return Utils.formatResponse(map.code, map.message, map.data, map.error)
+            let cells: Array<Cellsmodel> = map.data
+            const socketMatric = socketService.convertListCellsToMaatix(cells)
+            const findCellDistance = socketService.findCellsAtDistance(socketMatric, cellId, diceValue)
+            console.log(findCellDistance)
+
+            return Utils.formatResponse(200, 'Cell Found', "cell");
         } catch (error: any) {
             return Utils.formatResponse(500, 'Internal Server Error', null, error)
         }

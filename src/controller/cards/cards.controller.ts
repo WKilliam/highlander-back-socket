@@ -85,8 +85,12 @@ CardsController.post("/new", async (
         luk: luk,
         effects: effects
     }
-    const create = await cardsServices.createCard(cardsModel);
-    return Utils.requestFormatCommon(response, create);
+    const received = await cardsServices.createCard(cardsModel);
+    if (received.code >= 200 && received.code < 300) {
+        response.status(received.code).json(received);
+    } else {
+        response.status(received.code).json(received.message);
+    }
 })
 /**
  * @swagger
@@ -104,8 +108,12 @@ CardsController.post("/new", async (
 CardsController.get("/allcards", async (
     request,
     response) => {
-    const create: FormatModel = await cardsServices.getAllCards();
-    return Utils.requestFormatCommon(response, create);
+    const received = await cardsServices.getAllCards();
+    if (received.code >= 200 && received.code < 300) {
+        response.status(received.code).json(received);
+    } else {
+        response.status(received.code).json(received.message);
+    }
 })
 
 
@@ -188,8 +196,12 @@ CardsController.patch("/", async (
         luk: luk,
         effects: effects
     }
-    const create: FormatModel = await cardsServices.patchCard(cardsModel);
-    return Utils.requestFormatCommon(response, create);
+    const received = await cardsServices.patchCard(cardsModel);
+    if (received.code >= 200 && received.code < 300) {
+        response.status(received.code).json(received.data);
+    } else {
+        response.status(received.code).json(received.message);
+    }
 })
 
 
