@@ -1,84 +1,75 @@
 import {DataSource, Repository} from "typeorm";
 import {MapsDto} from "../../dto/maps.dto";
-import {CellsDto} from "../../dto/cells.dto";
-import {MapModels, MapModelsRequest} from "../../models/map.models";
 import {CellsServices} from "../cellulles/cells.services";
 import {Utils} from "../../utils/utils";
-import {FormatModel} from "../../models/format.model";
-import {JsonconceptorService} from "../jsonconceptor/jsonconceptor.service";
+import {Maps, MapsSimplify} from "../../models/maps.models";
+import {FormatRestApiModels} from "../../models/formatRestApi.models";
 
 export class MapsServices {
     dataSourceConfig: Promise<DataSource>;
+    cellsServices: CellsServices;
 
     constructor(dataSourceConfig: Promise<DataSource>) {
         this.dataSourceConfig = dataSourceConfig;
+        this.cellsServices = new CellsServices(dataSourceConfig);
     }
 
-    async createMap(mapRequest: MapModelsRequest) {
+    async create(map: MapsSimplify) {
         try {
-            const dataSource: DataSource = await this.dataSourceConfig;
-            const mapRepository: Repository<MapsDto> = dataSource.getRepository(MapsDto);
-
-            const creating = mapRepository.create({
-                backgroundImage: mapRequest.backgroundImage,
-                width: mapRequest.width,
-                height: mapRequest.height,
-                name: mapRequest.name
-            })
-            let mapInit = await mapRepository.save(creating)
-            await new CellsServices(this.dataSourceConfig).createCells(mapInit.id,mapInit.width,mapInit.height)
-            return Utils.formatResponse(201,'Created', mapInit);
+            const dataSource :DataSource = await this.dataSourceConfig;
+            const mapsRepository:Repository<MapsDto> = dataSource.getRepository(MapsDto);
+            const mapEntity = mapsRepository.create(map);
+            const mapSaved = await mapsRepository.save(mapEntity);
+            if (mapSaved) {
+                const cellsByMap: FormatRestApiModels = await this.cellsServices.create(mapSaved);
+                if (!(cellsByMap.code >= 200 && cellsByMap.code < 300)) {
+                    return Utils.formatResponse(
+                        cellsByMap.code, 'Cells Not Create', cellsByMap.data ,cellsByMap.error);
+                }else{
+                    return Utils.formatResponse(201, 'Map Created', mapSaved);
+                }
+            }else{
+                return Utils.formatResponse(400, 'Map Not Created', mapSaved);
+            }
         } catch (error: any) {
-            return Utils.formatResponse(500, 'Internal Server Error', null, error)
+            return Utils.formatResponse(500, 'Internal Server Error', error.data);
         }
     }
 
-    async getMapCompleted(mapId: number) {
+    async getMapsById(id: number) {
         try {
-            const dataSource: DataSource = await this.dataSourceConfig;
-            const mapRepository: Repository<MapsDto> = dataSource.getRepository(MapsDto);
-            const map = await mapRepository.findOneOrFail({
-                where: { id: mapId },
+            const dataSource :DataSource = await this.dataSourceConfig;
+            const mapsRepository:Repository<MapsDto> = dataSource.getRepository(MapsDto);
+            const map= await mapsRepository.findOne({
                 relations: ['cells'],
-                select: ["id", "backgroundImage", "width", "height", "name"],
+                where: {id: id}
             });
-
-            // Récupérez les cellules de la carte en excluant la référence à `map`
-            const cells = map.cells.map(cell => ({
-                id: cell.id,
-                x: cell.x,
-                y: cell.y,
-                value: cell.value,
-            }));
-
-            // Créez l'objet MapModels
-            const mapModel: MapModels = {
-                backgroundImg: map.backgroundImage,
-                width: map.width,
-                height: map.height,
-                name: map.name,
-                cellsGrid: cells,
-            };
-
-            return Utils.formatResponse(
-                201,
-                'Created Map',
-                mapModel);
-        } catch (error: any) {
-            return { error: error.message , code: 500 } as FormatModel;
-        }
-    }
-
-    async getMapInfo() {
-        try {
-            const dataSource: DataSource = await this.dataSourceConfig;
-            const mapRepository: Repository<MapsDto> = dataSource.getRepository(MapsDto);
-            const map = await mapRepository.find({
-                select: ["id", "backgroundImage", "name"],
-            })
-            return Utils.formatResponse(200,'Data found', map);
-        } catch (error: any) {
-            return Utils.formatResponse(500, 'Internal Server Error', null, error)
+            if (map) {
+                let mapSimplify: Maps = {
+                    id : map.id,
+                    name : map.name,
+                    backgroundImg : map.backgroundImage,
+                    width : map.width,
+                    height : map.height,
+                    cellsGrid : map.cells.map((cell) => {
+                        return {
+                            id : cell.id,
+                            x : cell.x,
+                            y : cell.y,
+                            value : cell.value
+                        }
+                    })
+                }
+                if (mapSimplify) {
+                    return Utils.formatResponse(200, 'Map Found', mapSimplify);
+                }else{
+                    return Utils.formatResponse(404, 'Map Not Found', mapSimplify);
+                }
+            }else{
+                return Utils.formatResponse(404, 'Map Not Found', map);
+            }
+        }catch (error:any){
+            return Utils.formatResponse(500, 'Internal Server Error', error.data);
         }
     }
 }

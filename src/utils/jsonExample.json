@@ -1,0 +1,45 @@
+{
+  "name": "Effects Data",
+  "image": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+  "description": "description data",
+  "type": "A",
+  "rarity": "COMMUN",
+  "cards": [
+    {
+      "name": "Card 1",
+      "description": "description data",
+      "image": "https://cdn.discordapp.com/attachments/1060501071056879618/1170447812517970102/kyrasw_the_frame_of_a_tarot_card_in_png_format_or_the_center_of_bd64af8e-0140-4349-b2b6-ce08f8eb260f.png?ex=65591378&is=65469e78&hm=5336d9ec0565b971a76f9db54b5dbdb6743d8206ccccc35702e68c23afbd6797&",
+      "rarity": "COMMUN",
+      "atk": 100,
+      "def": 200,
+      "spd": 30,
+      "luk": 2,
+      "deckId": 1,
+      "effects": [
+        1
+      ],
+      "capacities": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "Card 2",
+      "description": "description data",
+      "image": "https://cdn.discordapp.com/attachments/1060501071056879618/1170447128527646740/kyrasw_A_powerful_mage_capable_of_manipulating_mystical_forces__10656c34-75d5-494f-876f-558e1eb06223.png?ex=655912d5&is=65469dd5&hm=2c6b70367e16d4b5d456e406f632bcf1b1fcdc35cb1abf1630b4dfed97e8563f&",
+      "rarity": "COMMUN",
+      "atk": 100,
+      "def": 200,
+      "spd": 30,
+      "luk": 2,
+      "deckId": 1,
+      "effects": [
+        1
+      ],
+      "capacities": [
+        1,
+        2
+      ]
+    }
+  ]
+}

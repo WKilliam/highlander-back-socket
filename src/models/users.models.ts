@@ -1,16 +1,11 @@
-export interface UserSubscription {
-    pseudo : string,
-    password : string,
-    email : string,
-    avatar : string,
+export interface UsersLogin {
+    email: string;
+    password: string;
 }
 
-export interface UserLogin {
-    email : string,
-    password : string,
-}
-
-export enum Role {
-    ADMIN = 'admin',
-    USER = 'user'
+export interface UserSubscription{
+    pseudo,
+    password,
+    email,
+    avatar
 }

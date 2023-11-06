@@ -1,8 +1,13 @@
 import {SocketService} from "../../services/socket/socket.service";
 import {Socket} from 'socket.io'
-import {SocketJoinSession, SocketSelectPlaceTeam} from "../../models/sockets.models";
-import {FormatModel, SocketFormatModel} from "../../models/format.model";
 import {Utils} from "../../utils/utils";
+import {
+    FormatSocketModels,
+    JoinSessionSocket,
+    SelectCard,
+    SelectTeam
+} from "../../models/formatSocket.models";
+import {FormatRestApiModels} from "../../models/formatRestApi.models";
 
 
 module.exports = (io: any) => {
@@ -21,14 +26,14 @@ module.exports = (io: any) => {
             io.to(`${socketEndPoints}-default`).emit('default', `${socket.id} joined session: ${socketEndPoints}-default`);
         })
 
-        socket.on('join-session', async (data: SocketJoinSession) => {
+        socket.on('join-session', async (data: JoinSessionSocket) => {
             socket.rooms.forEach(room => {
                 socket.leave(room);
             });
             socket.join(`${socketEndPoints}-${data.room}`);
             console.log(`${socket.id} joined session: ${socketEndPoints}-${data.room}`)
-            let parties: FormatModel = Utils.partiesDataSocket(data.room)
-            let formatSocket: SocketFormatModel = Utils.formatSocketMessage(
+            let parties: FormatRestApiModels = Utils.partiesDataSocket(data.room)
+            let formatSocket: FormatSocketModels = Utils.formatSocketMessage(
                 `${socketEndPoints}-${data.room}`,
                 parties.data,
                 `${socket.id} joined session: ${socketEndPoints}-${data.room} , complete message : ${parties.message}`,
@@ -37,25 +42,25 @@ module.exports = (io: any) => {
         })
 
 
-        socket.on('select-place-team', async (data: SocketSelectPlaceTeam) => {
-            let value = socketService.selectPlaceTeam(data)
-            let formatSocket: SocketFormatModel = Utils.formatSocketMessage(
-                `${socketEndPoints}-${data.room}`,
-                value.data,
-                `${socket.id} joined session: ${socketEndPoints}-${data.room} , complete message : ${value.message}`,
-                value.error, value.error)
-            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, formatSocket);
+        socket.on('select-place-team', async (data: SelectTeam) => {
+            // let value = socketService.selectPlaceTeam(data)
+            // let formatSocket: FormatSocketModels = Utils.formatSocketMessage(
+            //     `${socketEndPoints}-${data.room}`,
+            //     value.data,
+            //     `${socket.id} joined session: ${socketEndPoints}-${data.room} , complete message : ${value.message}`,
+            //     value.error, value.error)
+            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, "formatSocket");
         })
 
-        socket.on('select-card-team', async (data: {
-            room: string,
-            avatar: string,
-            pseudo: string,
-            teamTag: string,
-            position: number,
-            cardId: number,
-        }) => {
-
+        socket.on('select-card-team', async (data: SelectCard) => {
+            // let value = socketService.selectCardPlaceTeam(data)
+            // let formatSocket: FormatSocketModels = Utils.formatSocketMessage(
+            //     `${socketEndPoints}-${data.room}`,
+            //     value.data,
+            //     `${socket.id} joined session: ${socketEndPoints}-${data.room} , complete message : ${value.message}`,
+            //     value.error, value.error)
+            // console.log(formatSocket)
+            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, "formatSocket");
         })
 
         socket.on('move-possibility', async (data: {

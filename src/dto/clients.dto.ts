@@ -1,4 +1,4 @@
-import {Column, Entity, ManyToMany, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn} from "typeorm";
 import {CardsDto} from "./cards.dto";
 
 @Entity('client')
@@ -28,6 +28,7 @@ export class ClientDto {
     @Column({name: 'bear_coin'})
     bearcoin: number = 0;
 
-    @ManyToMany(() => CardsDto, card => card.id)
+    @ManyToMany(() => CardsDto, (card) => card.clients)
+    @JoinTable({name: 'cards_to_clients'})
     cards: CardsDto[];
 }

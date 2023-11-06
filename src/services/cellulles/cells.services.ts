@@ -1,7 +1,8 @@
 import {DataSource, Repository} from "typeorm";
 import {CellsDto} from "../../dto/cells.dto";
 import {Utils} from "../../utils/utils";
-import {FormatModel} from "../../models/format.model";
+import {MapsDto} from "../../dto/maps.dto";
+import {Cells} from "../../models/maps.models";
 
 export class CellsServices {
     dataSourceConfig: Promise<DataSource>;
@@ -10,38 +11,28 @@ export class CellsServices {
         this.dataSourceConfig = dataSourceConfig;
     }
 
-    async createCells(mapId: number,mapWidth: number,mapHeight: number) {
+    async create(mapSaved: MapsDto) {
         try {
             const dataSource: DataSource = await this.dataSourceConfig;
             const cellsRepository: Repository<CellsDto> = dataSource.getRepository(CellsDto);
-            let cellsGrid = Utils.createGrid(mapWidth,mapHeight)
-            for (const row of cellsGrid) {
-                for (const cell of row) {
-                    const cellDto = new CellsDto();
-                    cellDto.map = {id: mapId} as any;
-                    cellDto.x = cell.x;
-                    cellDto.y = cell.y;
-                    cellDto.value = cell.value;
-                    cellsRepository.create(cellDto);
-                    await cellsRepository.save(cellDto);
+            let fixedCellGrid:Cells[][] = Utils.createGrid(mapSaved.width, mapSaved.height);
+            for (let i = 0; i < fixedCellGrid.length; i++) {
+                const row = fixedCellGrid[i];
+                for (let j = 0; j < row.length; j++) {
+                    const cell = row[j];
+                    // Create the cell entity
+                    const newCell = new CellsDto();
+                    newCell.x = cell.x;
+                    newCell.y = cell.y;
+                    newCell.value = cell.value;
+                    newCell.map = mapSaved;
+                    // Save the cell entity
+                    await cellsRepository.save(newCell);
                 }
             }
-            const foundCell = await cellsRepository.find(
-                {
-                    select: {
-                        id: true,
-                        x: true,
-                        y: true,
-                        value: true,
-                    },
-                    where: {
-                        id: mapId,
-                    }
-                })
-            return Utils.formatResponse(201,'Created Cells', foundCell);
+            return Utils.formatResponse(201, 'Cells Created', fixedCellGrid);
         } catch (error: any) {
-            return { error: error.message , code: 500 } as FormatModel;
+            return Utils.formatResponse(error.code, error.message, error.data);
         }
     }
-
 }

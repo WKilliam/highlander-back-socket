@@ -1,4 +1,4 @@
-import {Column, Entity, JoinTable, ManyToMany, OneToOne, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn} from "typeorm";
 import {CardsDto} from "./cards.dto";
 
 @Entity('decks')
@@ -31,8 +31,7 @@ export class DecksDto {
     @Column()
     count: number;
 
-    @ManyToMany(() => CardsDto, card => card.decks)
-    @JoinTable()
+    @OneToMany(() => CardsDto, (card) => card.deck, { cascade: true })
     cards: CardsDto[];
 
 }

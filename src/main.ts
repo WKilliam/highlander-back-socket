@@ -14,6 +14,7 @@ import UsersController from "./controller/users/users.controller";
 import cors from "cors";
 import JsonController from "./controller/json/json";
 import {Socket} from "net";
+import CapacityController from "./controller/capacity/capacity.controller";
 app.use(express.json());
 app.use(cors(corsApp));
 const httpServer: Express = require('http').createServer(app);
@@ -28,6 +29,7 @@ app.use('/cards',CardsController);
 app.use('/effects',EffectsController);
 app.use('/events',EventsController);
 app.use('/decks',DecksController);
+app.use('/capacity',CapacityController);
 app.use('/user',UsersController);
 app.use('/json',JsonController);
 

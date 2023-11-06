@@ -7,10 +7,6 @@ export class CellsDto {
     @PrimaryGeneratedColumn()
     id: number
 
-    @ManyToOne((type) => MapsDto, (map) => map.id, { eager: true, onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'map_id' })
-    map: MapsDto
-
     @Column()
     x: number;
 
@@ -19,5 +15,9 @@ export class CellsDto {
 
     @Column()
     value: number;
+
+    @ManyToOne(() => MapsDto, (map) => map.cells, { eager: true, onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'mapId' })
+    map: MapsDto
 
 }

@@ -1,7 +1,6 @@
 import {DataSource, Repository} from "typeorm";
 import {GamekeyDto} from "../../dto/gamekey.dto";
 import {Utils} from "../../utils/utils";
-import {FormatModel} from "../../models/format.model";
 
 export class GamekeyServices{
     dataSourceConfig: Promise<DataSource>;
@@ -33,7 +32,7 @@ export class GamekeyServices{
                 'Key created',
                 keyGen );
         } catch (error: any) {
-            return { error: error.message , code: 500 } as FormatModel;
+            return Utils.formatResponse( 500, 'Internal server error', error);
         }
     }
 
@@ -78,7 +77,7 @@ export class GamekeyServices{
                 'Key found',
                 findKey );
         } catch (error: any) {
-            return { error: error.message , code: 500 } as FormatModel;
+            return Utils.formatResponse( 500, 'Internal server error', error);
         }
     }
 

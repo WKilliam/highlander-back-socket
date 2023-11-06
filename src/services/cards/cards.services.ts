@@ -1,9 +1,10 @@
-import {DataSource, In, Repository} from "typeorm";
-import {CardsModelsRequest} from "../../models/cards.models";
+import {DataSource, DeepPartial, In, Repository} from "typeorm";
 import {CardsDto} from "../../dto/cards.dto";
 import {EffectsDto} from "../../dto/effects.dto";
-import {FormatModel} from "../../models/format.model";
 import {Utils} from "../../utils/utils";
+import {CardsRestApi} from "../../models/cards.models";
+import {CapacityDto} from "../../dto/capacity.dto";
+import {DecksDto} from "../../dto/decks.dto";
 
 export class CardsServices {
     dataSourceConfig: Promise<DataSource>;
@@ -12,79 +13,80 @@ export class CardsServices {
         this.dataSourceConfig = dataSourceConfig;
     }
 
-    async createCard(card: CardsModelsRequest) {
+
+    async create(card: CardsRestApi) {
         try {
             const dataSource: DataSource = await this.dataSourceConfig;
-            const cardRepository: Repository<CardsDto> = dataSource.getRepository(CardsDto);
-            const effectsRepository: Repository<EffectsDto> = dataSource.getRepository(EffectsDto);
+            const cardsDtoRepository: Repository<CardsDto> = dataSource.getRepository(CardsDto);
+            const capacityDtoRepository: Repository<CapacityDto> = dataSource.getRepository(CapacityDto);
+            const effectsDtoRepository: Repository<EffectsDto> = dataSource.getRepository(EffectsDto);
+            const decksDtoRepository: Repository<DecksDto> = dataSource.getRepository(DecksDto);
+            const effects = await effectsDtoRepository.findBy({ id: In(card.effects) })
+            const capacity = await capacityDtoRepository.findBy({ id: In(card.capacities) })
+            const deck = await decksDtoRepository.findOne({ where: { id: card.deckId } }) as DecksDto;
 
-            const effects = await effectsRepository.find({where: {id: In(card.effects)}});
-            const newCard = cardRepository.create(
-                {
-                    name: card.name,
-                    description: card.description,
-                    image: card.image,
-                    rarity: card.rarity,
-                    createdAt: new Date().toLocaleDateString(),
-                    atk: card.atk,
-                    def: card.def,
-                    spd: card.spd,
-                    luk: card.luk,
-                    effects: effects
-                }
-            );
-            const creating =  await cardRepository.save(newCard);
-            return Utils.formatResponse(201,'Created', creating);
-        } catch (error: any) {
-            return { error: error.message , code: 500 } as FormatModel;
-        }
-    }
+            if (!deck) return Utils.formatResponse(404, 'Deck not found', null, null);
 
-    async getAllCards() {
-        try {
-            const dataSource: DataSource = await this.dataSourceConfig;
-            const cardRepository: Repository<CardsDto> = dataSource.getRepository(CardsDto);
-            const cards = await cardRepository.find({
-                select: ["id", "name", "description", "image", "rarity", "atk", "def", "spd", "luk"],
-            });
-            return Utils.formatResponse(200,'All cards', cards );
-        } catch (error: any) {
-            return { error: error.message , code: 500 } as FormatModel;
-        }
-    }
-
-
-    async patchCard(card: CardsModelsRequest) {
-        try {
-            const dataSource: DataSource = await this.dataSourceConfig;
-            const cardRepository: Repository<CardsDto> = dataSource.getRepository(CardsDto);
-            const effectsRepository: Repository<EffectsDto> = dataSource.getRepository(EffectsDto);
-
-            const effects = await effectsRepository.find({where: {id: In(card.effects)}});
-            let CardPatch = cardRepository.update({id:card.id},{
+            // Créez la carte sans sauvegarder pour l'instant
+            const cardCreated = cardsDtoRepository.create({
                 name: card.name,
                 description: card.description,
                 image: card.image,
                 rarity: card.rarity,
+                createdAt: new Date().toISOString(),
                 atk: card.atk,
                 def: card.def,
                 spd: card.spd,
                 luk: card.luk,
-                effects: effects
-            })
-            return Utils.formatResponse(200,'Updated card', CardPatch);
-        }catch (error:any){
-            return { error: error.message , code: 500 } as FormatModel;
+                deck: deck,
+            });
+
+
+            const newCard = await cardsDtoRepository.save(cardCreated);
+            newCard.effects = effects;
+            newCard.capacities = capacity;
+            await cardsDtoRepository.save(newCard);
+            return Utils.formatResponse(201, 'Card created successfully', newCard, null);
+        } catch (error: any) {
+            return Utils.formatResponse(500, 'Internal server error', null, error.message);
         }
     }
 
+    async getCapacityById(number: number) {
+        try{
+            const dataSource :DataSource = await this.dataSourceConfig;
+            const cardsRepository:Repository<CardsDto> = dataSource.getRepository(CardsDto);
 
-    async getCardById(id: number) {
-        try {
-
-        }catch (error:any){
-            return { error: error.message , code: 500 } as FormatModel;
+            const card = await cardsRepository.findOne({
+                select: [
+                    "id",
+                    "name",
+                    "description",
+                    "image",
+                    "rarity",
+                    "atk",
+                    "def",
+                    "spd",
+                    "luk",
+                    "createdAt",
+                    "deck",
+                    "effects",
+                    "capacities"
+                ],
+                relations :[
+                    "deck",
+                    "effects",
+                    "capacities"
+                ],
+                where: {id: number},
+            });
+            if (card) {
+                return Utils.formatResponse(200, 'Capacity Found', card);
+            }else{
+                return Utils.formatResponse(404, 'Capacity Not Found', card);
+            }
+        }catch(error:any){
+            return Utils.formatResponse(500, 'Internal Server Error', error, error.message);
         }
     }
-
 }

@@ -1,9 +1,8 @@
 import {Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
 import {CardsDto} from "./cards.dto";
 
-@Entity('effects')
-export class EffectsDto {
-
+@Entity('capacity')
+export class CapacityDto {
     @PrimaryGeneratedColumn()
     id: number
 
@@ -13,16 +12,13 @@ export class EffectsDto {
     @Column({ length: 500 })
     description : string
 
-    @Column()
+    @Column({ length: 500 })
     icon : string
-
-    @Column()
-    rarity : string
 
     @Column({ length: 50 })
     action : string
 
-    @ManyToOne(() => CardsDto, (card) => card.effects)
-    @JoinTable({ name: 'cards_to_effects'})
+    @ManyToOne(() => CardsDto, (card) => card.capacities)
+    @JoinTable({ name: 'cards_to_capacities'})
     cards: CardsDto[];
 }

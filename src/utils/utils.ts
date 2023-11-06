@@ -1,31 +1,34 @@
-import {CellsConceptionModel, Cellsmodel} from "../models/cells.models";
-import {FormatModel, SocketFormatModel} from "../models/format.model";
-import {PlayersGameModels, PlayersLittleModels, PlayersLobbyModels} from "../models/players.models";
-import {TypeEvent} from "./enum/enum";
-import {EventsCellModels} from "../models/events.models";
-import {GameModels, PartiesFullBodyModels} from "../models/parties.models";
-import {MapModels} from "../models/map.models";
-import {GameKeySession, SessionModel, StatusAccess, StatusGame} from "../models/sessions.models";
-import {CardsModelsRequest} from "../models/cards.models";
-import {TeamBodyModels, TeamsModels} from "../models/teams.models";
-import {InfoGame} from "../models/infoGame";
-import {CardsDto} from "../dto/cards.dto";
 import {JsonconceptorService} from "../services/jsonconceptor/jsonconceptor.service";
+import {FormatRestApiModels} from "../models/formatRestApi.models";
+import {Cells, GridLimit, Maps} from "../models/maps.models";
+import {FormatSocketModels} from "../models/formatSocket.models";
+import {
+    EntityPlaying,
+    EntityStatus,
+    Game,
+    SessionGame,
+    SessionStatusGame,
+    StatusGame
+} from "../models/room.content.models";
+import {CardByEntityPlaying} from "../models/cards.models";
+import {PlayerCards} from "../models/player.models";
+import {MapsDto} from "../dto/maps.dto";
+import {ClientDto} from "../dto/clients.dto";
 
 export class Utils {
 
-    static createGrid(mapWidth: number, mapHeight: number): CellsConceptionModel[][] {
+    static createGrid(mapWidth: number, mapHeight: number): Cells[][] {
         const cellWidth = 32;
         const cellHeight = 32;
         const numCols = Math.floor(mapWidth / cellWidth);
         const numRows = Math.floor(mapHeight / cellHeight);
-        const gridCellData: CellsConceptionModel[][] = [];
+        const gridCellData: Cells[][] = [];
         let cellId = 1;
         for (let row = 0; row < numRows; row++) {
-            const rowArray: CellsConceptionModel[] = [];
+            const rowArray: Cells[] = [];
 
             for (let col = 0; col < numCols; col++) {
-                const cell: CellsConceptionModel = {
+                const cell: Cells = {
                     x: col * cellWidth,
                     y: row * cellHeight,
                     value: 1,
@@ -37,6 +40,82 @@ export class Utils {
             gridCellData.push(rowArray);
         }
         return gridCellData;
+    }
+
+    // convert list of cells to matrix
+    convertListCellsToMaatix(listeCellules: Cells[]): Cells[][] {
+        const mapWidth: number = 936;
+        const mapHeight: number = 620;
+        const cellWidth = 32;
+        const cellHeight = 32;
+        const numCols = Math.floor(mapWidth / cellWidth);
+        const numRows = Math.floor(mapHeight / cellHeight);
+        let gridCellData: Cells[][] = [];
+        let cellId = 1;
+
+        for (let row = 0; row < numRows; row++) {
+            const rowArray: Cells[] = [];
+            for (let col = 0; col < numCols; col++) {
+                const existingCell = listeCellules.find(cell => cell.id === cellId);
+                const cell: Cells = existingCell || {
+                    id: cellId,
+                    x: col * cellWidth + 5,
+                    y: row * cellHeight + 5,
+                    value: 1,
+                };
+                rowArray.push(cell);
+                cellId++;
+            }
+            gridCellData.push(rowArray);
+        }
+        return gridCellData;
+    }
+
+    // get limit of grid
+    getGridIndices(cells: Cells[]): GridLimit {
+        let gridCellData: Cells[][] = this.convertListCellsToMaatix(cells)
+        const numRows = gridCellData.length;
+        const numCols = gridCellData[0].length;
+        const minX = 0;
+        const maxX = numCols - 1;
+        const minY = 0;
+        const maxY = numRows - 1;
+        console.log(`Limites de la matrice : minRow=${minX}, maxRow=${maxX}, minCol=${minY}, maxCol=${maxY}`);
+        return {minX, maxX, minY, maxY};
+    }
+
+
+    // give posibility to move player
+    findCellsAtDistance(gridCellData: Cells[][], startId: number, distance: number): Cells[] {
+        const result: Cells[] = [];
+        let startX: number | null = null;
+        let startY: number | null = null;
+        gridCellData.forEach((rowArray, rowIndex) => {
+            rowArray.forEach((cell, colIndex) => {
+                if (cell.id === startId) {
+                    startX = rowIndex;
+                    startY = colIndex;
+                }
+            });
+        });
+
+        if (startX === null || startY === null) {
+            console.error(`Cellule de départ avec l'ID ${startId} non trouvée.`);
+            return result;
+        }
+        const {minX, maxX, minY, maxY} = this.getGridIndices(result);
+        for (let x = minX; x <= maxX; x++) {
+            for (let y = minY; y <= maxY; y++) {
+                const dx = Math.abs(x - startY);
+                const dy = Math.abs(y - startX);
+                const manhattanDistance = dx + dy;
+                if (manhattanDistance === distance) {
+                    result.push(gridCellData[y][x]);
+                }
+            }
+        }
+        console.log(`Cellules à une distance de ${distance} de la cellule de départ (ID: ${startId}) :`, result);
+        return result;
     }
 
     static createGameKeySession(testingVersion: boolean): string {
@@ -55,43 +134,28 @@ export class Utils {
     }
 
 
-    static formatResponse(code: number, message?: string, data?: any, error?: any): FormatModel {
-        let messageFormat: FormatModel;
+    static formatResponse(code: number, message?: string, data?: any, error?: any): FormatRestApiModels {
+        let messageFormat: FormatRestApiModels;
         if (error) {
             messageFormat = {
+                date: new Date().toISOString(),
                 error: error,
                 code: code,
-                message: message
+                message: null
             }
             return messageFormat;
         } else {
             messageFormat = {
+                date: new Date().toISOString(),
                 data: data,
                 code: code,
-                message: message
+                message: message || null
             }
             return messageFormat;
         }
     }
 
-    static createEventsCellModelsInit(
-        cellsmodel: Cellsmodel, messages: string, typeEvent: TypeEvent
-    ): EventsCellModels {
-        let eventsCellModels: EventsCellModels;
-        eventsCellModels = {
-            cells: {
-                id: cellsmodel.id,
-                x: cellsmodel.x,
-                y: cellsmodel.y,
-                value: cellsmodel.value,
-            },
-            message: messages,
-            typeEvent: typeEvent,
-        }
-        return eventsCellModels;
-    }
-
-    static requestFormatCommon(response: any, format: FormatModel): any {
+    static requestFormatCommon(response: any, format: FormatRestApiModels): any {
         if (format === undefined) {
             return response.status(500).json({message: "Erreur interne du serveur."})
         } else if (format.data !== null || format.data) {
@@ -101,127 +165,19 @@ export class Utils {
         }
     }
 
-    static initCellsmodel() : Cellsmodel {
-        return {
-            id: 0,
-            x: 0,
-            y: 0,
-            value: 0,
-        }
-    }
-
-    static initialiserCardsModelsRequest(): CardsModelsRequest {
-        return {
-            id: undefined, // Vous pouvez laisser cette propriété non définie pour un nouvel objet
-            name: '',
-            description: '',
-            image: 'https://cdn.discordapp.com/attachments/1060501071056879618/1168479278174830602/kyrasw_the_frame_of_a_back_tarot_card_game_rpg_in_png_format_or_379c9eb1-9bea-4ea4-bd56-c5629407e849.png?ex=6551ea21&is=653f7521&hm=6c6f2206917ece648f45a5e47c078b653280858dfed24979dedf207d22795991&',
-            rarity: 'common',
-            atk: 0,
-            def: 0,
-            spd: 0,
-            luk: 0,
-            effects: []
-        };
-    }
-
-    static initialiserPlayersGameModels(
-        avatar?:string,
-        pseudo?:string,
-        life?:number,
-        maxLife?:number,
-        cardsPosessed?:Array<number>,
-        key?:string,
-    ): PlayersGameModels {
-        return {
-            avatar: avatar || '',
-            pseudo: pseudo || '',
-            life: life || 0,
-            maxLife: maxLife || 0,
-            state: '',
-            cardsPosessed: cardsPosessed || []
-        };
-    }
-
-    static initialiserTeamBodyModels(teamTag:string,keyTag?:string): TeamBodyModels {
-        return {
-            freeplace: 0,
-            teamName: teamTag,
-            commonLife: 0,
-            commonMaxLife: 0,
-            commonAttack: 0,
-            commonDefense: 0,
-            commonLuck: 0,
-            commonSpeed: 0,
-            keyTag: keyTag || "",
-            cellPosition: this.initCellsmodel(),
-            isAlive: false,
-            isReady: false,
-            playerOne: this.initialiserPlayersGameModels(),
-            playerTwo: this.initialiserPlayersGameModels(),
-            cardOne: this.initialiserCardsModelsRequest(),
-            cardTwo: this.initialiserCardsModelsRequest()
-        };
-    }
-
-    static initialiserTeamsModels(teamOne:string,teamTwo:string,teamThree:string,teamFour:string): TeamsModels {
-        return {
-            teamOne: this.initialiserTeamBodyModels(teamOne,`teamOne`),
-            teamTwo: this.initialiserTeamBodyModels(teamTwo,`teamTwo`),
-            teamThree: this.initialiserTeamBodyModels(teamThree,`teamThree`),
-            teamFour: this.initialiserTeamBodyModels(teamFour,`teamFour`),
-        };
-    }
-
-    static initialiserGameModels(teamOne:string,teamTwo:string,teamThree:string,teamFour:string): GameModels {
-        return {
-            teams: this.initialiserTeamsModels(teamOne,teamTwo,teamThree,teamFour),
-            monsters: this.initialiserTeamsModels('','','',''),
-        };
-    }
-
-    static initInfoGameModels(
-        gameKeySession:string,
-        avatar:string,
-        pseudo:string,
-        ): InfoGame {
-        let gameKey :GameKeySession = {
-            key: gameKeySession,
-            statusGame: StatusGame.ON,
-        }
-        let allPlayers: Array<PlayersLittleModels> = []
-        allPlayers.push(this.initLittlePlayerModels(avatar,pseudo))
-        return {
-            turnCount: 0,
-            playerTurn: 7,
-            orderTurn: [],
-            lobby: [],
-            gameKeySession: gameKey,
-            allPlayers: allPlayers,
-        }
-    }
-
-    static initLittlePlayerModels(avatar:string, pseudo:string): PlayersLittleModels {
-        return {
-            avatar: avatar,
-            pseudo: pseudo,
-            teamTag: "",
-        }
-    }
-
-    static arrayConvertId(cards:Array<any>){
+    static arrayConvertId(cards: Array<any>) {
         return cards.flatMap(item => item.id);
     }
 
 
     static formatSocketMessage(
-        room:string ,
-        data:any,
+        room: string,
+        data: any,
         message: string,
         code: number,
         error: any
     ) {
-        let formatSocket: SocketFormatModel = {
+        let formatSocket: FormatSocketModels = {
             date: new Date().toISOString(),
             room: room,
             data: data,
@@ -232,17 +188,127 @@ export class Utils {
         return formatSocket
     }
 
-    static partiesDataSocket(roomjoin:string){
+    static partiesDataSocket(roomjoin: string) {
         try {
-            let received :FormatModel = JsonconceptorService.readJsonFile(`${roomjoin}/parties.json`)
-            if(!(received.code >= 200 && received.code <= 299)) return Utils.formatResponse(500, 'Internal Server Error', null, received.error);
-            let partiesFullBodyModels: PartiesFullBodyModels = JSON.parse(received.data);
+            let received: FormatRestApiModels = JsonconceptorService.readJsonFile(`${roomjoin}/parties.json`)
+            if (!(received.code >= 200 && received.code <= 299)) return Utils.formatResponse(500, 'Internal Server Error', null, received.error);
+            let partiesFullBodyModels: SessionGame = JSON.parse(received.data);
             return Utils.formatResponse(200, 'data body', partiesFullBodyModels);
-        }catch (error){
+        } catch (error) {
             return Utils.formatResponse(500, 'Internal Server Error', null, error);
         }
     }
 
 
+    static initSessionGame(roomjoin: string, teamNames: Array<string>,mapsData:MapsDto) {
+        let sessionStatusGame: SessionStatusGame = {
+            room: roomjoin,
+            status: StatusGame.LOBBY,
+            turnCount: 0,
+            lobby: [],
+            entityTurn: [],
+            teamNames: teamNames
+        }
+        let tab = this.initTeamEntity()
+        let game: Game = {
+            teams: tab.player,
+            monsters: tab.monster
+        }
+        let cellgrid : Cells[] = mapsData.cells.map((cell) => {
+            return {
+                id: cell.id,
+                x: cell.x,
+                y: cell.y,
+                value: cell.value,
+            }
+        })
+        let maps: Maps = {
+            backgroundImg: mapsData.backgroundImage,
+            width: mapsData.width,
+            height: mapsData.height,
+            name: mapsData.name,
+            cellsGrid: cellgrid
+        }
+        let sessionGame: SessionGame = {
+            sessionStatusGame: sessionStatusGame,
+            game: game,
+            maps: maps
+        }
+        return sessionGame
+    }
 
+    static initTeamEntity() {
+        let player: PlayerCards = {
+            avatar: '',
+            pseudo: '',
+        }
+        let cardsPlayer: CardByEntityPlaying = {
+            id: -1,
+            atk: 0,
+            def: 0,
+            spd: 0,
+            luk: 0,
+            rarity: 'commun',
+            imageSrc: '',
+            effects: [],
+            attacks: [],
+            player: player
+        }
+        let cardsMonster: CardByEntityPlaying = {
+            id: -1,
+            atk: -1,
+            def: 1,
+            spd: -1,
+            luk: -1,
+            rarity: 'commun',
+            imageSrc: '',
+            effects: [],
+            attacks: []
+        }
+        let cells: Cells = {
+            id: -1,
+            x: -1,
+            y: -1,
+            value: -1
+        }
+        let arrayPlayer: Array<CardByEntityPlaying> = []
+        let arrayMonster: Array<CardByEntityPlaying> = []
+        arrayPlayer.push(cardsPlayer)
+        arrayPlayer.push(cardsPlayer)
+        arrayMonster.push(cardsMonster)
+        arrayMonster.push(cardsMonster)
+        let cardByEntityPlayingPlayer = {
+            name: '',
+            commonLife: -1,
+            commonMaxLife: -1,
+            commonAttack: -1,
+            commonDefense: -1,
+            commonLuck: -1,
+            commonSpeed: -1,
+            cellPosition: cells,
+            entityStatus: EntityStatus.ALIVE,
+            cardsPlayer: arrayPlayer,
+        }
+        let teamEntityMonster = {
+            name: '',
+            commonLife: -1,
+            commonMaxLife: -1,
+            commonAttack: -1,
+            commonDefense: -1,
+            commonLuck: -1,
+            commonSpeed: -1,
+            cellPosition: cells,
+            entityStatus: EntityStatus.ALIVE,
+            cardsPlayer: arrayMonster,
+        }
+        let arrayTeamEntityMonster: Array<EntityPlaying> = []
+        let arrayTeamEntityPlayer: Array<EntityPlaying> = []
+        arrayTeamEntityPlayer.push(cardByEntityPlayingPlayer)
+        arrayTeamEntityPlayer.push(cardByEntityPlayingPlayer)
+        arrayTeamEntityPlayer.push(cardByEntityPlayingPlayer)
+        arrayTeamEntityPlayer.push(cardByEntityPlayingPlayer)
+        arrayTeamEntityMonster.push(teamEntityMonster)
+        arrayTeamEntityMonster.push(teamEntityMonster)
+        return {player: arrayTeamEntityPlayer, monster: arrayTeamEntityMonster}
+    }
 }

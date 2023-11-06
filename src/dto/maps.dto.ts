@@ -1,4 +1,4 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn} from "typeorm";
 import {CellsDto} from "./cells.dto";
 
 @Entity('maps')
@@ -19,6 +19,7 @@ export class MapsDto {
     @Column()
     name: string;
 
-    @OneToMany(() => CellsDto, (cells) => cells.map)
+    @OneToMany(() => CellsDto, (cell) => cell.map)
+    @JoinColumn()
     cells: CellsDto[];
 }

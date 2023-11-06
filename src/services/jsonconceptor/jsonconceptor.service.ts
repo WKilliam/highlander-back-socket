@@ -1,17 +1,11 @@
 import fse from 'fs-extra';
 import {Utils} from "../../utils/utils";
-import {FormatModel} from "../../models/format.model";
-import {PlayersLittleModels, PlayersLobbyModels} from "../../models/players.models";
-import {SocketJoinSession, SocketJoinTeamCard} from "../../models/sockets.models";
-import {TeamBodyModels} from "../../models/teams.models";
 import * as fs from "fs";
-import {GameModels, PartiesFullBodyModels} from "../../models/parties.models";
-import {InfoGame} from "../../models/infoGame";
-import {MapModels} from "../../models/map.models";
+import {FormatRestApiModels} from "../../models/formatRestApi.models";
 
 export class JsonconceptorService {
 
-    static createDirectoryAndJsonFile(path: string, data: any): FormatModel {
+    static createDirectoryAndJsonFile(path: string, data: any): FormatRestApiModels {
         try {
             // Crée le répertoire
             fse.ensureDirSync(`parties/${path}`);
@@ -57,7 +51,7 @@ export class JsonconceptorService {
     }
 
 
-    static readJsonFile(path: string): FormatModel {
+    static readJsonFile(path: string): FormatRestApiModels {
         try {
             const filePath = `parties/${path}`;
             console.log('Reading file:', filePath); // Ajoutez cette ligne pour le débogage
@@ -74,23 +68,6 @@ export class JsonconceptorService {
         }
     }
 
-    static getJsonFile(pathKeySession: string, keyJson: string): FormatModel {
-        try {
-            // Vérifiez si le répertoire existe
-            if (fse.existsSync(`parties/${pathKeySession}`)) {
-                // Le répertoire existe, vous pouvez maintenant essayer de lire le fichier JSON
-                const json = fse.readJsonSync(`parties/${pathKeySession}`);
-                const data = keyJson.split('.').reduce((obj, key) => obj[key], json);
-                return Utils.formatResponse(200, 'Directory created', data);
-            } else {
-                // Le répertoire n'existe pas, retournez une réponse d'erreur
-                return Utils.formatResponse(404, 'Directory not found', null);
-            }
-        } catch (error) {
-            return Utils.formatResponse(500, `Internal Server Error`, error);
-        }
-    }
-
     static mergeJsonData(target: any, source: any): void {
         for (const key in source) {
             if (source[key] instanceof Object && !Array.isArray(source[key])) {
@@ -104,7 +81,7 @@ export class JsonconceptorService {
         }
     }
 
-    static updateJsonFile(path: string, keyPath: string, value: any): FormatModel {
+    static updateJsonFile(path: string, keyPath: string, value: any): FormatRestApiModels {
         try {
             const json = fse.readFileSync(`parties/${path}`, 'utf8');
             const data = JSON.parse(json);

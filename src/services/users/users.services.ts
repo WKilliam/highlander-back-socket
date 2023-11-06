@@ -1,9 +1,9 @@
 import {DataSource, In, Repository} from "typeorm";
-import {UserLogin, UserSubscription} from "../../models/users.models";
-import {FormatModel} from "../../models/format.model";
+
 import {ClientDto} from "../../dto/clients.dto";
 import {Utils} from "../../utils/utils";
 import {CardsDto} from "../../dto/cards.dto";
+import {UsersLogin, UserSubscription} from "../../models/users.models";
 
 export class UsersServices{
 
@@ -13,44 +13,23 @@ export class UsersServices{
         this.dataSourceConfig = dataSourceConfig;
     }
 
-    async createUser(userSubscription: UserSubscription) : Promise<FormatModel> {
+    async create(user: UserSubscription) {
         try {
             const dataSource: DataSource = await this.dataSourceConfig;
-            const userRepository:Repository<ClientDto> = dataSource.getRepository(ClientDto);
-            const cardRepository:Repository<CardsDto> = dataSource.getRepository(CardsDto);
-            const cardsStarter = [1,2,3]
-            const cards = await cardRepository.find({where: {id: In(cardsStarter)}});
-            const newUser = userRepository.create({
-                pseudo: userSubscription.pseudo,
-                password: userSubscription.password,
-                email: userSubscription.email,
-                avatar: userSubscription.avatar,
-                createdAt: new Date().toLocaleDateString(),
-                role: "user",
-                cards: cards
-            });
-            const user = await userRepository.save(newUser);
-            return Utils.formatResponse(200, "User created", user)
+            const usersDtoRepository: Repository<ClientDto> = dataSource.getRepository(ClientDto);
+            const newUser: ClientDto = usersDtoRepository.create({
+                pseudo: user.pseudo,
+                email: user.email,
+                password: user.password,
+                avatar: user.avatar,
+                role: 'user',
+                createdAt: new Date().toISOString()
+            })
+            const createdUser: ClientDto = await usersDtoRepository.save(newUser);
+            if (!createdUser) return Utils.formatResponse(500, 'User created Error', newUser, null);
+            return Utils.formatResponse(201, 'User created successfully', createdUser, null);
         }catch (error:any){
-            return Utils.formatResponse(500, `${error}`, null)
-        }
-    }
-
-    async getUserByEmailAndPassword(user:UserLogin) : Promise<FormatModel> {
-        try {
-            const dataSource: DataSource = await this.dataSourceConfig;
-            const userRepository:Repository<ClientDto> = dataSource.getRepository(ClientDto);
-            const userFound = await userRepository.findOne({
-                select: ["id", "pseudo","email", "avatar", "bearcoin", "cards"],
-                where: {email: user.email, password: user.password}
-            });
-            if (userFound) {
-                return Utils.formatResponse(200, "User found", userFound)
-            } else {
-                return Utils.formatResponse(404, `User not found`, null)
-            }
-        }catch (error:any){
-            return Utils.formatResponse(500, `${error}`, null)
+            return Utils.formatResponse(500, 'Internal server error', null, error.message);
         }
     }
 }

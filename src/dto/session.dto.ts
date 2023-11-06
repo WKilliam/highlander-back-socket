@@ -1,7 +1,6 @@
 import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
-import {StatusAccess, StatusGame} from "../models/sessions.models";
-import {CellsDto} from "./cells.dto";
 import {GamekeyDto} from "./gamekey.dto";
+import {StatusGame} from "../models/room.content.models";
 
 @Entity('session')
 export class SessionDto{
@@ -19,10 +18,7 @@ export class SessionDto{
     updatedAt: string;
 
     @Column()
-    statusGame:StatusGame;
-
-    @Column()
-    statusAccess:StatusAccess;
+    statusGame:string;
 
     @Column({type: "varchar", length: 70})
     password:string;
@@ -30,9 +26,6 @@ export class SessionDto{
     @Column({type: "varchar", length: 70})
     name: string;
 
-    @Column()
-    freeplace: number = 8;
-
     @OneToMany(() => GamekeyDto, (gamekey) => gamekey.session)
-    cells: GamekeyDto[];
+    gamekeyDtos: GamekeyDto[];
 }
