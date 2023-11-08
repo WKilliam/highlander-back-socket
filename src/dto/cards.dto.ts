@@ -47,7 +47,8 @@ export class CardsDto {
     @Column()
     luk : number
 
-    @ManyToOne(() => DecksDto, deck => deck.cards) // Définissez cette relation pour lier une carte à un deck.
+    @ManyToOne(() => DecksDto, deck => deck.id, { eager: true, onDelete: 'CASCADE' }) // Définissez cette relation pour lier une carte à un deck.
+    @JoinColumn({ name: 'deck_id' })
     deck: DecksDto;
 
     @ManyToMany(() => CapacityDto, (capacity) => capacity.cards)

@@ -32,7 +32,7 @@ export class DecksDto {
     @Column()
     count: number;
 
-    @OneToMany(() => CardsDto, card => card.deck, { cascade: true, onDelete: 'CASCADE' })
+    @OneToMany(() => CardsDto, card => card.deck)
     cards: CardsDto[];
 
 }

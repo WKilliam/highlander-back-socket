@@ -27,18 +27,18 @@ module.exports = (io: any) => {
         })
 
         socket.on('join-session', async (data: JoinSessionSocket) => {
-            socket.rooms.forEach(room => {
-                socket.leave(room);
-            });
-            socket.join(`${socketEndPoints}-${data.room}`);
-            console.log(`${socket.id} joined session: ${socketEndPoints}-${data.room}`)
-            let parties: FormatRestApiModels = Utils.partiesDataSocket(data.room)
-            let formatSocket: FormatSocketModels = Utils.formatSocketMessage(
-                `${socketEndPoints}-${data.room}`,
-                parties.data,
-                `${socket.id} joined session: ${socketEndPoints}-${data.room} , complete message : ${parties.message}`,
-                parties.code, parties.error)
-            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, formatSocket);
+            // socket.rooms.forEach(room => {
+            //     socket.leave(room);
+            // });
+            // socket.join(`${socketEndPoints}-${data.room}`);
+            // console.log(`${socket.id} joined session: ${socketEndPoints}-${data.room}`)
+            // let parties: FormatRestApiModels = Utils.partiesDataSocket(data.room)
+            // let formatSocket: FormatSocketModels = Utils.formatSocketMessage(
+            //     `${socketEndPoints}-${data.room}`,
+            //     parties.data,
+            //     `${socket.id} joined session: ${socketEndPoints}-${data.room} , complete message : ${parties.message}`,
+            //     parties.code, parties.error)
+            // io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, formatSocket);
         })
 
 

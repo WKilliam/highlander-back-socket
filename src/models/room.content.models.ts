@@ -19,11 +19,8 @@ export enum EntityStatus {
 }
 
 export interface SessionCreated {
-    ownerId: number
     createdAt: string
     name: string,
-    updatedAt: string,
-    statusAccess: string,
     password: string,
     mapId: number,
     teamNames: Array<string>;

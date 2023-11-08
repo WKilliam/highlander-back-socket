@@ -5,10 +5,10 @@ import {CellsDto} from "./cells.dto";
 export class MapsDto {
 
     @PrimaryGeneratedColumn()
-    id: number
+    id: number;
 
-    @Column({name: 'background_image',type: 'varchar', length: 255})
-    backgroundImage: string
+    @Column({ name: 'background_image', type: 'varchar', length: 255 })
+    backgroundImage: string;
 
     @Column()
     width: number;
@@ -20,6 +20,5 @@ export class MapsDto {
     name: string;
 
     @OneToMany(() => CellsDto, (cell) => cell.map)
-    @JoinColumn()
     cells: CellsDto[];
 }

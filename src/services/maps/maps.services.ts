@@ -44,27 +44,8 @@ export class MapsServices {
                 relations: ['cells'],
                 where: {id: id}
             });
-            if (map) {
-                let mapSimplify: Maps = {
-                    id : map.id,
-                    name : map.name,
-                    backgroundImg : map.backgroundImage,
-                    width : map.width,
-                    height : map.height,
-                    cellsGrid : map.cells.map((cell) => {
-                        return {
-                            id : cell.id,
-                            x : cell.x,
-                            y : cell.y,
-                            value : cell.value
-                        }
-                    })
-                }
-                if (mapSimplify) {
-                    return Utils.formatResponse(200, 'Map Found', mapSimplify);
-                }else{
-                    return Utils.formatResponse(404, 'Map Not Found', mapSimplify);
-                }
+            if(map){
+                return Utils.formatResponse(200, 'Map Found', map);
             }else{
                 return Utils.formatResponse(404, 'Map Not Found', map);
             }

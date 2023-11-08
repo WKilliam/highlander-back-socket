@@ -1,11 +1,11 @@
-import {Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
 import {MapsDto} from "./maps.dto";
 
 @Entity('cells')
 export class CellsDto {
 
     @PrimaryGeneratedColumn()
-    id: number
+    id: number;
 
     @Column()
     x: number;
@@ -16,8 +16,7 @@ export class CellsDto {
     @Column()
     value: number;
 
-    @ManyToOne(() => MapsDto, (map) => map.cells, { eager: true, onDelete: 'CASCADE' })
+    @ManyToMany(() => MapsDto, (map) => map.id, { eager: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'mapId' })
-    map: MapsDto
-
+    map: MapsDto;
 }

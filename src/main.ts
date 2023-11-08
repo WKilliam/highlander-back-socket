@@ -12,8 +12,6 @@ import EventsController from "./controller/events/events.controller";
 import DecksController from "./controller/decks/decks.controller";
 import UsersController from "./controller/users/users.controller";
 import cors from "cors";
-import JsonController from "./controller/json/json";
-import {Socket} from "net";
 import CapacityController from "./controller/capacity/capacity.controller";
 app.use(express.json());
 app.use(cors(corsApp));
@@ -31,7 +29,6 @@ app.use('/events',EventsController);
 app.use('/decks',DecksController);
 app.use('/capacity',CapacityController);
 app.use('/user',UsersController);
-app.use('/json',JsonController);
 
 httpServer.listen(port, () => console.log(`listening on port ${port}`));
 

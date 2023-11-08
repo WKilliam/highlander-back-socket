@@ -1,4 +1,4 @@
-import {JsonconceptorService} from "../services/poutchdb/jsonconceptor.service";
+
 import {FormatRestApiModels} from "../models/formatRestApi.models";
 import {Cells, GridLimit, Maps} from "../models/maps.models";
 import {FormatSocketModels} from "../models/formatSocket.models";
@@ -118,21 +118,6 @@ export class Utils {
         return result;
     }
 
-    static createGameKeySession(testingVersion: boolean): string {
-        let characters: string;
-        if (testingVersion) {
-            characters = 'AB';
-        } else {
-            characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        }
-        let result = '';
-        const charactersLength = characters.length;
-        for (let i = 0; i < 5; i++) {
-            result += characters.charAt(Math.floor(Math.random() * charactersLength));
-        }
-        return result;
-    }
-
 
     static formatResponse(code: number, message?: string, data?: any, error?: any): FormatRestApiModels {
         let messageFormat: FormatRestApiModels;
@@ -155,21 +140,6 @@ export class Utils {
         }
     }
 
-    static requestFormatCommon(response: any, format: FormatRestApiModels): any {
-        if (format === undefined) {
-            return response.status(500).json({message: "Erreur interne du serveur."})
-        } else if (format.data !== null || format.data) {
-            return response.status(format.code).json(format.data);
-        } else {
-            return response.status(format.code).json(format.error);
-        }
-    }
-
-    static arrayConvertId(cards: Array<any>) {
-        return cards.flatMap(item => item.id);
-    }
-
-
     static formatSocketMessage(
         room: string,
         data: any,
@@ -186,17 +156,6 @@ export class Utils {
             error: error
         }
         return formatSocket
-    }
-
-    static partiesDataSocket(roomjoin: string) {
-        try {
-            let received: FormatRestApiModels = JsonconceptorService.readJsonFile(`${roomjoin}/parties.json`)
-            if (!(received.code >= 200 && received.code <= 299)) return Utils.formatResponse(500, 'Internal Server Error', null, received.error);
-            let partiesFullBodyModels: SessionGame = JSON.parse(received.data);
-            return Utils.formatResponse(200, 'data.db body', partiesFullBodyModels);
-        } catch (error) {
-            return Utils.formatResponse(500, 'Internal Server Error', null, error);
-        }
     }
 
 
