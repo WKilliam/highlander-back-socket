@@ -2,3 +2,4 @@
 .env
 coverage
 parties
+src/utils/database/data.db
