@@ -1,5 +1,6 @@
 import {PlayerCards} from "./player.models";
 import {Cells} from "./maps.models";
+import {DecksDto} from "../dto/decks.dto";
 
 
 export enum action {
@@ -63,6 +64,11 @@ export interface CardDocumentSetter {
     commonLuck: number,
     commonSpeed: number,
     cellPosition: Cells,
+}
+
+export interface CardCreateArg {
+    cards: Array<CardsRestApi>,
+    deck: number
 }
 
 export interface CapacityRestApi {

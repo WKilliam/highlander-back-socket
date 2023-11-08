@@ -3,34 +3,18 @@ import {Router} from "express";
 const CardsController = Router();
 import {AppDataSource} from "../../utils/database/database.config";
 import {CardsServices} from "../../services/cards/cards.services";
-import {CardsRestApi} from "../../models/cards.models";
+import {CardCreateArg, CardsRestApi} from "../../models/cards.models";
 const cardsServices = new CardsServices(AppDataSource);
 
 
 CardsController.post('/new', async (req, res) => {
     const {
-name,
-        description,
-        image,
-        rarity,
-        atk,
-        def,
-        spd,
-        luk,
-        effects,
-        capacities,
+        cards,
+        deck
     } = req.body;
-    let card:CardsRestApi = {
-        name: name,
-        description: description,
-        image: image,
-        rarity: rarity,
-        atk: atk,
-        def: def,
-        spd: spd,
-        luk: luk,
-        effects: effects,
-        capacities: capacities,
+    let card:CardCreateArg = {
+        cards : cards,
+        deck : deck
     }
     const received = await cardsServices.create(card);
     res.status(received.code).json(received);
@@ -48,7 +32,7 @@ CardsController.get("/", async (
             error: 'ID is not Number'
         });
     }else{
-        const received = await cardsServices.getCapacityById(Number(id));
+        const received = await cardsServices.getCardById(Number(id));
         response.status(received.code).json(received);
     }
 });

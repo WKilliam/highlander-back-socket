@@ -1,4 +1,4 @@
-import {JsonconceptorService} from "../services/jsonconceptor/jsonconceptor.service";
+import {JsonconceptorService} from "../services/poutchdb/jsonconceptor.service";
 import {FormatRestApiModels} from "../models/formatRestApi.models";
 import {Cells, GridLimit, Maps} from "../models/maps.models";
 import {FormatSocketModels} from "../models/formatSocket.models";
@@ -193,7 +193,7 @@ export class Utils {
             let received: FormatRestApiModels = JsonconceptorService.readJsonFile(`${roomjoin}/parties.json`)
             if (!(received.code >= 200 && received.code <= 299)) return Utils.formatResponse(500, 'Internal Server Error', null, received.error);
             let partiesFullBodyModels: SessionGame = JSON.parse(received.data);
-            return Utils.formatResponse(200, 'data body', partiesFullBodyModels);
+            return Utils.formatResponse(200, 'data.db body', partiesFullBodyModels);
         } catch (error) {
             return Utils.formatResponse(500, 'Internal Server Error', null, error);
         }

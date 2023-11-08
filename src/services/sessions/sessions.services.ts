@@ -6,7 +6,7 @@ import {Utils} from "../../utils/utils";
 import {ClientDto} from "../../dto/clients.dto";
 import {SessionCreated, SessionGame, StatusGame} from "../../models/room.content.models";
 import {MapsDto} from "../../dto/maps.dto";
-import {PouchdbServices} from "../jsonconceptor/pouchdb.services";
+import {PouchdbServices} from "../poutchdb/pouchdb.services";
 import {FormatRestApiModels} from "../../models/formatRestApi.models";
 import {PlayerLobby} from "../../models/player.models";
 

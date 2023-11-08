@@ -42,7 +42,7 @@ DecksController.get("/", async (
             error: 'ID is not Number'
         });
     }else{
-        const received = await decksService.getCapacityById(Number(id));
+        const received = await decksService.getDeckById(Number(id));
         response.status(received.code).json(received);
     }
 });

@@ -47,8 +47,7 @@ export class CardsDto {
     @Column()
     luk : number
 
-    @ManyToOne(() => DecksDto, (deck) => deck.cards)
-    @JoinColumn({ name: 'deckId' })
+    @ManyToOne(() => DecksDto, deck => deck.cards) // Définissez cette relation pour lier une carte à un deck.
     deck: DecksDto;
 
     @ManyToMany(() => CapacityDto, (capacity) => capacity.cards)
@@ -59,7 +58,7 @@ export class CardsDto {
     @JoinTable({ name: 'cards_to_effects'})
     effects: EffectsDto[];
 
-    @ManyToMany(() => ClientDto, (client) => client.cards)
+    @ManyToOne(() => ClientDto, (client) => client.userCards)
     @JoinTable({ name: 'cards_to_clients'})
     clients: ClientDto[];
 }

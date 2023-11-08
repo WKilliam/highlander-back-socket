@@ -13,12 +13,14 @@ import {CapacityDto} from "../../dto/capacity.dto";
 import PouchDB from "pouchdb";
 
 export const AppDataSource  = new DataSource({
-    type: "mariadb",
-    host: "163.172.34.147",
-    port: 3306,
-    username: "bearman",
-    password: "bearman",
-    database: "mydb",
+    // type: "mariadb",
+    // host: "localhost",
+    // port: 3306,
+    // username: "bearman",
+    // password: "bearman",
+    // database: "mydb",
+    type: 'sqlite',
+    database: 'src/utils/database/data.db',
     synchronize: true,
     logging: true,
     entities: [
