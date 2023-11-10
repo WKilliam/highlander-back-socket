@@ -16,7 +16,7 @@ export interface UserSubscription{
 }
 
 export interface UserFrontData {
-    token?: TokenData;
+    token: string;
     pseudo: string;
     avatar: string;
     bearcoins: number;

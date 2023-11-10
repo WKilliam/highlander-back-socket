@@ -53,4 +53,38 @@ export class MapsServices {
             return Utils.formatResponse(500, 'Internal Server Error', error.data);
         }
     }
+
+    async getAllMaps() {
+        try {
+            const dataSource: DataSource = await this.dataSourceConfig;
+            const mapsRepository: Repository<MapsDto> = dataSource.getRepository(MapsDto);
+            const maps = await mapsRepository.find({
+                relations: ['cells'],
+            });
+            if (maps) {
+                let  mapsSimplify= maps.map((map: MapsDto) => {
+                    return {
+                        id: map.id,
+                        backgroundImage: map.backgroundImage,
+                        height: map.height,
+                        width: map.width,
+                        name: map.name,
+                        cellsGrid : map.cells.map((cell) => {
+                            return {
+                                id: cell.id,
+                                x: cell.x,
+                                y: cell.y,
+                                value: cell.value,
+                            }
+                        })
+                    }
+                })
+                return Utils.formatResponse(200, 'Maps Found', mapsSimplify);
+            } else {
+                return Utils.formatResponse(404, 'Maps Not Found', maps);
+            }
+        } catch (error: any) {
+            return Utils.formatResponse(500, 'Internal Server Error', error.data);
+        }
+    }
 }

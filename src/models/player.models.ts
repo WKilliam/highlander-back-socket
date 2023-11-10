@@ -6,7 +6,6 @@ export interface PlayerCards {
 }
 
 export interface PlayerLobby {
-    id: number;
     score: number;
     avatar: string;
     pseudo: string;

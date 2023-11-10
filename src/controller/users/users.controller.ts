@@ -37,6 +37,7 @@ UsersController.post('/login', async (request, response) => {
         email : email,
     }
     const received = await userService.login(user);
+    console.log(received)
     response.status(received.code).json(received);
 })
 

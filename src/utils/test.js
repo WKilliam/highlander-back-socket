@@ -1,4 +1,4 @@
-import {Encryptor} from "./crypto/encryptor";
+import {Jsonwebtoken} from "./tokennezer/jsonwebtoken";
 
-let value = Encryptor.encrypt("test").encryptedData;
+let value = Jsonwebtoken.encrypt("test").encryptedData;
 console.log(value);

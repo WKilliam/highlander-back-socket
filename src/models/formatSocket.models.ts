@@ -11,20 +11,13 @@ export interface FormatSocketModels{
 
 export interface JoinSessionSocket {
     room: string;
-    avatar: string;
-    pseudo: string;
+    token: string;
 }
 
-export interface SelectTeam {
+export interface JoinSessionTeam {
     room: string;
-    avatar: string;
-    pseudo: string;
+    lobbyPosition: number;
+    teamPosition: number;
+    cardPosition: number;
 }
 
-export interface SelectCard {
-    room: string,
-    id: number
-    avatar: string,
-    pseudo: string,
-    card : CardEntitySimplify
-}

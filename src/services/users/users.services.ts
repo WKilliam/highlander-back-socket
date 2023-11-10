@@ -5,18 +5,16 @@ import {Utils} from "../../utils/utils";
 import {CardsDto} from "../../dto/cards.dto";
 import {TokenData, UserFrontData, UsersLogin, UserSubscription} from "../../models/users.models";
 import {DecksDto} from "../../dto/decks.dto";
-import {Encryptor} from "../../utils/crypto/encryptor";
+import { TokenManager} from "../../utils/tokennezer/jsonwebtoken";
 import {CardsRestApi} from "../../models/cards.models";
 import {DecksRestApi, DecksRestApiUser} from "../../models/decks.models";
 
 export class UsersServices {
 
     dataSourceConfig: Promise<DataSource>;
-    encryptor: Encryptor;
 
     constructor(dataSourceConfig: Promise<DataSource>) {
         this.dataSourceConfig = dataSourceConfig;
-        this.encryptor = new Encryptor('test');
     }
 
     async create(user: UserSubscription) {
@@ -57,7 +55,6 @@ export class UsersServices {
                 where: {id: In(allCardIds)},
                 relations: ['effects', 'capacities']
             });
-            console.log(cards)
 
             const createUser = usersDtoRepository.create({
                 pseudo: user.pseudo,
@@ -81,7 +78,7 @@ export class UsersServices {
             const dataSource: DataSource = await this.dataSourceConfig;
             const usersDtoRepository: Repository<ClientDto> = dataSource.getRepository(ClientDto);
             const existingUser = await usersDtoRepository.findOne({
-                select: ['id', 'pseudo', 'email', 'avatar', 'bearcoin'],
+                select: ["id",'pseudo', 'email', 'password', 'avatar', 'bearcoin'],
                 where: {email: user.email, password: user.password},
                 relations: [
                     'userCards',
@@ -92,7 +89,61 @@ export class UsersServices {
             if (!existingUser) {
                 return Utils.formatResponse(400, 'Email or password incorrect', null, null);
             }
-            return Utils.formatResponse(200, 'User logged in successfully', existingUser, null);
+            const tokenManager = new TokenManager('votre_clé_secrète');
+            const token = tokenManager.createToken({
+                userId: existingUser.id,
+                email: existingUser.email,
+                password: existingUser.password,
+                roles: ['user']
+            });
+            if (token.code < 200 || token.code > 299) {
+                return Utils.formatResponse(token.code, `${token.message}`, token.data, token.error);
+            }
+            const decks: Array<DecksRestApiUser> = [];
+            const cards: Array<CardsRestApi> = [];
+
+            for (let i = 0; i < existingUser.userCards.length; i++) {
+                cards.push({
+                    id: existingUser.userCards[i].id,
+                    name: existingUser.userCards[i].name,
+                    description: existingUser.userCards[i].description,
+                    image: existingUser.userCards[i].image,
+                    rarity: existingUser.userCards[i].rarity,
+                    atk: existingUser.userCards[i].atk,
+                    def: existingUser.userCards[i].def,
+                    spd: existingUser.userCards[i].spd,
+                    luk: existingUser.userCards[i].luk,
+                    effects: existingUser.userCards[i].effects.map((effect) => effect.id),
+                    capacities: existingUser.userCards[i].capacities.map((capacity) => capacity.id),
+                    deckId: existingUser.userCards[i].deck.id
+                })
+                decks.push({
+                    name: existingUser.userCards[i].deck.name,
+                    description: existingUser.userCards[i].deck.description,
+                    image: existingUser.userCards[i].deck.image,
+                    type: existingUser.userCards[i].deck.type,
+                    rarity: existingUser.userCards[i].deck.rarity,
+                })
+            }
+            const tokenData: UserFrontData = {
+                token: token.data,
+                pseudo: existingUser.pseudo,
+                avatar: existingUser.avatar,
+                bearcoins: existingUser.bearcoin,
+                decks: decks.filter(
+                    (deck, index, self) =>
+                        index ===
+                        self.findIndex((d) =>
+                            d.name === deck.name &&
+                            d.description === deck.description &&
+                            d.image === deck.image &&
+                            d.type === deck.type &&
+                            d.rarity === deck.rarity
+                        )
+                ),
+                cards: cards
+            }
+            return Utils.formatResponse(200, 'User logged in successfully', tokenData, null);
         } catch (error: any) {
             return Utils.formatResponse(500, 'Internal server error', null, error.message);
         }

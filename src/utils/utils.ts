@@ -1,19 +1,9 @@
-
 import {FormatRestApiModels} from "../models/formatRestApi.models";
-import {Cells, GridLimit, Maps} from "../models/maps.models";
+import {Cells, GridLimit} from "../models/maps.models";
 import {FormatSocketModels} from "../models/formatSocket.models";
-import {
-    EntityPlaying,
-    EntityStatus,
-    Game,
-    SessionGame,
-    SessionStatusGame,
-    StatusGame
-} from "../models/room.content.models";
+import {EntityPlaying, EntityStatus} from "../models/room.content.models";
+import {PlayerLobby} from "../models/player.models";
 import {CardByEntityPlaying} from "../models/cards.models";
-import {PlayerCards} from "../models/player.models";
-import {MapsDto} from "../dto/maps.dto";
-import {ClientDto} from "../dto/clients.dto";
 
 export class Utils {
 
@@ -158,116 +148,105 @@ export class Utils {
         return formatSocket
     }
 
+    static initTeamEntityPlaying(teamName: Array<string>) :Array<EntityPlaying> {
+        let teamEntityPlaying: Array<EntityPlaying> = [];
+        for (let i = 0; i < teamName.length; i++) {
+            teamEntityPlaying.push({
+                name: teamName[i],
+                commonLife: 0,
+                commonMaxLife: 0,
+                commonAttack: 0,
+                commonDefense: 0,
+                commonLuck: 0,
+                commonSpeed: 0,
+                cellPosition: {
+                    id: -1,
+                    x: -1,
+                    y: -1,
+                    value: -1
+                },
+                entityStatus: EntityStatus.ALIVE,
+                cardsPlayer: [
+                    {
+                        player: {
+                            avatar: '',
+                            pseudo: '',
+                        },
+                        atk: 0,
+                        def: 0,
+                        spd: 0,
+                        luk: 0,
+                        rarity: '',
+                        status: EntityStatus.ALIVE,
+                        imageSrc: '',
+                        effects: [],
+                        capacities: [],
+                    },
+                    {
+                        player: {
+                            avatar: '',
+                            pseudo: '',
+                        },
+                        atk: 0,
+                        def: 0,
+                        spd: 0,
+                        luk: 0,
+                        rarity: '',
+                        status: EntityStatus.ALIVE,
+                        imageSrc: '',
+                        effects: [],
+                        capacities: [],
+                    }
+                ],
+            });
+        }
+        return teamEntityPlaying;
+    }
 
-    static initSessionGame(roomjoin: string, teamNames: Array<string>,mapsData:MapsDto) {
-        let sessionStatusGame: SessionStatusGame = {
-            room: roomjoin,
-            status: StatusGame.LOBBY,
-            turnCount: 0,
-            lobby: [],
-            entityTurn: [],
-            teamNames: teamNames
-        }
-        let tab = this.initTeamEntity()
-        let game: Game = {
-            teams: tab.player,
-            monsters: tab.monster
-        }
-        let cellgrid : Cells[] = mapsData.cells.map((cell) => {
-            return {
-                id: cell.id,
-                x: cell.x,
-                y: cell.y,
-                value: cell.value,
+    static initTeamEntityPlayingWithCards(session: Array<EntityPlaying>, lobby: Array<PlayerLobby>, lobbyPosition: number, teamPosition: number, cardPosition: number) {
+        const user = lobby[lobbyPosition];
+        // Mettre à jour la position dans la session actuelle
+        const cards = session[teamPosition]?.cardsPlayer as Array<CardByEntityPlaying>;
+        if (cards && cards.length < 3 && cardPosition >= 0 && cardPosition < cards.length) {
+            const card = cards[cardPosition];
+            if (
+                user.pseudo !== card?.player?.pseudo &&
+                user.avatar !== card?.player?.avatar &&
+                card?.player?.pseudo === '' &&
+                card?.player?.avatar === ''
+            ) {
+                card.player = {
+                    avatar: user.avatar,
+                    pseudo: user.pseudo,
+                };
+                card.atk = 0;
+                card.def = 0;
+                card.spd = 0;
+                card.luk = 0;
+                card.rarity = 'common';
+                card.status = EntityStatus.ALIVE;
+                card.imageSrc = '';
+                card.effects = [];
+                card.capacities = [];
+
+                // Vérifier si le joueur est dans une autre session et le supprimer le cas échéant
+                for (let i = 0; i < session.length; i++) {
+                    if (i !== teamPosition) {
+                        const otherSession = session[i];
+                        const userIndexInOtherSession = otherSession.cardsPlayer?.findIndex(card => card.player?.pseudo === user.pseudo);
+
+                        if (userIndexInOtherSession !== undefined && userIndexInOtherSession !== -1) {
+                            otherSession.cardsPlayer?.splice(userIndexInOtherSession, 1);
+                        }
+                    }
+                }
+            } else {
+                return Utils.formatResponse(409, 'Place not available', null, 'Place not available');
             }
-        })
-        let maps: Maps = {
-            backgroundImg: mapsData.backgroundImage,
-            width: mapsData.width,
-            height: mapsData.height,
-            name: mapsData.name,
-            cellsGrid: cellgrid
+        } else {
+            return Utils.formatResponse(204, 'Place available', null, 'Place available');
         }
-        let sessionGame: SessionGame = {
-            sessionStatusGame: sessionStatusGame,
-            game: game,
-            maps: maps
-        }
-        return sessionGame
+        return Utils.formatResponse(200, 'Success', session, null);
     }
 
-    static initTeamEntity() {
-        let player: PlayerCards = {
-            avatar: '',
-            pseudo: '',
-        }
-        let cardsPlayer: CardByEntityPlaying = {
-            id: -1,
-            atk: 0,
-            def: 0,
-            spd: 0,
-            luk: 0,
-            rarity: 'commun',
-            imageSrc: '',
-            effects: [],
-            attacks: [],
-            player: player
-        }
-        let cardsMonster: CardByEntityPlaying = {
-            id: -1,
-            atk: -1,
-            def: 1,
-            spd: -1,
-            luk: -1,
-            rarity: 'commun',
-            imageSrc: '',
-            effects: [],
-            attacks: []
-        }
-        let cells: Cells = {
-            id: -1,
-            x: -1,
-            y: -1,
-            value: -1
-        }
-        let arrayPlayer: Array<CardByEntityPlaying> = []
-        let arrayMonster: Array<CardByEntityPlaying> = []
-        arrayPlayer.push(cardsPlayer)
-        arrayPlayer.push(cardsPlayer)
-        arrayMonster.push(cardsMonster)
-        arrayMonster.push(cardsMonster)
-        let cardByEntityPlayingPlayer = {
-            name: '',
-            commonLife: -1,
-            commonMaxLife: -1,
-            commonAttack: -1,
-            commonDefense: -1,
-            commonLuck: -1,
-            commonSpeed: -1,
-            cellPosition: cells,
-            entityStatus: EntityStatus.ALIVE,
-            cardsPlayer: arrayPlayer,
-        }
-        let teamEntityMonster = {
-            name: '',
-            commonLife: -1,
-            commonMaxLife: -1,
-            commonAttack: -1,
-            commonDefense: -1,
-            commonLuck: -1,
-            commonSpeed: -1,
-            cellPosition: cells,
-            entityStatus: EntityStatus.ALIVE,
-            cardsPlayer: arrayMonster,
-        }
-        let arrayTeamEntityMonster: Array<EntityPlaying> = []
-        let arrayTeamEntityPlayer: Array<EntityPlaying> = []
-        arrayTeamEntityPlayer.push(cardByEntityPlayingPlayer)
-        arrayTeamEntityPlayer.push(cardByEntityPlayingPlayer)
-        arrayTeamEntityPlayer.push(cardByEntityPlayingPlayer)
-        arrayTeamEntityPlayer.push(cardByEntityPlayingPlayer)
-        arrayTeamEntityMonster.push(teamEntityMonster)
-        arrayTeamEntityMonster.push(teamEntityMonster)
-        return {player: arrayTeamEntityPlayer, monster: arrayTeamEntityMonster}
-    }
 }

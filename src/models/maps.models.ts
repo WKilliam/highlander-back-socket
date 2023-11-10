@@ -10,6 +10,7 @@ export interface Maps {
 }
 
 export interface MapsSimplify {
+    id?:number,
     backgroundImage: string;
     height: number;
     width: number;

@@ -1,6 +1,7 @@
 import {PlayerCards} from "./player.models";
 import {Cells} from "./maps.models";
 import {DecksDto} from "../dto/decks.dto";
+import {EntityStatus} from "./room.content.models";
 
 
 export enum action {
@@ -28,16 +29,16 @@ export interface CardEntitySimplify {
 }
 
 export interface CardByEntityPlaying {
-    id: number;
     player?: PlayerCards
     atk: number;
     def: number;
     spd: number;
     luk: number;
     rarity: string;
+    status: EntityStatus;
     imageSrc: string;
     effects: Array<Effects>;
-    attacks: Array<Attack>;
+    capacities: Array<Attack>;
 }
 
 export interface CardsRestApi{

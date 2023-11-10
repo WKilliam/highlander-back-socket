@@ -19,6 +19,6 @@ export class MapsDto {
     @Column()
     name: string;
 
-    @OneToMany(() => CellsDto, (cell) => cell.map)
+    @OneToMany(() => CellsDto, (cells) => cells.map)
     cells: CellsDto[];
 }
