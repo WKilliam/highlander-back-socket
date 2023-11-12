@@ -3,7 +3,8 @@ import {SessionsServices} from "../../services/sessions/sessions.services";
 import {AppDataSource} from "../../utils/database/database.config";
 import {SessionCreated} from "../../models/room.content.models";
 import {CardCreateArg} from "../../models/cards.models";
-import {JoinSessionSocket} from "../../models/formatSocket.models";
+import {JoinSessionSocket, JoinSessionTeamCard} from "../../models/formatSocket.models";
+import {FormatRestApiModels} from "../../models/formatRestApi.models";
 const sessionsServices: SessionsServices = new SessionsServices(AppDataSource);
 const SessionController = Router();
 
@@ -34,7 +35,7 @@ SessionController.get('/', async (request, response) => {
 
 SessionController.post('/activeForPlayer', async (request, response) => {
     const {token} = request.body;
-    const received = await sessionsServices.activeForPlayer(token)
+    const received :FormatRestApiModels = await sessionsServices.activeForPlayer(token)
     response.status(received.code).json(received);
 });
 
@@ -67,13 +68,28 @@ SessionController.post('/joinTeam', async (req, res) => {
 
 SessionController.post('/cardSelected', async (req, res) => {
     const {
-        room, lobbyPosition,teamPosition,cardPosition
+        room,
+        lobbyPosition,
+        teamPosition,
+        cardPosition,
+        cardByPlayer,
     } = req.body;
-    const received = await sessionsServices
-        .cardSelected(
-            room, lobbyPosition,teamPosition,cardPosition
-        );
+    let joinCard:JoinSessionTeamCard = {
+        room: room,
+        lobbyPosition: lobbyPosition,
+        teamPosition: teamPosition,
+        cardPosition: cardPosition,
+        cardByPlayer: cardByPlayer,
+    }
+    const received:FormatRestApiModels = await sessionsServices.cardSelected(joinCard);
     res.status(received.code).json(received);
+});
+
+
+SessionController.get('/startGame', async (request, response) => {
+    const room = request.query.room as string;
+    const received = await sessionsServices.startGame(room);
+    response.status(received.code).json(received);
 });
 
 

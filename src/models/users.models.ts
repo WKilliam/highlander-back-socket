@@ -1,5 +1,5 @@
 import {DecksRestApi, DecksRestApiUser} from "./decks.models";
-import {CardByEntityPlaying, CardsRestApi} from "./cards.models";
+import {CardByEntityPlaying, CardEntitySimplify, CardsRestApi} from "./cards.models";
 
 export interface UsersLogin {
     email: string;
@@ -21,7 +21,7 @@ export interface UserFrontData {
     avatar: string;
     bearcoins: number;
     decks: Array<DecksRestApiUser>;
-    cards: Array<CardsRestApi>;
+    cards: Array<CardEntitySimplify>;
 }
 
 

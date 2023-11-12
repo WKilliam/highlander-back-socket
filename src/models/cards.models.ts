@@ -22,10 +22,12 @@ export interface CardEntitySimplify {
     def: number;
     spd: number;
     luk: number;
+    name: string;
+    description: string;
     rarity: string;
-    imageSrc: string;
+    image: string;
     effects: Array<Effects>;
-    attacks: Array<Attack>;
+    capacities: Array<Attack>;
 }
 
 export interface CardByEntityPlaying {
@@ -34,6 +36,8 @@ export interface CardByEntityPlaying {
     def: number;
     spd: number;
     luk: number;
+    name: string;
+    description: string;
     rarity: string;
     status: EntityStatus;
     imageSrc: string;

@@ -6,7 +6,7 @@ import {CardsDto} from "../../dto/cards.dto";
 import {TokenData, UserFrontData, UsersLogin, UserSubscription} from "../../models/users.models";
 import {DecksDto} from "../../dto/decks.dto";
 import { TokenManager} from "../../utils/tokennezer/jsonwebtoken";
-import {CardsRestApi} from "../../models/cards.models";
+import {CardEntitySimplify, CardsRestApi} from "../../models/cards.models";
 import {DecksRestApi, DecksRestApiUser} from "../../models/decks.models";
 
 export class UsersServices {
@@ -100,7 +100,7 @@ export class UsersServices {
                 return Utils.formatResponse(token.code, `${token.message}`, token.data, token.error);
             }
             const decks: Array<DecksRestApiUser> = [];
-            const cards: Array<CardsRestApi> = [];
+            const cards: Array<CardEntitySimplify> = [];
 
             for (let i = 0; i < existingUser.userCards.length; i++) {
                 cards.push({
@@ -113,9 +113,8 @@ export class UsersServices {
                     def: existingUser.userCards[i].def,
                     spd: existingUser.userCards[i].spd,
                     luk: existingUser.userCards[i].luk,
-                    effects: existingUser.userCards[i].effects.map((effect) => effect.id),
-                    capacities: existingUser.userCards[i].capacities.map((capacity) => capacity.id),
-                    deckId: existingUser.userCards[i].deck.id
+                    effects: existingUser.userCards[i].effects,
+                    capacities: existingUser.userCards[i].capacities
                 })
                 decks.push({
                     name: existingUser.userCards[i].deck.name,
@@ -141,7 +140,21 @@ export class UsersServices {
                             d.rarity === deck.rarity
                         )
                 ),
-                cards: cards
+                cards: cards.map(card=>{
+                    return {
+                        id: card.id,
+                        name: card.name,
+                        description: card.description,
+                        image: card.image,
+                        rarity: card.rarity,
+                        atk: card.atk,
+                        def: card.def,
+                        spd: card.spd,
+                        luk: card.luk,
+                        effects: card.effects,
+                        capacities: card.capacities
+                    }
+                })
             }
             return Utils.formatResponse(200, 'User logged in successfully', tokenData, null);
         } catch (error: any) {

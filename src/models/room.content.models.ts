@@ -5,8 +5,10 @@ import {PlayerLobby} from "./player.models";
 export enum StatusGame {
     LOBBY = "LOBBY",
     START = "START",
+    GAME = "GAME",
     END = "END",
 }
+
 
 export enum EntityStatus {
     ALIVE = "ALIVE",

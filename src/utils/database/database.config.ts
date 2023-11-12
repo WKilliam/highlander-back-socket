@@ -17,7 +17,7 @@ export const AppDataSource  = new DataSource({
     // password: "bearman",
     // database: "mydb",
     type: 'sqlite',
-    database: 'src/utils/database/data.db',
+    database: 'db/data.db',
     synchronize: true,
     logging: true,
     entities: [

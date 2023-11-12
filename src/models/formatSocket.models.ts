@@ -21,3 +21,10 @@ export interface JoinSessionTeam {
     cardPosition: number;
 }
 
+export interface JoinSessionTeamCard {
+    room: string;
+    lobbyPosition: number;
+    teamPosition: number;
+    cardPosition: number;
+    cardByPlayer:number
+}

@@ -10,8 +10,9 @@ import {TokenManager} from "../../utils/tokennezer/jsonwebtoken";
 import {UsersServices} from "../users/users.services";
 import {CardByEntityPlaying} from "../../models/cards.models";
 import {ClientDto} from "../../dto/clients.dto";
-import {JoinSessionSocket, JoinSessionTeam} from "../../models/formatSocket.models";
+import {JoinSessionSocket, JoinSessionTeam, JoinSessionTeamCard} from "../../models/formatSocket.models";
 import {PlayerLobby} from "../../models/player.models";
+import {CardsDto} from "../../dto/cards.dto";
 
 interface Document {
     _id: string;
@@ -72,6 +73,10 @@ export class SessionsServices {
 
     async getSession(room: string) {
         try {
+            const existed = await this.roomExists(room)
+            if (existed.code < 200 || existed.code > 299) {
+                return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
+            }
             const pouchDB = new PouchDB(`${this.directory}/${room}`);
             const doc: Document = await pouchDB.get(room);
             return Utils.formatResponse(200, 'Document créé avec succès', doc, null);
@@ -88,7 +93,6 @@ export class SessionsServices {
             return Utils.formatResponse(500, 'Room not found', null, null);
         }
     }
-
 
 
     async create(session: SessionCreated) {
@@ -194,9 +198,9 @@ export class SessionsServices {
                 cards: login.data.cards,
             })
             const response = await pouchDB.put(doc);
-            if(response.ok){
+            if (response.ok) {
                 return Utils.formatResponse(200, 'Document créé avec succès', doc, null);
-            }else{
+            } else {
                 return Utils.formatResponse(500, 'Erreur lors de la création du document JSON', null, response);
             }
         } catch (error: any) {
@@ -206,7 +210,10 @@ export class SessionsServices {
 
     async joinTeam(data: JoinSessionTeam) {
         try {
-            const existed:FormatRestApiModels = await this.roomExists(data.room)
+            if (data.lobbyPosition < 0 || data.lobbyPosition > 7 || data.teamPosition < 0 || data.teamPosition > 3 || data.cardPosition < 0 || data.cardPosition > 1) {
+                return Utils.formatResponse(500, 'Position not valid', null, null);
+            }
+            const existed: FormatRestApiModels = await this.roomExists(data.room)
             if (existed.code < 200 || existed.code > 299) {
                 return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
             }
@@ -216,11 +223,10 @@ export class SessionsServices {
             if (!doc.game || !doc.game.teams) {
                 return Utils.formatResponse(500, 'Game or teams not found', null, null);
             }
-            const team = doc.game.teams[data.teamPosition].cardsPlayer as Array<CardByEntityPlaying>;
             let session = doc.game.teams
             let lobby = doc.sessionStatusGame.lobby
-            let newGame = Utils.initTeamEntityPlayingWithCards(session,lobby,data.lobbyPosition,data.teamPosition,data.cardPosition)
-            if (newGame.code < 200 || newGame.code > 299) {
+            let newGame = Utils.initTeamEntityPlayingWithCards(session, lobby, data.lobbyPosition, data.teamPosition, data.cardPosition)
+            if (newGame.code < 200 || newGame.code > 299 || !newGame) {
                 return Utils.formatResponse(newGame.code, `${newGame.message}`, newGame.data, newGame.error);
             }
             doc.game.teams = newGame.data;
@@ -232,33 +238,87 @@ export class SessionsServices {
         }
     }
 
-    async cardSelected(room: string, lobbyPosition: number, teamPosition: number, cardPosition: number) {
+    async cardSelected(data:JoinSessionTeamCard) {
         try {
+            const existed = await this.roomExists(data.room)
+            if (existed.code < 200 || existed.code > 299) {
+                return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
+            }
+            const pouchDB = new PouchDB(`${this.directory}/${data.room}`);
+            let doc: Document = await pouchDB.get(data.room);
+            // Vérifiez si doc.game et doc.game.teams existent
+            if (!doc.game || !doc.game.teams) {
+                return Utils.formatResponse(500, 'Game or teams not found', null, null);
+            }
+            let session = doc.game.teams
+            let lobby = doc.sessionStatusGame.lobby
+            let newGame = Utils.initPlaceTeamCard(data, session, lobby)
+            if (newGame.code < 200 || newGame.code > 299 || !newGame) {
+                return Utils.formatResponse(newGame.code, `${newGame.message}`, newGame.data, newGame.error);
+            }
+            doc.game.teams = newGame.data;
+            await pouchDB.put(doc);
+            const retrievedDoc = await pouchDB.get(data.room);
+            return Utils.formatResponse(200, 'Document créé avec succès', retrievedDoc, null);
+        } catch (error: any) {
+            return Utils.formatResponse(500, error.message, null, null);
+        }
+    }
+
+    async startGame(room: string) {
+        try{
+            const dataSource: DataSource = await this.dataSourceConfig;
+            const cardDtoRepository: Repository<CardsDto> = dataSource.getRepository(CardsDto);
             const existed = await this.roomExists(room)
             if (existed.code < 200 || existed.code > 299) {
                 return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
             }
             const pouchDB = new PouchDB(`${this.directory}/${room}`);
             let doc: Document = await pouchDB.get(room);
+            // Vérifiez si doc.game et doc.game.teams existent
             if (!doc.game || !doc.game.teams) {
                 return Utils.formatResponse(500, 'Game or teams not found', null, null);
             }
-            const team = doc.game.teams[teamPosition].cardsPlayer as Array<CardByEntityPlaying>;
-            const card = doc.sessionStatusGame.lobby[lobbyPosition].cards[cardPosition];
-            team[teamPosition].atk = card.atk;
-            team[teamPosition].def = card.def;
-            team[teamPosition].spd = card.spd;
-            team[teamPosition].luk = card.luk;
-            team[teamPosition].rarity = card.rarity;
-            team[teamPosition].imageSrc = card.imageSrc;
-            team[teamPosition].effects = card.effects;
-            team[teamPosition].capacities = card.capacities;
+            let needMinimumOnePlayer = Utils.getIfJustOnePlayerHaveCard(doc.game.teams)
+            if(!needMinimumOnePlayer){
+                return Utils.formatResponse(500, 'Need minimum one player have card', null, null);
+            }
+            const cards = await cardDtoRepository.find({
+                select: [
+                    "id",
+                    "name",
+                    "description",
+                    "image",
+                    "rarity",
+                    "atk",
+                    "def",
+                    "spd",
+                    "luk",
+                    "createdAt",
+                    "deck",
+                    "effects",
+                    "capacities"
+                ],
+                relations :[
+                    "deck",
+                    "effects",
+                    "capacities"
+                ],
+            });
+            if(!cards){
+                return Utils.formatResponse(500, 'Cards not found', null, null);
+            }
+            doc.sessionStatusGame.status = StatusGame.GAME;
+            doc.game.monsters = Utils.initMonsterEntityPlaying(cards,doc.maps.cellsGrid)
 
+            const monsterCells = doc.game.monsters.map(monster => {
+                return monster.cellPosition
+            })
+            doc.game.teams = Utils.placeEntityPlayer(doc.game.teams,doc.maps.cellsGrid,monsterCells)
             await pouchDB.put(doc);
             const retrievedDoc = await pouchDB.get(room);
             return Utils.formatResponse(200, 'Document créé avec succès', retrievedDoc, null);
-
-        } catch (error: any) {
+        }catch (error:any){
             return Utils.formatResponse(500, error.message, null, null);
         }
     }
@@ -279,12 +339,12 @@ export class SessionsServices {
             }
             // Récupérez la liste de toutes les sessions existantes
             const allSessions = this.getFilesInDirectory();
-            if (allSessions.length === 0) {
-                return Utils.formatResponse(500, 'No session found', null, null);
+            if (allSessions.length < 1) {
+                return Utils.formatResponse(500, 'No session existed', 'all Session list is empty', 'No session existed');
             }
-            try{
+            try {
                 for (const sessionName of allSessions) {
-                    try{
+                    try {
                         const pouchDB = new PouchDB(`${this.directory}/${sessionName}`);
                         const doc: Document = await pouchDB.get(sessionName);
                         for (let i = 0; i < doc.sessionStatusGame.lobby.length; i++) {
@@ -293,16 +353,18 @@ export class SessionsServices {
                                 return Utils.formatResponse(200, `Player inside session by ${sessionName}`, retrievedDoc, null);
                             }
                         }
-                    }catch (error:any){
+                    } catch (error: any) {
                         return Utils.formatResponse(500, error.message, null, 'Session not found');
                     }
                 }
                 return Utils.formatResponse(200, 'Player not inside session', null, null);
-            }catch (error: any) {
+            } catch (error: any) {
                 return Utils.formatResponse(500, error.message, null, null);
             }
         } catch (error: any) {
             return Utils.formatResponse(500, error.message, null, null);
         }
     }
+
+
 }

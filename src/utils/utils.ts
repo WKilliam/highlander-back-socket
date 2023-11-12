@@ -1,11 +1,39 @@
 import {FormatRestApiModels} from "../models/formatRestApi.models";
-import {Cells, GridLimit} from "../models/maps.models";
-import {FormatSocketModels} from "../models/formatSocket.models";
+import {Cells, GridLimit, Maps} from "../models/maps.models";
+import {FormatSocketModels, JoinSessionTeamCard} from "../models/formatSocket.models";
 import {EntityPlaying, EntityStatus} from "../models/room.content.models";
 import {PlayerLobby} from "../models/player.models";
 import {CardByEntityPlaying} from "../models/cards.models";
+import {CardsDto} from "../dto/cards.dto";
 
 export class Utils {
+
+    static randomName() {
+        let nomsMonstres = [
+            "Ombre Funeste",
+            "Griffes de Nuit",
+            "Fléau Ténébreux",
+            "Harpies Maudites",
+            "Gargouilles Infernales",
+            "Hydra de l'Ombre",
+            "Chimère Dévoreuse",
+            "Basilic Venimeux",
+            "Démons Sanguinaires",
+            "Minotaure Furieux",
+            "Spectres Vengeurs",
+            "Gobelins Maléfiques",
+            "Loups Nocturnes",
+            "Dragon de l'Abîme",
+            "Goules Affamées",
+            "Kraken Abyssal",
+            "Wyvernes Sombres",
+            "Banshees Hurlantes",
+            "Gobelins des Marais",
+            "Liche Immortelle"
+        ];
+        return nomsMonstres[Math.floor(Math.random() * nomsMonstres.length)];
+    }
+
 
     static createGrid(mapWidth: number, mapHeight: number): Cells[][] {
         const cellWidth = 32;
@@ -148,17 +176,17 @@ export class Utils {
         return formatSocket
     }
 
-    static initTeamEntityPlaying(teamName: Array<string>) :Array<EntityPlaying> {
+    static initTeamEntityPlaying(teamName: Array<string>): Array<EntityPlaying> {
         let teamEntityPlaying: Array<EntityPlaying> = [];
         for (let i = 0; i < teamName.length; i++) {
             teamEntityPlaying.push({
                 name: teamName[i],
-                commonLife: 0,
-                commonMaxLife: 0,
-                commonAttack: 0,
-                commonDefense: 0,
-                commonLuck: 0,
-                commonSpeed: 0,
+                commonLife: -1,
+                commonMaxLife: -1,
+                commonAttack: -1,
+                commonDefense: -1,
+                commonLuck: -1,
+                commonSpeed: -1,
                 cellPosition: {
                     id: -1,
                     x: -1,
@@ -172,10 +200,12 @@ export class Utils {
                             avatar: '',
                             pseudo: '',
                         },
-                        atk: 0,
-                        def: 0,
-                        spd: 0,
-                        luk: 0,
+                        atk: -1,
+                        def: -1,
+                        spd: -1,
+                        luk: -1,
+                        description: '',
+                        name: '',
                         rarity: '',
                         status: EntityStatus.ALIVE,
                         imageSrc: '',
@@ -187,10 +217,12 @@ export class Utils {
                             avatar: '',
                             pseudo: '',
                         },
-                        atk: 0,
-                        def: 0,
-                        spd: 0,
-                        luk: 0,
+                        atk: -1,
+                        def: -1,
+                        spd: -1,
+                        luk: -1,
+                        description: '',
+                        name: '',
                         rarity: '',
                         status: EntityStatus.ALIVE,
                         imageSrc: '',
@@ -203,50 +235,322 @@ export class Utils {
         return teamEntityPlaying;
     }
 
-    static initTeamEntityPlayingWithCards(session: Array<EntityPlaying>, lobby: Array<PlayerLobby>, lobbyPosition: number, teamPosition: number, cardPosition: number) {
-        const user = lobby[lobbyPosition];
-        // Mettre à jour la position dans la session actuelle
-        const cards = session[teamPosition]?.cardsPlayer as Array<CardByEntityPlaying>;
-        if (cards && cards.length < 3 && cardPosition >= 0 && cardPosition < cards.length) {
-            const card = cards[cardPosition];
-            if (
-                user.pseudo !== card?.player?.pseudo &&
-                user.avatar !== card?.player?.avatar &&
-                card?.player?.pseudo === '' &&
-                card?.player?.avatar === ''
-            ) {
-                card.player = {
-                    avatar: user.avatar,
-                    pseudo: user.pseudo,
-                };
-                card.atk = 0;
-                card.def = 0;
-                card.spd = 0;
-                card.luk = 0;
-                card.rarity = 'common';
-                card.status = EntityStatus.ALIVE;
-                card.imageSrc = '';
-                card.effects = [];
-                card.capacities = [];
-
-                // Vérifier si le joueur est dans une autre session et le supprimer le cas échéant
-                for (let i = 0; i < session.length; i++) {
-                    if (i !== teamPosition) {
-                        const otherSession = session[i];
-                        const userIndexInOtherSession = otherSession.cardsPlayer?.findIndex(card => card.player?.pseudo === user.pseudo);
-
-                        if (userIndexInOtherSession !== undefined && userIndexInOtherSession !== -1) {
-                            otherSession.cardsPlayer?.splice(userIndexInOtherSession, 1);
-                        }
-                    }
+    static initTeamEntityPlayingWithCards(
+        session: Array<EntityPlaying>,
+        lobby: Array<PlayerLobby>,
+        lobbyPosition: number,
+        teamPosition: number,
+        cardPosition: number) {
+        // Vérifier si la position dans cardPlayer n'est pas déjà prise
+        const existingPlayer = lobby[lobbyPosition]
+        const placeIsTaken = session[teamPosition].cardsPlayer ?? [];
+        if (placeIsTaken[cardPosition].player?.pseudo !== '' && placeIsTaken[cardPosition].player?.pseudo !== '') {
+            return Utils.formatResponse(400, 'Place is not free.', null, null);
+        } else {
+            if (placeIsTaken[cardPosition].player !== undefined) {
+                placeIsTaken[cardPosition] = {
+                    atk: -1,
+                    def: -1,
+                    spd: -1,
+                    luk: -1,
+                    rarity: '',
+                    imageSrc: '',
+                    description: '',
+                    name: '',
+                    effects: [],
+                    capacities: [],
+                    status: EntityStatus.ALIVE,
+                    player: {
+                        avatar: existingPlayer.avatar,
+                        pseudo: existingPlayer.pseudo,
+                    },
                 }
             } else {
-                return Utils.formatResponse(409, 'Place not available', null, 'Place not available');
+                return Utils.formatResponse(400, 'Data is Undefined.', null, null);
             }
-        } else {
-            return Utils.formatResponse(204, 'Place available', null, 'Place available');
         }
-        return Utils.formatResponse(200, 'Success', session, null);
+        // Parcourir toutes les équipes et réinitialiser les cartes des autres joueurs
+        for (let i = 0; i < session.length; i++) {
+            let cards: Array<CardByEntityPlaying> = session[i].cardsPlayer ?? [];
+            for (let j = 0; j < cards.length; j++) {
+                // Vérifier si la carte correspond à la position actuelle et réinitialiser si nécessaire
+                if (i !== teamPosition || j !== cardPosition) {
+                    cards[j] = {
+                        atk: -1,
+                        def: -1,
+                        spd: -1,
+                        luk: -1,
+                        rarity: '',
+                        imageSrc: '',
+                        description: '',
+                        name: '',
+                        effects: [],
+                        capacities: [],
+                        status: EntityStatus.ALIVE,
+                        player: {
+                            avatar: '',
+                            pseudo: '',
+                        },
+                    };
+                    session[i].commonLuck = Utils.initCommunStat(session[i],'luk')
+                    session[i].commonSpeed = Utils.initCommunStat(session[i],'spd')
+                    session[i].commonDefense = Utils.initCommunStat(session[i],'def')
+                    session[i].commonAttack = Utils.initCommunStat(session[i],'atk')
+                    session[i].commonMaxLife = Utils.initCommunStat(session[i],'maxLife')
+                    session[i].commonLife = Utils.initCommunStat(session[i],'life')
+                } else {
+                    console.log('Card already in place');
+                }
+            }
+        }
+        return Utils.formatResponse(200, 'Card Change', session, null);
     }
 
+
+    static initPlaceTeamCard(
+        data: JoinSessionTeamCard,
+        session: Array<EntityPlaying>,
+        lobby: Array<PlayerLobby>,
+    ): FormatRestApiModels {
+        // Vérifier si la position dans cardPlayer n'est pas déjà prise
+        const existingPlayer: PlayerLobby = lobby[data.lobbyPosition];
+        const placeIsTaken = session[data.teamPosition].cardsPlayer ?? [];
+        const cardSelected = lobby[data.lobbyPosition].cards[data.cardByPlayer];
+        if (existingPlayer.pseudo === '' || existingPlayer.avatar === '') {
+            return Utils.formatResponse(400, 'Player not found.', null, null);
+        }
+        if (placeIsTaken[data.cardPosition].player?.pseudo !== existingPlayer.pseudo && placeIsTaken[data.cardPosition].player?.avatar !== existingPlayer.avatar) {
+            return Utils.formatResponse(400, 'The seat does not belong to the player.', null, null);
+        }
+        if (cardSelected.name === '') {
+            return Utils.formatResponse(400, 'Card not found.', null, null);
+        }
+
+        for (let i = 0; i < session.length; i++) {
+            if (i === data.teamPosition) {
+                let cards: Array<CardByEntityPlaying> = session[i].cardsPlayer ?? [];
+                for (let j = 0; j < cards.length; j++) {
+                    // Vérifier si la carte correspond à la position actuelle et réinitialiser si nécessaire
+                    if (i === data.teamPosition && j === data.cardPosition) {
+                        cards[j] = {
+                            atk: cardSelected.atk,
+                            def: cardSelected.def,
+                            spd: cardSelected.spd,
+                            luk: cardSelected.luk,
+                            rarity: cardSelected.rarity,
+                            imageSrc: cardSelected.image,
+                            description: cardSelected.description,
+                            name: cardSelected.name,
+                            effects: cardSelected.effects,
+                            capacities: cardSelected.capacities,
+                            status: EntityStatus.ALIVE,
+                            player: {
+                                avatar: existingPlayer.avatar,
+                                pseudo: existingPlayer.pseudo,
+                            },
+                        };
+                        session[i].commonLuck = Utils.initCommunStat(session[i],'luk')
+                        session[i].commonSpeed = Utils.initCommunStat(session[i],'spd')
+                        session[i].commonDefense = Utils.initCommunStat(session[i],'def')
+                        session[i].commonAttack = Utils.initCommunStat(session[i],'atk')
+                        session[i].commonMaxLife = Utils.initCommunStat(session[i],'maxLife')
+                        session[i].commonLife = Utils.initCommunStat(session[i],'life')
+                    } else {
+                        console.log('Card already in place');
+                    }
+                }
+            }
+        }
+        return Utils.formatResponse(200, 'Card Change', session, null);
+    }
+
+    static getIfJustOnePlayerHaveCard(session: Array<EntityPlaying>): boolean {
+        let count = 0;
+        for (let i = 0; i < session.length; i++) {
+            const team = session[i].cardsPlayer ?? [];
+            for (let j = 0; j < team.length; j++) {
+                if (
+                    team[j].player?.pseudo !== '' &&
+                    team[j].player?.avatar !== '' &&
+                    team[j].name !== '' &&
+                    team[j].imageSrc !== '' &&
+                    team[j].rarity !== '' &&
+                    team[j].description !== '' &&
+                    team[j].atk !== -1 &&
+                    team[j].def !== -1 &&
+                    team[j].spd !== -1 &&
+                    team[j].luk !== -1 &&
+                    team[j].effects.length !== 0 &&
+                    team[j].capacities.length !== 0) {
+                    count++;
+                }
+            }
+        }
+        return count !== 0;
+    }
+
+    static generateRandomNumber(min: number, max: number): number {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    static initMonsterEntityPlaying(cards: Array<CardsDto>, map: Array<Cells>): Array<EntityPlaying> {
+        let teamEntityPlaying: Array<EntityPlaying> = [];
+        for (let i = 0; i < this.generateRandomNumber(1, 5); i++) {
+            const validCells = map.filter(cell => cell.value !== -1);
+            let indexMap = this.generateRandomNumber(0, validCells.length - 1);
+            let indexOne = this.generateRandomNumber(0, cards.length - 1);
+            let indexTwo = this.generateRandomNumber(0, cards.length - 1);
+            let cardOne = {
+                atk: cards[indexOne].atk,
+                def: cards[indexOne].def,
+                spd: cards[indexOne].spd,
+                luk: cards[indexOne].luk,
+                description: cards[indexOne].description,
+                name: cards[indexOne].name,
+                rarity: cards[indexOne].rarity,
+                status: EntityStatus.ALIVE,
+                imageSrc: cards[indexOne].image,
+                effects: cards[indexOne].effects,
+                capacities: cards[indexOne].capacities,
+            }
+            let cardTwo = {
+                atk: cards[indexTwo].atk,
+                def: cards[indexTwo].def,
+                spd: cards[indexTwo].spd,
+                luk: cards[indexTwo].luk,
+                description: cards[indexTwo].description,
+                name: cards[indexTwo].name,
+                rarity: cards[indexTwo].rarity,
+                status: EntityStatus.ALIVE,
+                imageSrc: cards[indexTwo].image,
+                effects: cards[indexTwo].effects,
+                capacities: cards[indexTwo].capacities,
+            }
+            teamEntityPlaying.push({
+                name: this.randomName(),
+                commonLife: 200,
+                commonMaxLife: 200,
+                commonAttack: cardOne.atk + cardTwo.atk,
+                commonDefense: cardOne.def + cardTwo.def,
+                commonLuck: cardOne.luk + cardTwo.luk,
+                commonSpeed: cardOne.spd + cardTwo.spd,
+                cellPosition: {
+                    id: validCells[indexMap].id,
+                    x: validCells[indexMap].x,
+                    y: validCells[indexMap].y,
+                    value: validCells[indexMap].value
+                },
+                entityStatus: EntityStatus.ALIVE,
+                cardsMonster: [
+                    cardOne,
+                    cardTwo
+                ],
+            });
+        }
+        return teamEntityPlaying;
+    }
+
+    static placeEntityPlayer(session: Array<EntityPlaying>, map: Array<Cells>, monsterCells: Array<Cells>) {
+        let playerPositionCells: Array<Cells> = []
+        for (let i = 0; i < session.length; i++) {
+            const team = session[i].cardsPlayer ?? [];
+            for (let j = 0; j < team.length; j++) {
+                if (team[j].player?.pseudo !== '' && team[j].player?.avatar !== '') {
+                    if (session[i].cellPosition) {
+                        const validCells = map.filter(cell => cell.value !== -1);
+                        const validCellsWithNotMonster = validCells.filter(cell => {
+                            let monster = monsterCells.length === 0 || monsterCells.some(monsterCell => monsterCell.id !== cell.id)
+                            let player = playerPositionCells.length === 0 || playerPositionCells.some(playerCell => playerCell.id !== cell.id)
+                            return monster && player
+                        });
+                        let indexMap = this.generateRandomNumber(0, validCellsWithNotMonster.length - 1);
+                        session[i].cellPosition = {
+                            id: validCellsWithNotMonster[indexMap].id,
+                            x: validCellsWithNotMonster[indexMap].x,
+                            y: validCellsWithNotMonster[indexMap].y,
+                            value: validCellsWithNotMonster[indexMap].value
+                        }
+                        playerPositionCells.push(validCellsWithNotMonster[indexMap])
+                    } else {
+                        console.log('Cell position is null')
+                    }
+                } else {
+                    console.log('Player not found')
+                }
+            }
+        }
+        return session;
+    }
+
+    static initCommunStat(session: EntityPlaying, type: string) {
+        let players = session.cardsPlayer ?? [];
+
+        const playerOne = players[0];
+        const playerTwo = players[1];
+
+        switch (type) {
+            case 'luk':
+                if(playerOne.luk !== -1 && playerTwo.luk !== -1){
+                    return playerOne.luk + playerTwo.luk
+                }else if(playerOne.luk !== -1 && playerTwo.luk === -1){
+                    return playerOne.luk
+                }else if(playerOne.luk === -1 && playerTwo.luk !== -1){
+                    return playerTwo.luk
+                }else {
+                    return -1
+                }
+            case 'atk':
+                if(playerOne.atk !== -1 && playerTwo.atk !== -1){
+                    return playerOne.atk + playerTwo.atk
+                }else if(playerOne.atk !== -1 && playerTwo.atk === -1){
+                    return playerOne.atk
+                }else if(playerOne.atk === -1 && playerTwo.atk !== -1){
+                    return playerTwo.atk
+                }else {
+                    return -1
+                }
+            case 'def':
+                if(playerOne.def !== -1 && playerTwo.def !== -1){
+                    return playerOne.def + playerTwo.def
+                }else if(playerOne.def !== -1 && playerTwo.def === -1){
+                    return playerOne.def
+                }else if(playerOne.def === -1 && playerTwo.def !== -1){
+                    return playerTwo.def
+                }else {
+                    return -1
+                }
+            case 'spd':
+                if(playerOne.spd !== -1 && playerTwo.spd !== -1){
+                    return playerOne.spd + playerTwo.spd
+                }else if(playerOne.spd !== -1 && playerTwo.spd === -1){
+                    return playerOne.spd
+                }else if(playerOne.spd === -1 && playerTwo.spd !== -1){
+                    return playerTwo.spd
+                }else {
+                    return -1
+                }
+            case 'maxLife':
+                if(playerOne.name !== '' && playerTwo.name !== ''){
+                    return 200
+                }else if(playerOne.name !== '' && playerTwo.name === ''){
+                    return 100
+                }else if(playerOne.name === '' && playerTwo.name !== ''){
+                    return 100
+                }else {
+                    return -1
+                }
+            case 'life':
+                if(playerOne.name !== '' && playerTwo.name !== ''){
+                    return 200
+                }else if(playerOne.name !== '' && playerTwo.name === ''){
+                    return 100
+                }else if(playerOne.name === '' && playerTwo.name !== ''){
+                    return 100
+                }else {
+                    return -1
+                }
+            default:
+               return -1
+        }
+    }
 }
