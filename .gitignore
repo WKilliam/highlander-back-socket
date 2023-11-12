@@ -2,3 +2,4 @@
 .env
 coverage
 parties
+db/data.db
