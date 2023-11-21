@@ -1,7 +1,7 @@
 import {FormatRestApiModels} from "../models/formatRestApi.models";
-import {Cells, GridLimit, Maps} from "../models/maps.models";
+import {Cells, GridLimit} from "../models/maps.models";
 import {FormatSocketModels, JoinSessionTeamCard} from "../models/formatSocket.models";
-import {EntityPlaying, EntityStatus} from "../models/room.content.models";
+import {EntityCategorie, EntityPlaying, EntityStatus, Game, TurnListEntity} from "../models/room.content.models";
 import {PlayerLobby} from "../models/player.models";
 import {CardByEntityPlaying} from "../models/cards.models";
 import {CardsDto} from "../dto/cards.dto";
@@ -61,7 +61,7 @@ export class Utils {
     }
 
     // convert list of cells to matrix
-    convertListCellsToMaatix(listeCellules: Cells[]): Cells[][] {
+    static convertListCellsToMatrix(listeCellules: Cells[]): Cells[][] {
         const mapWidth: number = 936;
         const mapHeight: number = 620;
         const cellWidth = 32;
@@ -90,8 +90,8 @@ export class Utils {
     }
 
     // get limit of grid
-    getGridIndices(cells: Cells[]): GridLimit {
-        let gridCellData: Cells[][] = this.convertListCellsToMaatix(cells)
+    static getGridIndices(cells: Cells[]): GridLimit {
+        let gridCellData: Cells[][] = this.convertListCellsToMatrix(cells)
         const numRows = gridCellData.length;
         const numCols = gridCellData[0].length;
         const minX = 0;
@@ -104,7 +104,7 @@ export class Utils {
 
 
     // give posibility to move player
-    findCellsAtDistance(gridCellData: Cells[][], startId: number, distance: number): Cells[] {
+    static findCellsAtDistance(gridCellData: Cells[][], startId: number, distance: number) {
         const result: Cells[] = [];
         let startX: number | null = null;
         let startY: number | null = null;
@@ -118,8 +118,7 @@ export class Utils {
         });
 
         if (startX === null || startY === null) {
-            console.error(`Cellule de départ avec l'ID ${startId} non trouvée.`);
-            return result;
+            return Utils.formatResponse(400, 'Start cell not found.', null, null);
         }
         const {minX, maxX, minY, maxY} = this.getGridIndices(result);
         for (let x = minX; x <= maxX; x++) {
@@ -132,8 +131,7 @@ export class Utils {
                 }
             }
         }
-        console.log(`Cellules à une distance de ${distance} de la cellule de départ (ID: ${startId}) :`, result);
-        return result;
+        return Utils.formatResponse(200, 'Cells found.', result, null);
     }
 
 
@@ -292,12 +290,12 @@ export class Utils {
                             pseudo: '',
                         },
                     };
-                    session[i].commonLuck = Utils.initCommunStat(session[i],'luk')
-                    session[i].commonSpeed = Utils.initCommunStat(session[i],'spd')
-                    session[i].commonDefense = Utils.initCommunStat(session[i],'def')
-                    session[i].commonAttack = Utils.initCommunStat(session[i],'atk')
-                    session[i].commonMaxLife = Utils.initCommunStat(session[i],'maxLife')
-                    session[i].commonLife = Utils.initCommunStat(session[i],'life')
+                    session[i].commonLuck = Utils.initCommunStat(session[i], 'luk')
+                    session[i].commonSpeed = Utils.initCommunStat(session[i], 'spd')
+                    session[i].commonDefense = Utils.initCommunStat(session[i], 'def')
+                    session[i].commonAttack = Utils.initCommunStat(session[i], 'atk')
+                    session[i].commonMaxLife = Utils.initCommunStat(session[i], 'maxLife')
+                    session[i].commonLife = Utils.initCommunStat(session[i], 'life')
                 } else {
                     console.log('Card already in place');
                 }
@@ -349,12 +347,12 @@ export class Utils {
                                 pseudo: existingPlayer.pseudo,
                             },
                         };
-                        session[i].commonLuck = Utils.initCommunStat(session[i],'luk')
-                        session[i].commonSpeed = Utils.initCommunStat(session[i],'spd')
-                        session[i].commonDefense = Utils.initCommunStat(session[i],'def')
-                        session[i].commonAttack = Utils.initCommunStat(session[i],'atk')
-                        session[i].commonMaxLife = Utils.initCommunStat(session[i],'maxLife')
-                        session[i].commonLife = Utils.initCommunStat(session[i],'life')
+                        session[i].commonLuck = Utils.initCommunStat(session[i], 'luk')
+                        session[i].commonSpeed = Utils.initCommunStat(session[i], 'spd')
+                        session[i].commonDefense = Utils.initCommunStat(session[i], 'def')
+                        session[i].commonAttack = Utils.initCommunStat(session[i], 'atk')
+                        session[i].commonMaxLife = Utils.initCommunStat(session[i], 'maxLife')
+                        session[i].commonLife = Utils.initCommunStat(session[i], 'life')
                     } else {
                         console.log('Card already in place');
                     }
@@ -474,8 +472,6 @@ export class Utils {
                     } else {
                         console.log('Cell position is null')
                     }
-                } else {
-                    console.log('Player not found')
                 }
             }
         }
@@ -490,67 +486,132 @@ export class Utils {
 
         switch (type) {
             case 'luk':
-                if(playerOne.luk !== -1 && playerTwo.luk !== -1){
+                if (playerOne.luk !== -1 && playerTwo.luk !== -1) {
                     return playerOne.luk + playerTwo.luk
-                }else if(playerOne.luk !== -1 && playerTwo.luk === -1){
+                } else if (playerOne.luk !== -1 && playerTwo.luk === -1) {
                     return playerOne.luk
-                }else if(playerOne.luk === -1 && playerTwo.luk !== -1){
+                } else if (playerOne.luk === -1 && playerTwo.luk !== -1) {
                     return playerTwo.luk
-                }else {
+                } else {
                     return -1
                 }
             case 'atk':
-                if(playerOne.atk !== -1 && playerTwo.atk !== -1){
+                if (playerOne.atk !== -1 && playerTwo.atk !== -1) {
                     return playerOne.atk + playerTwo.atk
-                }else if(playerOne.atk !== -1 && playerTwo.atk === -1){
+                } else if (playerOne.atk !== -1 && playerTwo.atk === -1) {
                     return playerOne.atk
-                }else if(playerOne.atk === -1 && playerTwo.atk !== -1){
+                } else if (playerOne.atk === -1 && playerTwo.atk !== -1) {
                     return playerTwo.atk
-                }else {
+                } else {
                     return -1
                 }
             case 'def':
-                if(playerOne.def !== -1 && playerTwo.def !== -1){
+                if (playerOne.def !== -1 && playerTwo.def !== -1) {
                     return playerOne.def + playerTwo.def
-                }else if(playerOne.def !== -1 && playerTwo.def === -1){
+                } else if (playerOne.def !== -1 && playerTwo.def === -1) {
                     return playerOne.def
-                }else if(playerOne.def === -1 && playerTwo.def !== -1){
+                } else if (playerOne.def === -1 && playerTwo.def !== -1) {
                     return playerTwo.def
-                }else {
+                } else {
                     return -1
                 }
             case 'spd':
-                if(playerOne.spd !== -1 && playerTwo.spd !== -1){
+                if (playerOne.spd !== -1 && playerTwo.spd !== -1) {
                     return playerOne.spd + playerTwo.spd
-                }else if(playerOne.spd !== -1 && playerTwo.spd === -1){
+                } else if (playerOne.spd !== -1 && playerTwo.spd === -1) {
                     return playerOne.spd
-                }else if(playerOne.spd === -1 && playerTwo.spd !== -1){
+                } else if (playerOne.spd === -1 && playerTwo.spd !== -1) {
                     return playerTwo.spd
-                }else {
+                } else {
                     return -1
                 }
             case 'maxLife':
-                if(playerOne.name !== '' && playerTwo.name !== ''){
+                if (playerOne.name !== '' && playerTwo.name !== '') {
                     return 200
-                }else if(playerOne.name !== '' && playerTwo.name === ''){
+                } else if (playerOne.name !== '' && playerTwo.name === '') {
                     return 100
-                }else if(playerOne.name === '' && playerTwo.name !== ''){
+                } else if (playerOne.name === '' && playerTwo.name !== '') {
                     return 100
-                }else {
+                } else {
                     return -1
                 }
             case 'life':
-                if(playerOne.name !== '' && playerTwo.name !== ''){
+                if (playerOne.name !== '' && playerTwo.name !== '') {
                     return 200
-                }else if(playerOne.name !== '' && playerTwo.name === ''){
+                } else if (playerOne.name !== '' && playerTwo.name === '') {
                     return 100
-                }else if(playerOne.name === '' && playerTwo.name !== ''){
+                } else if (playerOne.name === '' && playerTwo.name !== '') {
                     return 100
-                }else {
+                } else {
                     return -1
                 }
             default:
-               return -1
+                return -1
         }
+    }
+
+    static turnInit(game: Game) {
+
+        let allEntities: Array<TurnListEntity> = [];
+
+        // Extract player entities
+        game.teams.forEach((team, teamIndex) => {
+            team?.cardsPlayer?.forEach((card, cardIndex) => {
+                if (card.player?.pseudo !== '') {
+                    allEntities.push({
+                        pseudo: `${team.name}-${card?.player?.pseudo}` ?? 'none',
+                        teamIndex: teamIndex,
+                        cardIndex: cardIndex,
+                        typeEntity: EntityCategorie.HUMAIN,
+                        luk: card.luk,
+                    });
+                }
+            });
+        });
+
+        // Extract monster entities
+        game.monsters.forEach((monster, monsterIndex) => {
+            monster?.cardsMonster?.forEach((card, cardIndex) => {
+                allEntities.push({
+                    pseudo: card.name,
+                    teamIndex: monsterIndex,
+                    cardIndex: cardIndex,
+                    typeEntity: EntityCategorie.COMPUTER,
+                    luk: card.luk,
+                });
+            });
+        });
+
+        return allEntities.sort((a, b) => b.luk - a.luk);
+    }
+
+    static moveEntityPlayer(teams: Array<EntityPlaying>, cellToMove: Cells, pseudo: string) {
+        teams.forEach(team => {
+            const {cardsPlayer, cellPosition} = team;
+            if (cardsPlayer) {
+                const player = cardsPlayer.find(card => card.player?.pseudo === pseudo);
+                if (player) {
+                    team.cellPosition = cellToMove;
+                }
+            }
+        });
+        return teams;
+    }
+
+    static moveEntityMonster(monsters: Array<EntityPlaying>, cellToMove: Cells, pseudo: string) {
+        monsters.forEach(team => {
+            const {cardsPlayer, cellPosition} = team;
+            if (cardsPlayer) {
+                const player = cardsPlayer.find(card => card.name === pseudo);
+                if (player) {
+                    team.cellPosition = cellToMove;
+                }
+            }
+        });
+        return monsters;
+    }
+
+    static findEntityByTurnListEntity(teams: Array<EntityPlaying>, entity: TurnListEntity) {
+        let cell = teams[entity.teamIndex].cellPosition
     }
 }

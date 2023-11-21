@@ -1,45 +1,280 @@
 {
-  "name": "Effects Data",
-  "image": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-  "description": "description data",
-  "type": "A",
-  "rarity": "COMMUN",
-  "cards": [
+  "room": "04TBQ",
+  "teamNames": [
+    "TEAM 1",
+    "TEAM 2",
+    "TEAM 3",
+    "TEAM 4"
+  ],
+  "status": "START",
+  "turnCount": 0,
+  "lobby": [
     {
-      "name": "Card 1",
-      "description": "description data",
-      "image": "https://cdn.discordapp.com/attachments/1060501071056879618/1170447812517970102/kyrasw_the_frame_of_a_tarot_card_in_png_format_or_the_center_of_bd64af8e-0140-4349-b2b6-ce08f8eb260f.png?ex=65591378&is=65469e78&hm=5336d9ec0565b971a76f9db54b5dbdb6743d8206ccccc35702e68c23afbd6797&",
-      "rarity": "COMMUN",
-      "atk": 100,
-      "def": 200,
-      "spd": 30,
-      "luk": 2,
-      "deckId": 1,
-      "effects": [
-        1
-      ],
-      "capacities": [
-        1,
-        2
-      ]
-    },
-    {
-      "name": "Card 2",
-      "description": "description data",
-      "image": "https://cdn.discordapp.com/attachments/1060501071056879618/1170447128527646740/kyrasw_A_powerful_mage_capable_of_manipulating_mystical_forces__10656c34-75d5-494f-876f-558e1eb06223.png?ex=655912d5&is=65469dd5&hm=2c6b70367e16d4b5d456e406f632bcf1b1fcdc35cb1abf1630b4dfed97e8563f&",
-      "rarity": "COMMUN",
-      "atk": 100,
-      "def": 200,
-      "spd": 30,
-      "luk": 2,
-      "deckId": 1,
-      "effects": [
-        1
-      ],
-      "capacities": [
-        1,
-        2
+      "score": 0,
+      "avatar": "https://acdai.grandeafrique.co.ke/wp-content/uploads/2017/03/male_avatar_lg.png",
+      "pseudo": "Joe",
+      "cards": [
+        {
+          "id": 1,
+          "name": "Arcane Enigma",
+          "description": "Unleash the mysteries of the arcane with this legendary card. It holds the power to manipulate luck and weave protective spells.",
+          "image": "https://cdn.discordapp.com/attachments/1060501071056879618/1173696197211475998/kyrasw_Arcane_Enigma_Unleash_the_mysteries_of_the_arcane_with_t_2d69f2c4-c990-4db7-9917-acf61b610b4b.png?ex=6564e4c3&is=65526fc3&hm=82d7e983876a45ae83e6cb9b0ea64a2bec56db8b56fa31cec09a86a232265e4f&",
+          "rarity": "LEGENDARY",
+          "atk": 10,
+          "def": 20,
+          "spd": 30,
+          "luk": 7,
+          "effects": [
+            {
+              "id": 1,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "rarity": "COMMUN",
+              "action": "A"
+            }
+          ],
+          "capacities": [
+            {
+              "id": 1,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "action": "A"
+            },
+            {
+              "id": 2,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "action": "A"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "Spectral Mirage",
+          "description": "Summon ethereal illusions with this mythical card. It confounds enemies and boosts the agility of its wielder.",
+          "image": "https://cdn.discordapp.com/attachments/1060501071056879618/1173696222905765948/kyrasw_Spectral_Mirage_Summon_ethereal_illusions_with_this_myth_808bf1f0-d9cf-42ca-aeb4-cbad57e7159f.png?ex=6564e4c9&is=65526fc9&hm=eee4605205187b4ac416cb9ed6814dab74a861b45f3a2078b5c4431c31a9892c&",
+          "rarity": "LEGENDARY",
+          "atk": 10,
+          "def": 20,
+          "spd": 30,
+          "luk": 7,
+          "effects": [
+            {
+              "id": 2,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "rarity": "COMMUN",
+              "action": "A"
+            }
+          ],
+          "capacities": [
+            {
+              "id": 2,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "action": "A"
+            },
+            {
+              "id": 3,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "action": "A"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "name": "Celestial Harmony",
+          "description": "Attain balance with the celestial forces using this divine card. It enhances both offensive and defensive capabilities.",
+          "image": "https://cdn.discordapp.com/attachments/1060501071056879618/1173696252148469821/kyrasw_Celestial_Harmony_Attain_balance_with_the_celestial_forc_fba0ed35-4303-4716-8c1c-80efa3ef7553.png?ex=6564e4d0&is=65526fd0&hm=ddfd36b9c33ba202c8771722b1d33427f722aefa0bd5166eb1b79184fd5e6baa&",
+          "rarity": "LEGENDARY",
+          "atk": 10,
+          "def": 20,
+          "spd": 30,
+          "luk": 7,
+          "effects": [
+            {
+              "id": 3,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "rarity": "COMMUN",
+              "action": "A"
+            }
+          ],
+          "capacities": [
+            {
+              "id": 1,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "action": "A"
+            },
+            {
+              "id": 3,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "action": "A"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "name": "Eclipse Veil",
+          "description": "Shroud yourself in the mystique of the eclipse with this enigmatic card. It grants unparalleled protection and dark powers.",
+          "image": "https://cdn.discordapp.com/attachments/1060501071056879618/1173696286231375982/kyrasw_Eclipse_Veil_Shroud_yourself_in_the_mystique_of_the_ecli_fd913a53-74fc-4423-a3e6-b3c80ae25690.png?ex=6564e4d8&is=65526fd8&hm=9985e389c2a4a1a4149be16672cae85f142a6b2438b998feb72da39575f7ba4a&",
+          "rarity": "LEGENDARY",
+          "atk": 10,
+          "def": 20,
+          "spd": 30,
+          "luk": 7,
+          "effects": [
+            {
+              "id": 1,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "rarity": "COMMUN",
+              "action": "A"
+            }
+          ],
+          "capacities": [
+            {
+              "id": 1,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "action": "A"
+            },
+            {
+              "id": 2,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "action": "A"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "name": "Astral Guardian",
+          "description": "Summon a celestial guardian with this divine card. It shields its wielder from harm and retaliates with divine retribution.",
+          "image": "https://cdn.discordapp.com/attachments/1060501071056879618/1173697305828937749/kyrasw_Astral_Guardian_Summon_a_celestial_guardian_with_this_di_90be06aa-a080-481f-bcc2-54bcf383d27f.png?ex=6564e5cb&is=655270cb&hm=0c3259e2c2bd9b09fc11855e38a04627a1e44a1f47af25614a4ba1ce21faa05a&",
+          "rarity": "LEGENDARY",
+          "atk": 10,
+          "def": 20,
+          "spd": 30,
+          "luk": 7,
+          "effects": [
+            {
+              "id": 3,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "rarity": "COMMUN",
+              "action": "A"
+            }
+          ],
+          "capacities": [
+            {
+              "id": 1,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "action": "A"
+            },
+            {
+              "id": 3,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "action": "A"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "name": "Lunar Eclipse Blade",
+          "description": "Channel the power of a lunar eclipse with this formidable card. It cuts through enemies with precision and darkness.",
+          "image": "https://cdn.discordapp.com/attachments/1060501071056879618/1166449293507440813/kyrasw_Tarot_card__ornate_border_frame__Tarot_Card_Illustration_82abb972-4101-43c4-9720-cb960245c3d5.png?ex=655cfc8f&is=654a878f&hm=aa93973dea73d4901a16fa8aee5e9f74b537932a0493794fd7d2cdc8fb92164a&",
+          "rarity": "LEGENDARY",
+          "atk": 10,
+          "def": 20,
+          "spd": 30,
+          "luk": 7,
+          "effects": [
+            {
+              "id": 1,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "rarity": "COMMUN",
+              "action": "A"
+            }
+          ],
+          "capacities": [
+            {
+              "id": 1,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "action": "A"
+            },
+            {
+              "id": 2,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "action": "A"
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "name": "Soulbound Specter",
+          "description": "Bind your enemies' souls with this spectral card. It drains life force and haunts foes with ghostly apparitions.",
+          "image": "https://cdn.discordapp.com/attachments/1060501071056879618/1173698394301145169/kyrasw_Soulbound_Specter_Bind_your_enemies_souls_with_this_spec_addb992a-6e44-4cc4-9bdd-4cbdb32eacbf.png?ex=6564e6cf&is=655271cf&hm=04ad2f39b9913c930e15ee10e0d643f17952c83eace5fb9bd346969c01121b6d&",
+          "rarity": "LEGENDARY",
+          "atk": 10,
+          "def": 20,
+          "spd": 30,
+          "luk": 7,
+          "effects": [
+            {
+              "id": 2,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "rarity": "COMMUN",
+              "action": "A"
+            }
+          ],
+          "capacities": [
+            {
+              "id": 2,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "action": "A"
+            },
+            {
+              "id": 3,
+              "name": "Effects Data",
+              "description": "description data",
+              "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+              "action": "A"
+            }
+          ]
+        }
       ]
     }
-  ]
+  ],
+  "entityTurn": []
 }

@@ -38,28 +38,41 @@ export interface SessionStatusGame {
     room: string;
     teamNames: Array<string>;
     status: StatusGame;
-    turnCount: number;
+    turnCount: number
     lobby:Array<PlayerLobby>
-    entityTurn : Array<EntityPlaying>
+    entityTurn : Array<TurnListEntity>
 }
 
 export interface Game {
     teams: Array<EntityPlaying>
     monsters: Array<EntityPlaying>
+    fightings: Array<Array<TurnListEntity>>
 }
 
-
 export interface EntityPlaying {
-    name : string;
-    commonLife : number;
-    commonMaxLife : number;
-    commonAttack : number;
-    commonDefense : number;
-    commonLuck : number;
-    commonSpeed : number;
-    cellPosition : Cells
-    entityStatus : EntityStatus
-    cardsPlayer? : Array<CardByEntityPlaying>;
-    cardsMonster? : Array<CardByEntityPlaying>;
+    name: string;
+    commonLife: number;
+    commonMaxLife: number;
+    commonAttack: number;
+    commonDefense: number;
+    commonLuck: number;
+    commonSpeed: number;
+    cellPosition: Cells
+    entityStatus: EntityStatus
+    cardsPlayer?: Array<CardByEntityPlaying>;
+    cardsMonster?: Array<CardByEntityPlaying>;
+}
+
+export enum EntityCategorie {
+    HUMAIN ='HUMAIN',
+    COMPUTER = 'COMPUTER'
+}
+
+export interface TurnListEntity {
+    pseudo: string
+    teamIndex: number
+    cardIndex: number
+    typeEntity: EntityCategorie
+    luk: number
 }
 

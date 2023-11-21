@@ -1,11 +1,14 @@
 import {DataSource} from "typeorm";
 import {Utils} from "../../utils/utils";
 import {
+    CurrentTurnAction, FormatSocketModels,
     JoinSessionSocket,
-    JoinSessionTeam, JoinSessionTeamCard
+    JoinSessionTeam,
+    JoinSessionTeamCard
 } from "../../models/formatSocket.models";
 import {SessionsServices} from "../sessions/sessions.services";
 import {FormatRestApiModels} from "../../models/formatRestApi.models";
+import {Can} from "../../models/enums";
 
 export class SocketService {
     dataSourceConfig: Promise<DataSource>;
@@ -56,17 +59,95 @@ export class SocketService {
         }
     }
 
-    async startGame(room: string) {
+    async createTurnList(room: string) {
         try {
-            let cardSelected: FormatRestApiModels = await this.sessionService.startGame(room);
+            let createTurn: FormatRestApiModels;
+            createTurn = await this.sessionService.createTurnList(room);
             return Utils.formatSocketMessage(
                 room,
-                cardSelected.data,
-                `${cardSelected.message}`,
-                cardSelected.code,
-                cardSelected.error)
+                createTurn.data,
+                `${createTurn.message}`,
+                createTurn.code,
+                createTurn.error)
         } catch (error: any) {
             return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
         }
     }
+
+    async whoIsTurn(room: string) {
+        try {
+            let whoIsTurn: FormatRestApiModels;
+            whoIsTurn = await this.sessionService.whoIsTurn(room);
+            return Utils.formatSocketMessage(
+                room,
+                whoIsTurn.data,
+                `${whoIsTurn.message}`,
+                whoIsTurn.code,
+                whoIsTurn.error)
+        } catch (error: any) {
+            return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
+        }
+    }
+
+    async sendDice(data: CurrentTurnAction) {
+        try {
+            let sendDice: FormatRestApiModels;
+            sendDice = await this.sessionService.sendDice(data);
+            return Utils.formatSocketMessage(
+                data.room,
+                sendDice.data,
+                `${sendDice.message}`,
+                sendDice.code,
+                sendDice.error)
+        } catch (error: any) {
+            return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
+        }
+    }
+
+    async chooseMove(data: CurrentTurnAction) {
+        try {
+            let chooseMove: FormatRestApiModels;
+            if(data.turnEntity.typeEntity === 'HUMAIN'){
+                chooseMove = await this.sessionService.chooseMove(data);
+            }else{
+                data.move = this.computerMove(data)
+                chooseMove = await this.sessionService.chooseMove(data);
+            }
+            return Utils.formatSocketMessage(
+                data.room,
+                chooseMove.data,
+                `${chooseMove.message}`,
+                chooseMove.code,
+                chooseMove.error)
+        } catch (error: any) {
+            return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
+        }
+    }
+
+    async endMove(data: CurrentTurnAction) {
+        try {
+            let endMove: FormatRestApiModels;
+            endMove = await this.sessionService.endMove(data);
+            return Utils.formatSocketMessage(
+                data.room,
+                endMove.data,
+                `${endMove.message}`,
+                endMove.code,
+                endMove.error)
+        } catch (error: any) {
+            return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
+        }
+    }
+
+    /**
+     * COMPUTER
+     */
+
+    computerMove(data: CurrentTurnAction) {
+        const moves = data.moves
+        let indexMap = Utils.generateRandomNumber(0, moves.length - 1);
+        return moves[indexMap]
+    }
+
+
 }

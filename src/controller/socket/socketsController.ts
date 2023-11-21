@@ -2,6 +2,7 @@ import {SocketService} from "../../services/socket/socket.service";
 import {Socket} from 'socket.io'
 import {AppDataSource} from "../../utils/database/database.config";
 import {
+    CurrentTurnAction,
     FormatSocketModels,
     JoinSessionSocket,
     JoinSessionTeam,
@@ -23,27 +24,51 @@ module.exports = (io: any) => {
             });
             socket.join(`${socketEndPoints}-${data.room}`);
             console.log(`${socket.id} joined session: ${socketEndPoints}-${data.room}`)
-            if(data.room !== 'default'){
-                let socketJoin:FormatSocketModels = await socketService.joinSession(data);
+            if (data.room !== 'default') {
+                let socketJoin: FormatSocketModels = await socketService.joinSession(data);
                 io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, socketJoin);
-            }else{
+            } else {
                 io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, `${socket.id} joined session: ${socketEndPoints}-${data.room}`);
             }
         })
 
-        socket.on('join-team',  async (data: JoinSessionTeam) => {
-            const joinTeam:FormatSocketModels = await socketService.joinTeam(data);
+        socket.on('join-team', async (data: JoinSessionTeam) => {
+            const joinTeam: FormatSocketModels = await socketService.joinTeam(data);
             io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, joinTeam);
         })
 
-        socket.on('join-card',  async (data: JoinSessionTeamCard) => {
-            const joinCard:FormatSocketModels = await socketService.cardSelected(data);
+        socket.on('join-card', async (data: JoinSessionTeamCard) => {
+            const joinCard: FormatSocketModels = await socketService.cardSelected(data);
             io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, joinCard);
         })
 
-        socket.on('start-game',  async (data: {room:string}) => {
-            const joinCard:FormatSocketModels = await socketService.startGame(data.room);
-            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, joinCard);
+        /**
+         * Boucle de jeu
+         */
+
+        socket.on('createTurnList', async (data: {room:string}) => {
+            const startGame: FormatSocketModels = await socketService.createTurnList(data.room);
+            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, startGame);
+        })
+
+        socket.on('whoIsTurn', async (data: {room:string}) => {
+            const startGame: FormatSocketModels = await socketService.whoIsTurn(data.room)
+            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}-turn`, startGame);
+        })
+
+        socket.on('sendDice', async (data: CurrentTurnAction) => {
+            const startTurn: FormatSocketModels = await socketService.sendDice(data)
+            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}-turn`, startTurn);
+        })
+
+        socket.on('chooseMove', async (data: CurrentTurnAction) => {
+            const startTurn: FormatSocketModels = await socketService.chooseMove(data)
+            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}-turn`, startTurn);
+        })
+
+        socket.on('endMove', async (data: CurrentTurnAction) => {
+            const startTurn: FormatSocketModels = await socketService.endMove(data)
+            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}-turn`, startTurn);
         })
 
         socket.on('disconnect', () => {

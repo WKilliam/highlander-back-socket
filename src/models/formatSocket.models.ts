@@ -1,4 +1,7 @@
 import {CardEntitySimplify} from "./cards.models";
+import {Cells} from "./maps.models";
+import {TurnListEntity} from "./room.content.models";
+import {Can} from "./enums";
 
 export interface FormatSocketModels{
     date: string;
@@ -28,3 +31,26 @@ export interface JoinSessionTeamCard {
     cardPosition: number;
     cardByPlayer:number
 }
+
+export interface CurrentTurnAction {
+    room: string;
+    isPlay: boolean;
+    turnEntity: TurnListEntity;
+    dice: number,
+    currentCell: Cells,
+    moves: Cells[],
+    move: Cells,
+}
+
+// export interface DiceRoll {
+//     currentTurn: TurnListEntity;
+//     room: string;
+//     dice: number;
+//     cell: Cells
+// }
+//
+// export interface ChooseMove {
+//     room: string
+//     cellToMove: Cells
+//     currentCanAction: CurrentTurnAction
+// }
