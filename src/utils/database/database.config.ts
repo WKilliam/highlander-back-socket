@@ -8,6 +8,7 @@ import {EventDto} from "../../dto/event.dto";
 import {DecksDto} from "../../dto/decks.dto";
 import {ClientDto} from "../../dto/clients.dto";
 import {CapacityDto} from "../../dto/capacity.dto";
+import {SessionDto} from "../../dto/session.dto";
 
 export const AppDataSource  = new DataSource({
     // type: "mariadb",
@@ -28,7 +29,8 @@ export const AppDataSource  = new DataSource({
         EventDto,
         DecksDto,
         ClientDto,
-        CapacityDto
+        CapacityDto,
+        SessionDto
     ],
     subscribers: [],
     migrations: [],

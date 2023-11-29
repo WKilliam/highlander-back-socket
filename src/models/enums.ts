@@ -1,5 +1,5 @@
 export enum Can {
-    START_GAME="START_GAME",
+    START_GAME = "START_GAME",
     WHO_TURN = "WHO_TURN",
     START_TURN = "START_TURN",
     SEND_DICE = "SEND_DICE",

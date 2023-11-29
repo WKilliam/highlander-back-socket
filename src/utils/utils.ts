@@ -559,7 +559,8 @@ export class Utils {
             team?.cardsPlayer?.forEach((card, cardIndex) => {
                 if (card.player?.pseudo !== '') {
                     allEntities.push({
-                        pseudo: `${team.name}-${card?.player?.pseudo}` ?? 'none',
+                        team: team.name,
+                        pseudo: card?.player?.pseudo ?? 'none',
                         teamIndex: teamIndex,
                         cardIndex: cardIndex,
                         typeEntity: EntityCategorie.HUMAIN,
@@ -573,7 +574,8 @@ export class Utils {
         game.monsters.forEach((monster, monsterIndex) => {
             monster?.cardsMonster?.forEach((card, cardIndex) => {
                 allEntities.push({
-                    pseudo: card.name,
+                    team: monster.name,
+                    pseudo: cardIndex.toString(),
                     teamIndex: monsterIndex,
                     cardIndex: cardIndex,
                     typeEntity: EntityCategorie.COMPUTER,
@@ -582,7 +584,8 @@ export class Utils {
             });
         });
 
-        return allEntities.sort((a, b) => b.luk - a.luk);
+        let tab = allEntities.sort((a, b) => b.luk - a.luk);
+        return tab;
     }
 
     static moveEntityPlayer(teams: Array<EntityPlaying>, cellToMove: Cells, pseudo: string) {

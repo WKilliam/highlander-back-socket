@@ -88,7 +88,7 @@ SessionController.post('/cardSelected', async (req, res) => {
 
 SessionController.get('/startGame', async (request, response) => {
     const room = request.query.room as string;
-    const received = await sessionsServices.createTurnList(room);
+    const received = await sessionsServices.startGame(room);
     response.status(received.code).json(received);
 });
 

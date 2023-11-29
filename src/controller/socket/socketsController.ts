@@ -47,28 +47,43 @@ module.exports = (io: any) => {
          */
 
         socket.on('createTurnList', async (data: {room:string}) => {
-            const startGame: FormatSocketModels = await socketService.createTurnList(data.room);
-            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, startGame);
+            const createTurnList: FormatSocketModels = await socketService.createTurnList(data.room);
+            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, createTurnList);
         })
 
         socket.on('whoIsTurn', async (data: {room:string}) => {
-            const startGame: FormatSocketModels = await socketService.whoIsTurn(data.room)
-            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}-turn`, startGame);
+            const whoIsTurn: FormatSocketModels = await socketService.whoIsTurn(data.room)
+            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}-turn`, whoIsTurn);
         })
 
-        socket.on('sendDice', async (data: CurrentTurnAction) => {
-            const startTurn: FormatSocketModels = await socketService.sendDice(data)
+        socket.on('startTurn', async (data: {action:CurrentTurnAction,room:string}) => {
+            const startTurn: FormatSocketModels = await socketService.startTurn(data);
             io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}-turn`, startTurn);
         })
 
-        socket.on('chooseMove', async (data: CurrentTurnAction) => {
-            const startTurn: FormatSocketModels = await socketService.chooseMove(data)
-            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}-turn`, startTurn);
+        socket.on('sendDice', async (data: {action:CurrentTurnAction,room:string}) => {
+            const sendDice: FormatSocketModels = await socketService.sendDice(data)
+            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}-turn`, sendDice);
         })
 
-        socket.on('endMove', async (data: CurrentTurnAction) => {
-            const startTurn: FormatSocketModels = await socketService.endMove(data)
-            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}-turn`, startTurn);
+        socket.on('chooseMove', async (data: {action:CurrentTurnAction,room:string}) => {
+            const chooseMove: FormatSocketModels = await socketService.chooseMove(data)
+            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}-turn`, chooseMove);
+        })
+
+        socket.on('move', async (data: {action:CurrentTurnAction,room:string}) => {
+            const move: FormatSocketModels = await socketService.move(data)
+            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}-turn`, move);
+        })
+
+        socket.on('endMove', async (data: {action:CurrentTurnAction,room:string}) => {
+            const endMove: FormatSocketModels = await socketService.endMove(data)
+            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}-turn`, endMove);
+        })
+
+        socket.on('endTurn', async (data: {action:CurrentTurnAction,room:string}) => {
+            const endTurn: FormatSocketModels = await socketService.endTurn(data)
+            io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}-turn`, endTurn);
         })
 
         socket.on('disconnect', () => {

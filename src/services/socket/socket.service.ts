@@ -8,6 +8,7 @@ import {
 } from "../../models/formatSocket.models";
 import {SessionsServices} from "../sessions/sessions.services";
 import {FormatRestApiModels} from "../../models/formatRestApi.models";
+import {EntityCategorie} from "../../models/room.content.models";
 import {Can} from "../../models/enums";
 
 export class SocketService {
@@ -62,7 +63,7 @@ export class SocketService {
     async createTurnList(room: string) {
         try {
             let createTurn: FormatRestApiModels;
-            createTurn = await this.sessionService.createTurnList(room);
+            createTurn = await this.sessionService.startGame(room);
             return Utils.formatSocketMessage(
                 room,
                 createTurn.data,
@@ -89,45 +90,137 @@ export class SocketService {
         }
     }
 
-    async sendDice(data: CurrentTurnAction) {
-        try {
-            let sendDice: FormatRestApiModels;
-            sendDice = await this.sessionService.sendDice(data);
-            return Utils.formatSocketMessage(
-                data.room,
-                sendDice.data,
-                `${sendDice.message}`,
-                sendDice.code,
-                sendDice.error)
-        } catch (error: any) {
-            return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
-        }
-    }
-
-    async chooseMove(data: CurrentTurnAction) {
-        try {
-            let chooseMove: FormatRestApiModels;
-            if(data.turnEntity.typeEntity === 'HUMAIN'){
-                chooseMove = await this.sessionService.chooseMove(data);
-            }else{
-                data.move = this.computerMove(data)
-                chooseMove = await this.sessionService.chooseMove(data);
-            }
-            return Utils.formatSocketMessage(
-                data.room,
-                chooseMove.data,
-                `${chooseMove.message}`,
-                chooseMove.code,
-                chooseMove.error)
-        } catch (error: any) {
-            return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
-        }
-    }
-
-    async endMove(data: CurrentTurnAction) {
+    async startTurn(data: {action:CurrentTurnAction,room:string}) {
         try {
             let endMove: FormatRestApiModels;
-            endMove = await this.sessionService.endMove(data);
+            endMove = await this.sessionService.startTurn(data.action,data.room);
+            return Utils.formatSocketMessage(
+                data.room,
+                endMove.data,
+                `${endMove.message}`,
+                endMove.code,
+                endMove.error)
+        } catch (error: any) {
+            return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
+        }
+    }
+
+
+    async sendDice(data: {action:CurrentTurnAction,room:string}) {
+        try {
+            let sendDice: FormatRestApiModels;
+            // sendDice = await this.sessionService.sendDice(data.action,data.room);
+
+            if(data.action.turnEntity.typeEntity === EntityCategorie.HUMAIN) {
+                sendDice = await this.sessionService.sendDice(data.action,data.room);
+                return Utils.formatSocketMessage(
+                    data.room,
+                    sendDice.data,
+                    `${sendDice.message}`,
+                    sendDice.code,
+                    sendDice.error)
+            }else if (data.action.turnEntity.typeEntity === EntityCategorie.COMPUTER){
+                let currentAction = {
+                    ...data.action,
+                    dice : Utils.generateRandomNumber(1,20)
+                }
+                sendDice = await this.sessionService.sendDice(currentAction,data.room);
+                return Utils.formatSocketMessage(
+                    data.room,
+                    sendDice.data,
+                    `${sendDice.message}`,
+                    sendDice.code,
+                    sendDice.error)
+            }else{
+                return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, 'TypeEntity not found')
+            }
+        } catch (error: any) {
+            return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
+        }
+    }
+
+    async chooseMove(data: {action:CurrentTurnAction,room:string}) {
+        try {
+            let chooseMove: FormatRestApiModels;
+            if(data.action.turnEntity.typeEntity === EntityCategorie.HUMAIN) {
+                chooseMove = await this.sessionService.chooseMove(data.action,data.room);
+                return Utils.formatSocketMessage(
+                    data.room,
+                    chooseMove.data,
+                    `${chooseMove.message}`,
+                    chooseMove.code,
+                    chooseMove.error)
+            }else if (data.action.turnEntity.typeEntity === EntityCategorie.COMPUTER){
+                let currentAction = {
+                    ...data.action,
+                    move: this.computerMove(data.action)
+                }
+                chooseMove = await this.sessionService.chooseMove(currentAction,data.room);
+                return Utils.formatSocketMessage(
+                    data.room,
+                    chooseMove.data,
+                    `${chooseMove.message}`,
+                    chooseMove.code,
+                    chooseMove.error)
+            }else{
+                return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, 'TypeEntity not found')
+            }
+        } catch (error: any) {
+            return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
+        }
+    }
+
+
+    async move(data: {action:CurrentTurnAction,room:string}) {
+        try {
+            let endMove: FormatRestApiModels;
+            if(data.action.turnEntity.typeEntity === EntityCategorie.HUMAIN) {
+                endMove = await this.sessionService.endMove(data.action,data.room);
+                return Utils.formatSocketMessage(
+                    data.room,
+                    endMove.data,
+                    `${endMove.message}`,
+                    endMove.code,
+                    endMove.error)
+            }else if (data.action.turnEntity.typeEntity === EntityCategorie.COMPUTER){
+                let currentAction = {
+                    ...data.action,
+                    move: this.computerMove(data.action)
+                }
+                endMove = await this.sessionService.endMove(currentAction,data.room);
+                return Utils.formatSocketMessage(
+                    data.room,
+                    endMove.data,
+                    `${endMove.message}`,
+                    endMove.code,
+                    endMove.error)
+            }else{
+                return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, 'TypeEntity not found')
+            }
+        } catch (error: any) {
+            return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
+        }
+    }
+
+    async endMove(data: {action:CurrentTurnAction,room:string}) {
+        try {
+            let endMove: FormatRestApiModels;
+            endMove = await this.sessionService.endMove(data.action,data.room);
+            return Utils.formatSocketMessage(
+                data.room,
+                endMove.data,
+                `${endMove.message}`,
+                endMove.code,
+                endMove.error)
+        } catch (error: any) {
+            return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
+        }
+    }
+
+    async endTurn(data: {action:CurrentTurnAction,room:string}) {
+        try {
+            let endMove: FormatRestApiModels;
+            endMove = await this.sessionService.endTurn(data.action,data.room);
             return Utils.formatSocketMessage(
                 data.room,
                 endMove.data,
@@ -148,6 +241,5 @@ export class SocketService {
         let indexMap = Utils.generateRandomNumber(0, moves.length - 1);
         return moves[indexMap]
     }
-
 
 }
