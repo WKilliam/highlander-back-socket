@@ -16,29 +16,81 @@ module.exports = (io: any) => {
     const socketEndPoints: string = 'highlander-socket'
 
     io.on('connection', (socket: Socket) => {
-        console.log(`${socket.id} connected!`)
+        console.log(`%c ${socket.id} connected!`,'color: blue; font-size: 20px;')
 
         socket.on('join', async (data: JoinSessionSocket) => {
             socket.rooms.forEach(room => {
                 socket.leave(room);
             });
             socket.join(`${socketEndPoints}-${data.room}`);
-            console.log(`${socket.id} joined session: ${socketEndPoints}-${data.room}`)
+            console.log(`%c ${socket.id} joined session: ${socketEndPoints}-${data.room}`,'color: blue; font-size: 20px;')
             if (data.room !== 'default') {
-                let socketJoin: FormatSocketModels = await socketService.joinSession(data);
+                let socketJoin= await socketService.joinSession(data);
                 io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, socketJoin);
             } else {
                 io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, `${socket.id} joined session: ${socketEndPoints}-${data.room}`);
             }
         })
 
+        function roomConnect() {
+            let rooms: Array<string> = [];
+            socket.rooms.forEach((room) => {
+                rooms.push(room);
+            });
+            return rooms;
+        }
+
+        function joinDefaultRoom(data: string) {
+            socket.rooms.forEach((room) => {
+                socket.leave(room);
+            });
+            socket.join(`highlander-socket-default`);
+            io.to(`${socketEndPoints}-default`).emit(`room-${data}`, `default`);
+        }
+
+        socket.on(`room`, async (data: string) => {
+            let rooms: Array<string> = roomConnect();
+            if (rooms.length > 0) {
+                const roomParts: string[] = rooms[0].split('-');
+                console.log("roomParts", roomParts)
+                if (roomParts.length === 3) {
+                    const lastPart: string = roomParts[2];
+                    console.log("lastPart", lastPart)
+                    if (lastPart === 'default') {
+                        console.log("Valid room:", rooms[0]);
+                        joinDefaultRoom(data);
+                    }else if (lastPart.length === 5){
+                        console.log("Valid room:", rooms[0]);
+                        socket.rooms.forEach((room) => {
+                            if(room !== rooms[0]){
+                                socket.leave(room);
+                            }else{
+                                console.log("Check room:", rooms[0])
+                                socket.join(rooms[0]);
+                            }
+                        });
+                        io.to(`${rooms[0]}`).emit(`room-${data}`, lastPart);
+                    }else{
+                        console.log("Invalid room. Joining default room. Inside 3eme else");
+                        joinDefaultRoom(data);
+                    }
+                }else{
+                    console.log("Invalid room. Joining default room. Inside Second else");
+                    joinDefaultRoom(data);
+                }
+            }else{
+                console.log("Invalid room. Joining default room. Outside first else");
+                joinDefaultRoom(data);
+            }
+        });
+
         socket.on('join-team', async (data: JoinSessionTeam) => {
-            const joinTeam: FormatSocketModels = await socketService.joinTeam(data);
+            const joinTeam = await socketService.joinTeam(data);
             io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, joinTeam);
         })
 
         socket.on('join-card', async (data: JoinSessionTeamCard) => {
-            const joinCard: FormatSocketModels = await socketService.cardSelected(data);
+            const joinCard = await socketService.cardSelected(data);
             io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, joinCard);
         })
 
@@ -47,7 +99,8 @@ module.exports = (io: any) => {
          */
 
         socket.on('createTurnList', async (data: {room:string}) => {
-            const createTurnList: FormatSocketModels = await socketService.createTurnList(data.room);
+            console.log(data.room)
+            const createTurnList = await socketService.createTurnList(data.room);
             io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, createTurnList);
         })
 

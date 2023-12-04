@@ -20,7 +20,7 @@ export const AppDataSource  = new DataSource({
     type: 'sqlite',
     database: 'db/data.db',
     synchronize: true,
-    logging: true,
+    logging: false,
     entities: [
         CellsDto,
         MapsDto,

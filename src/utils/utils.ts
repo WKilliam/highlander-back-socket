@@ -575,7 +575,7 @@ export class Utils {
             monster?.cardsMonster?.forEach((card, cardIndex) => {
                 allEntities.push({
                     team: monster.name,
-                    pseudo: cardIndex.toString(),
+                    pseudo: `monster-${cardIndex.toString()}`,
                     teamIndex: monsterIndex,
                     cardIndex: cardIndex,
                     typeEntity: EntityCategorie.COMPUTER,

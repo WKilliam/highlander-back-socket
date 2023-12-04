@@ -102,7 +102,7 @@ export class SessionsServices {
                 if (sessions.code < 200 || sessions.code > 299) {
                     return Utils.formatResponse(sessions.code, `${sessions.message}`, sessions.data, sessions.error);
                 }
-                let tabString: Array<string>= []
+                let tabString: Array<string> = []
                 for (let i = 0; i < sessions.data; i++) {
                     tabString.push(sessions.data.game.sessionStatusGame.room)
                 }
@@ -127,18 +127,18 @@ export class SessionsServices {
                 return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
             }
             const session = await sessionRepository.find()
-            let returnSession : SessionGame | null = null
+            let returnSession: SessionGame | null = null
             for (let i = 0; i < session.length; i++) {
                 if (session[i].game.sessionStatusGame.room === room) {
                     returnSession = {
                         id: session[i].id,
-                        sessionStatusGame : session[i].game.sessionStatusGame,
-                        game : session[i].game.game,
-                        maps : session[i].game.maps
+                        sessionStatusGame: session[i].game.sessionStatusGame,
+                        game: session[i].game.game,
+                        maps: session[i].game.maps
                     }
                 }
             }
-            if(!returnSession){
+            if (!returnSession) {
                 return Utils.formatResponse(500, 'Session not found', null, null);
             }
             return Utils.formatResponse(200, 'Document créé avec succès', returnSession, null);
@@ -148,13 +148,13 @@ export class SessionsServices {
     }
 
     async roomExists(roomId: string) {
-        let tabString: Array<string>= []
+        let tabString: Array<string> = []
         let sessions = await this.getFilesInDirectory()
         if (sessions.code < 200 || sessions.code > 299) {
             return Utils.formatResponse(sessions.code, `${sessions.message}`, sessions.data, sessions.error);
         }
         for (let i = 0; i < sessions.data.length; i++) {
-            const room  = sessions.data[i].game
+            const room = sessions.data[i].game
             tabString.push(room.sessionStatusGame.room)
         }
         if (tabString.includes(roomId)) {
@@ -235,21 +235,17 @@ export class SessionsServices {
                 monsters: [],
                 fightings: []
             }
-            try {
-                let sessionDto = new SessionDto()
-                sessionDto.game = {
-                    sessionStatusGame: sessionStatusGame,
-                    game: game,
-                    maps: mapSimply
-                };
-                const session = await sessionRepository.save(sessionDto);
-                if (!session) {
-                    return Utils.formatResponse(500, 'Error save session', null, 'Error save session');
-                }
-                return Utils.formatResponse(200, 'Document créé avec succès', session.game, null);
-            } catch (error) {
-                return Utils.formatResponse(500, 'Erreur lors de la création du document JSON', null, error);
+            let sessionDto = new SessionDto()
+            sessionDto.game = {
+                sessionStatusGame: sessionStatusGame,
+                game: game,
+                maps: mapSimply
+            };
+            const sessionSend = await sessionRepository.save(sessionDto);
+            if (!sessionSend) {
+                return Utils.formatResponse(500, 'Error save session', null, 'Error save session');
             }
+            return Utils.formatResponse(200, 'Document créé avec succès', sessionSend, null);
         } catch (error: any) {
             return Utils.formatResponse(500, error.message, null, null);
         }
@@ -272,37 +268,38 @@ export class SessionsServices {
             // Récupérez la liste de toutes les sessions existantes
             const allSessions = await this.getFilesInDirectory();
             if (allSessions.data.length < 1) {
-                return Utils.formatResponse(500, 'No session existed', 'all Session list is empty', 'No session existed');
+                return Utils.formatResponse(
+                    200,
+                    'No session existed',
+                    null);
             }
-            let tabAllSession : Array<string> = []
+            let tabAllSession: Array<string> = []
             for (let i = 0; i < allSessions.data.length; i++) {
                 tabAllSession.push(allSessions.data[i].game.sessionStatusGame.room)
             }
-            try {
-                for (const sessionName of tabAllSession) {
-                    try {
-                        console.log('sessionName', sessionName)
-                        let game = await this.getSession(sessionName)
-                        if (game.code < 200 || game.code > 299) {
-                            return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
-                        }
-                        for (let i = 0; i < game.data.sessionStatusGame.lobby.length; i++) {
-                            if (game.data.sessionStatusGame.lobby[i].pseudo === user?.pseudo &&
-                                game.data.sessionStatusGame.lobby[i].avatar === user?.avatar) {
-                                return Utils.formatResponse(200,
-                                    `Player inside session by ${sessionName}`,
-                                    game.data,
-                                    null);
-                            }
-                        }
-                    } catch (error: any) {
-                        return Utils.formatResponse(500, error.message, null, 'Session not found');
+
+            for (const sessionName of tabAllSession) {
+                try {
+                    console.log('sessionName', sessionName)
+                    let game = await this.getSession(sessionName)
+                    if (game.code < 200 || game.code > 299) {
+                        return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
                     }
+                    for (let i = 0; i < game.data.sessionStatusGame.lobby.length; i++) {
+                        if (game.data.sessionStatusGame.lobby[i].pseudo === user?.pseudo &&
+                            game.data.sessionStatusGame.lobby[i].avatar === user?.avatar) {
+                            let session = await this.getSession(game.data.sessionStatusGame.room)
+                            if (session.code < 200 || session.code > 299) {
+                                return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
+                            }
+                            return Utils.formatResponse(200, 'Session found', session, null);
+                        }
+                    }
+                } catch (error: any) {
+                    return Utils.formatResponse(500, error.message, null, 'Session not found');
                 }
-                return Utils.formatResponse(200, 'Player not inside session', null, null);
-            } catch (error: any) {
-                return Utils.formatResponse(500, error.message, null, null);
             }
+            return Utils.formatResponse(200, 'Player not inside session', null, null);
         } catch (error: any) {
             return Utils.formatResponse(500, error.message, null, null);
         }
@@ -341,7 +338,11 @@ export class SessionsServices {
             for (const playerLobby in game.data.sessionStatusGame.lobby) {
                 if (game.data.sessionStatusGame.lobby[playerLobby].pseudo === login.data.pseudo &&
                     game.data.sessionStatusGame.lobby[playerLobby].avatar === login.data.avatar) {
-                    return Utils.formatResponse(200, 'Player already inside session', game.data, null);
+                    let session = await this.getSession(game.data.sessionStatusGame.room)
+                    if (session.code < 200 || session.code > 299) {
+                        return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
+                    }
+                    return Utils.formatResponse(200, 'Session found', session.data, null);
                 }
             }
             game.data.sessionStatusGame.lobby.push({
@@ -480,7 +481,7 @@ export class SessionsServices {
             if (session.code < 200 || session.code > 299) {
                 return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
             }
-            return Utils.formatResponse(200, 'Document created succes', session, null);
+            return Utils.formatResponse(200, 'Document created succes', session.data, null);
         } catch (error: any) {
             return Utils.formatResponse(500, error.message, null, null);
         }
@@ -497,7 +498,7 @@ export class SessionsServices {
                 return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
             }
             const entity = game.data.sessionStatusGame.entityTurn[0]
-            game.data.sessionStatusGame.currentTurnEntity  = {
+            game.data.sessionStatusGame.currentTurnEntity = {
                 turnEntity: entity,
                 currentCell: {
                     id: -1,
@@ -513,7 +514,7 @@ export class SessionsServices {
                     value: 0
                 },
                 moves: [],
-                currentAction:Can.START_TURN
+                currentAction: Can.START_TURN
             }
             const session = await this.setDataInsideDb(game)
             if (session.code < 200 || session.code > 299) {
@@ -525,8 +526,8 @@ export class SessionsServices {
         }
     }
 
-    async startTurn(action:CurrentTurnAction,room:string) {
-        try{
+    async startTurn(action: CurrentTurnAction, room: string) {
+        try {
             const existed = await this.roomExists(room)
             if (existed.code < 200 || existed.code > 299) {
                 return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
@@ -537,20 +538,20 @@ export class SessionsServices {
             }
             game.data.sessionStatusGame.currentTurnEntity = {
                 ...action,
-                currentAction:Can.SEND_DICE
+                currentAction: Can.SEND_DICE
             }
             const session = await this.setDataInsideDb(game)
             if (session.code < 200 || session.code > 299) {
                 return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
             }
             return Utils.formatResponse(200, 'Document created succes', session.data, null);
-        }catch (error:any){
+        } catch (error: any) {
             return Utils.formatResponse(500, error.message, null, null);
         }
     }
 
 
-    async sendDice(action:CurrentTurnAction,room:string) {
+    async sendDice(action: CurrentTurnAction, room: string) {
         try {
             const existed = await this.roomExists(room)
             if (existed.code < 200 || existed.code > 299) {
@@ -560,14 +561,14 @@ export class SessionsServices {
             if (game.code < 200 || game.code > 299) {
                 return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
             }
-            if(action.currentCell.id === -1){
+            if (action.currentCell.id === -1) {
                 return Utils.formatResponse(500, 'Current cell not found', null, null);
             }
             if (action.dice === -1) {
                 return Utils.formatResponse(500, 'Dice not found', null, null);
             }
             const startId = action.currentCell.id ?? -1
-            if(startId === -1){
+            if (startId === -1) {
                 return Utils.formatResponse(500, 'Current cell not found', null, null);
             }
             const cells = Utils.findCellsAtDistance(
@@ -575,13 +576,13 @@ export class SessionsServices {
                 startId,
                 action.dice
             )
-            if(cells.data.length === 0){
+            if (cells.data.length === 0) {
                 return Utils.formatResponse(500, 'Cells not found', null, null);
             }
             game.data.sessionStatusGame.currentTurnEntity = {
                 ...action,
-                currentAction:Can.CHOOSE_MOVE,
-                moves:cells.data
+                currentAction: Can.CHOOSE_MOVE,
+                moves: cells.data
             }
             const session = await this.setDataInsideDb(game)
             if (session.code < 200 || session.code > 299) {
@@ -593,7 +594,7 @@ export class SessionsServices {
         }
     }
 
-    async chooseMove(action:CurrentTurnAction,room:string) {
+    async chooseMove(action: CurrentTurnAction, room: string) {
         try {
             const existed = await this.roomExists(room)
             if (existed.code < 200 || existed.code > 299) {
@@ -603,12 +604,12 @@ export class SessionsServices {
             if (game.code < 200 || game.code > 299) {
                 return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
             }
-            if(game.data.sessionStatusGame.currentTurnEntity.move.id === -1){
+            if (game.data.sessionStatusGame.currentTurnEntity.move.id === -1) {
                 return Utils.formatResponse(500, 'Move not found', null, null);
             }
             game.data.sessionStatusGame.currentTurnEntity = {
                 ...action,
-                currentAction:Can.MOVE,
+                currentAction: Can.MOVE,
             }
             const session = await this.setDataInsideDb(game)
             if (session.code < 200 || session.code > 299) {
@@ -620,8 +621,8 @@ export class SessionsServices {
         }
     }
 
-    async move(action:CurrentTurnAction,room:string) {
-        try{
+    async move(action: CurrentTurnAction, room: string) {
+        try {
             const existed = await this.roomExists(room)
             if (existed.code < 200 || existed.code > 299) {
                 return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
@@ -633,20 +634,20 @@ export class SessionsServices {
 
             game.data.sessionStatusGame.currentTurnEntity = {
                 ...action,
-                currentAction:Can.END_MOVE,
+                currentAction: Can.END_MOVE,
             }
             const session = await this.setDataInsideDb(game)
             if (session.code < 200 || session.code > 299) {
                 return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
             }
             return Utils.formatResponse(200, 'Document created succes', session.data, null);
-        }catch (error:any){
+        } catch (error: any) {
             return Utils.formatResponse(500, error.message, null, null);
         }
     }
 
-    async endMove(action:CurrentTurnAction,room:string){
-        try{
+    async endMove(action: CurrentTurnAction, room: string) {
+        try {
             const existed = await this.roomExists(room)
             if (existed.code < 200 || existed.code > 299) {
                 return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
@@ -657,20 +658,20 @@ export class SessionsServices {
             }
             game.data.sessionStatusGame.currentTurnEntity = {
                 ...action,
-                currentAction:Can.END_TURN,
+                currentAction: Can.END_TURN,
             }
             const session = await this.setDataInsideDb(game)
             if (session.code < 200 || session.code > 299) {
                 return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
             }
             return Utils.formatResponse(200, 'Document created succes', session.data, null);
-        }catch (error:any){
+        } catch (error: any) {
             return Utils.formatResponse(500, error.message, null, null);
         }
     }
 
-    async endTurn(action:CurrentTurnAction,room:string){
-        try{
+    async endTurn(action: CurrentTurnAction, room: string) {
+        try {
             const existed = await this.roomExists(room)
             if (existed.code < 200 || existed.code > 299) {
                 return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
@@ -681,18 +682,17 @@ export class SessionsServices {
             }
             game.data.sessionStatusGame.currentTurnEntity = {
                 ...action,
-                currentAction:Can.START_GAME,
+                currentAction: Can.START_GAME,
             }
             const session = await this.setDataInsideDb(game)
             if (session.code < 200 || session.code > 299) {
                 return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
             }
             return Utils.formatResponse(200, 'Document created succes', session.data, null);
-        }catch (error:any){
+        } catch (error: any) {
             return Utils.formatResponse(500, error.message, null, null);
         }
     }
-
 
 
 }

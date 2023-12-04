@@ -22,11 +22,7 @@ export class SocketService {
 
     async joinSession(data: JoinSessionSocket) {
         try {
-            let joinned = await this.sessionService.joinSession(data);
-            return Utils.formatSocketMessage(
-                data.room,
-                joinned.data,
-                `${joinned.message}`, 200, null)
+            return this.sessionService.joinSession(data);
         } catch (error: any) {
             return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
         }
@@ -34,13 +30,7 @@ export class SocketService {
 
     async joinTeam(data: JoinSessionTeam) {
         try {
-            let joinedTeam = await this.sessionService.joinTeam(data);
-            return Utils.formatSocketMessage(
-                data.room,
-                joinedTeam.data,
-                `${joinedTeam.message}`,
-                joinedTeam.code,
-                joinedTeam.error)
+            return this.sessionService.joinTeam(data);
         } catch (error: any) {
             return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
         }
@@ -48,13 +38,7 @@ export class SocketService {
 
     async cardSelected(data: JoinSessionTeamCard) {
         try {
-            let cardSelected = await this.sessionService.cardSelected(data);
-            return Utils.formatSocketMessage(
-                data.room,
-                cardSelected.data,
-                `${cardSelected.message}`,
-                cardSelected.code,
-                cardSelected.error)
+            return this.sessionService.cardSelected(data);
         } catch (error: any) {
             return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
         }
@@ -62,14 +46,7 @@ export class SocketService {
 
     async createTurnList(room: string) {
         try {
-            let createTurn: FormatRestApiModels;
-            createTurn = await this.sessionService.startGame(room);
-            return Utils.formatSocketMessage(
-                room,
-                createTurn.data,
-                `${createTurn.message}`,
-                createTurn.code,
-                createTurn.error)
+            return this.sessionService.startGame(room);
         } catch (error: any) {
             return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
         }
@@ -81,7 +58,7 @@ export class SocketService {
             whoIsTurn = await this.sessionService.whoIsTurn(room);
             return Utils.formatSocketMessage(
                 room,
-                whoIsTurn.data,
+                whoIsTurn,
                 `${whoIsTurn.message}`,
                 whoIsTurn.code,
                 whoIsTurn.error)
@@ -96,7 +73,7 @@ export class SocketService {
             endMove = await this.sessionService.startTurn(data.action,data.room);
             return Utils.formatSocketMessage(
                 data.room,
-                endMove.data,
+                endMove,
                 `${endMove.message}`,
                 endMove.code,
                 endMove.error)
@@ -115,7 +92,7 @@ export class SocketService {
                 sendDice = await this.sessionService.sendDice(data.action,data.room);
                 return Utils.formatSocketMessage(
                     data.room,
-                    sendDice.data,
+                    sendDice,
                     `${sendDice.message}`,
                     sendDice.code,
                     sendDice.error)
@@ -127,7 +104,7 @@ export class SocketService {
                 sendDice = await this.sessionService.sendDice(currentAction,data.room);
                 return Utils.formatSocketMessage(
                     data.room,
-                    sendDice.data,
+                    sendDice,
                     `${sendDice.message}`,
                     sendDice.code,
                     sendDice.error)
@@ -146,7 +123,7 @@ export class SocketService {
                 chooseMove = await this.sessionService.chooseMove(data.action,data.room);
                 return Utils.formatSocketMessage(
                     data.room,
-                    chooseMove.data,
+                    chooseMove,
                     `${chooseMove.message}`,
                     chooseMove.code,
                     chooseMove.error)
@@ -158,7 +135,7 @@ export class SocketService {
                 chooseMove = await this.sessionService.chooseMove(currentAction,data.room);
                 return Utils.formatSocketMessage(
                     data.room,
-                    chooseMove.data,
+                    chooseMove,
                     `${chooseMove.message}`,
                     chooseMove.code,
                     chooseMove.error)
@@ -178,7 +155,7 @@ export class SocketService {
                 endMove = await this.sessionService.endMove(data.action,data.room);
                 return Utils.formatSocketMessage(
                     data.room,
-                    endMove.data,
+                    endMove,
                     `${endMove.message}`,
                     endMove.code,
                     endMove.error)
@@ -190,7 +167,7 @@ export class SocketService {
                 endMove = await this.sessionService.endMove(currentAction,data.room);
                 return Utils.formatSocketMessage(
                     data.room,
-                    endMove.data,
+                    endMove,
                     `${endMove.message}`,
                     endMove.code,
                     endMove.error)
@@ -208,7 +185,7 @@ export class SocketService {
             endMove = await this.sessionService.endMove(data.action,data.room);
             return Utils.formatSocketMessage(
                 data.room,
-                endMove.data,
+                endMove,
                 `${endMove.message}`,
                 endMove.code,
                 endMove.error)
@@ -223,7 +200,7 @@ export class SocketService {
             endMove = await this.sessionService.endTurn(data.action,data.room);
             return Utils.formatSocketMessage(
                 data.room,
-                endMove.data,
+                endMove,
                 `${endMove.message}`,
                 endMove.code,
                 endMove.error)
