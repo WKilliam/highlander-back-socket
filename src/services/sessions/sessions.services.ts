@@ -18,11 +18,12 @@ import {
     CurrentTurnAction,
     JoinSessionSocket,
     JoinSessionTeam,
-    JoinSessionTeamCard
+    JoinSessionTeamCard, PlayerStatusSession
 } from "../../models/formatSocket.models";
 import {CardsDto} from "../../dto/cards.dto";
 import {Can} from "../../models/enums";
 import {SessionDto} from "../../dto/session.dto";
+import {PlayerLobby} from "../../models/player.models";
 
 interface GameKey {
     gameKey: string;
@@ -46,32 +47,6 @@ export class SessionsServices {
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
         return result;
-    }
-
-    async setDataInsideDb(game: FormatRestApiModels) {
-        try {
-            const dataSource: DataSource = await this.dataSourceConfig;
-            const sessionRepository: Repository<SessionDto> = dataSource.getRepository(SessionDto);
-            if (game.data) {
-                const updateSend = {
-                    id: game.data.id,
-                    game: {
-                        sessionStatusGame: game.data.sessionStatusGame,
-                        game: game.data.game,
-                        maps: game.data.maps
-                    }
-                }
-                const updateResult = await sessionRepository.update(game.data.id, updateSend);
-                const updatedSession = await sessionRepository.findOne({
-                    where: {id: game.data.id},
-                });
-                return Utils.formatResponse(200, 'Document updated successfully', updatedSession, null);
-            } else {
-                return Utils.formatResponse(400, 'Les données à mettre à jour sont vides ou non définies', null, null);
-            }
-        } catch (error) {
-            return Utils.formatResponse(500, 'Erreur lors de la création du document JSON', null, error);
-        }
     }
 
     async getFilesInDirectory() {
@@ -127,14 +102,12 @@ export class SessionsServices {
                 return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
             }
             const session = await sessionRepository.find()
-            let returnSession: SessionGame | null = null
+            let returnSession: SessionDto | null = null
             for (let i = 0; i < session.length; i++) {
                 if (session[i].game.sessionStatusGame.room === room) {
                     returnSession = {
                         id: session[i].id,
-                        sessionStatusGame: session[i].game.sessionStatusGame,
-                        game: session[i].game.game,
-                        maps: session[i].game.maps
+                        game: session[i].game
                     }
                 }
             }
@@ -210,15 +183,15 @@ export class SessionsServices {
                         teamIndex: -1,
                         cardIndex: -1,
                         typeEntity: EntityCategorie.HUMAIN,
-                        luk: -1
+                        luk: -1,
+                        cellPosition: {
+                            id: -1,
+                            x: -1,
+                            y: -1,
+                            value: 0
+                        },
                     },
                     dice: -1,
-                    currentCell: {
-                        id: -1,
-                        x: -1,
-                        y: -1,
-                        value: 0
-                    },
                     moves: [],
                     move: {
                         id: -1,
@@ -251,111 +224,113 @@ export class SessionsServices {
         }
     }
 
-    async activeForPlayer(token: any) {
+    async setDataInsideDb(game: FormatRestApiModels) {
         try {
             const dataSource: DataSource = await this.dataSourceConfig;
-            const userRepository: Repository<ClientDto> = dataSource.getRepository(ClientDto);
-            const tokenManager = new TokenManager('votre_clé_secrète');
             const sessionRepository: Repository<SessionDto> = dataSource.getRepository(SessionDto);
-            const tokenData = tokenManager.verifyToken(token);
-            if (tokenData.code < 200 || tokenData.code > 299) {
-                return Utils.formatResponse(tokenData.code, `${tokenData.message}`, tokenData.data, tokenData.error);
-            }
-            const user = await userRepository.findOne({where: {id: tokenData.data.userId}});
-            if (!user) {
-                return Utils.formatResponse(500, 'User not found', null, null);
-            }
-            // Récupérez la liste de toutes les sessions existantes
-            const allSessions = await this.getFilesInDirectory();
-            if (allSessions.data.length < 1) {
-                return Utils.formatResponse(
-                    200,
-                    'No session existed',
-                    null);
-            }
-            let tabAllSession: Array<string> = []
-            for (let i = 0; i < allSessions.data.length; i++) {
-                tabAllSession.push(allSessions.data[i].game.sessionStatusGame.room)
-            }
-
-            for (const sessionName of tabAllSession) {
-                try {
-                    console.log('sessionName', sessionName)
-                    let game = await this.getSession(sessionName)
-                    if (game.code < 200 || game.code > 299) {
-                        return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
+            if (game.data) {
+                const updateSend = {
+                    id: game.data.id,
+                    game: {
+                        sessionStatusGame: game.data.game.sessionStatusGame,
+                        game: game.data.game.game,
+                        maps: game.data.game.maps
                     }
-                    for (let i = 0; i < game.data.sessionStatusGame.lobby.length; i++) {
-                        if (game.data.sessionStatusGame.lobby[i].pseudo === user?.pseudo &&
-                            game.data.sessionStatusGame.lobby[i].avatar === user?.avatar) {
-                            let session = await this.getSession(game.data.sessionStatusGame.room)
-                            if (session.code < 200 || session.code > 299) {
-                                return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
-                            }
-                            return Utils.formatResponse(200, 'Session found', session, null);
-                        }
-                    }
-                } catch (error: any) {
-                    return Utils.formatResponse(500, error.message, null, 'Session not found');
                 }
+                const updateResult = await sessionRepository.update(game.data.id, updateSend);
+                const updatedSession = await sessionRepository.findOne({
+                    where: {id: game.data.id},
+                });
+
+                return Utils.formatResponse(200, 'Document updated successfully', updatedSession, null);
+            } else {
+                return Utils.formatResponse(400, 'Les données à mettre à jour sont vides ou non définies', null, null);
             }
-            return Utils.formatResponse(200, 'Player not inside session', null, null);
-        } catch (error: any) {
-            return Utils.formatResponse(500, error.message, null, null);
+        } catch (error) {
+            return Utils.formatResponse(500, 'Erreur lors de la création du document JSON', null, error);
         }
     }
 
-    async joinSession(data: JoinSessionSocket) {
+    async playerStatusSession(playerStatusSession: PlayerStatusSession) {
         try {
-            const existed = await this.roomExists(data.room)
-            const dataSource: DataSource = await this.dataSourceConfig;
-            const sessionRepository: Repository<SessionDto> = dataSource.getRepository(SessionDto);
-            if (existed.code < 200 || existed.code > 299) {
-                return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
-            }
-            const tokenManager = new TokenManager('votre_clé_secrète');
-            const tokenData = tokenManager.verifyToken(data.token);
-            if (tokenData.code < 200 || tokenData.code > 299) {
-                return Utils.formatResponse(tokenData.code, `${tokenData.message}`, tokenData.data, tokenData.error);
-            }
-            if (tokenData.code < 200 || tokenData.code > 299) {
-                return Utils.formatResponse(tokenData.code, `${tokenData.message}`, tokenData.data, tokenData.error);
-            }
-            const login = await this.userServices.login({
-                email: tokenData.data.email,
-                password: tokenData.data.password
-            });
-            if (login.code < 200 || login.code > 299) {
-                return Utils.formatResponse(login.code, `${login.message}`, login.data, login.error);
-            }
-            let game = await this.getSession(data.room)
-            if (game.code < 200 || game.code > 299) {
-                return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
-            }
-            if (game.data.sessionStatusGame.lobby.length === 8) {
-                return Utils.formatResponse(500, 'Session is full', null, null);
-            }
-            for (const playerLobby in game.data.sessionStatusGame.lobby) {
-                if (game.data.sessionStatusGame.lobby[playerLobby].pseudo === login.data.pseudo &&
-                    game.data.sessionStatusGame.lobby[playerLobby].avatar === login.data.avatar) {
-                    let session = await this.getSession(game.data.sessionStatusGame.room)
+            if (playerStatusSession.room !== null && playerStatusSession.room !== undefined) {
+                // partie join
+                const existed = await this.roomExists(playerStatusSession.room)
+                if (existed.code < 200 || existed.code > 299) {
+                    return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
+                }
+                let user = await this.userServices.getUserSimplified(playerStatusSession.token)
+                if (user.code < 200 || user.code > 299) {
+                    return Utils.formatResponse(user.code, `${user.message}`, user.data, user.error);
+                }
+                let game = await this.getSession(playerStatusSession.room)
+                if (game.code < 200 || game.code > 299) {
+                    return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
+                }
+                let isInside = false
+
+                game.data.game.sessionStatusGame.lobby.forEach((player: PlayerLobby, index: number) => {
+                    if (player.pseudo === user.data.pseudo && player.avatar === user.data.avatar) {
+                        isInside = true
+                    }
+                })
+                if (isInside) {
+                    return game
+                } else {
+                    game.data.game.sessionStatusGame.lobby.push({
+                        score: 0,
+                        avatar: user.data.avatar,
+                        pseudo: user.data.pseudo,
+                        cards: user.data.cards,
+                    })
+                    const session = await this.setDataInsideDb({
+                        date: new Date().toISOString(),
+                        code: 200,
+                        message: 'Document created succes',
+                        data: game.data,
+                        error: null
+                    })
                     if (session.code < 200 || session.code > 299) {
                         return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
                     }
-                    return Utils.formatResponse(200, 'Session found', session.data, null);
+                    return Utils.formatResponse(200, 'Document created succes', session.data, null);
+                }
+            } else {
+                // partie get inside
+                let user = await this.userServices.getUserSimplified(playerStatusSession.token)
+                if (user.code < 200 || user.code > 299) {
+                    return Utils.formatResponse(user.code, `${user.message}`, user.data, user.error);
+                }
+                // Récupérez la liste de toutes les sessions existantes
+                const allSessions = await this.getFilesInDirectory();
+                if (allSessions.code < 200 || allSessions.code > 299) {
+                    return Utils.formatResponse(allSessions.code, `${allSessions.message}`, allSessions.data, allSessions.error);
+                }
+                const sessions: Array<SessionDto> = allSessions.data
+                if (sessions.length < 1) {
+                    return Utils.formatResponse(
+                        200,
+                        'No session existed',
+                        null,
+                        null);
+                } else {
+                    let isInside = false
+                    let indixSession = -1
+                    sessions.forEach((session: SessionDto, index: number) => {
+                        session.game.sessionStatusGame.lobby.forEach((player: PlayerLobby, index: number) => {
+                            if (player.pseudo === user.data.pseudo && player.avatar === user.data.avatar) {
+                                isInside = true
+                                indixSession = index
+                            }
+                        })
+                    })
+                    if (isInside) {
+                        return Utils.formatResponse(200, 'Player already inside session', allSessions.data[indixSession], null);
+                    } else {
+                        return Utils.formatResponse(200, 'Player not inside session', [], null);
+                    }
                 }
             }
-            game.data.sessionStatusGame.lobby.push({
-                score: 0,
-                avatar: login.data.avatar,
-                pseudo: login.data.pseudo,
-                cards: login.data.cards,
-            })
-            const session = await this.setDataInsideDb(game)
-            if (session.code < 200 || session.code > 299) {
-                return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
-            }
-            return Utils.formatResponse(200, 'Document created succes', session.data, null);
         } catch (error: any) {
             return Utils.formatResponse(500, error.message, null, null);
         }
@@ -376,12 +351,9 @@ export class SessionsServices {
             if (game.code < 200 || game.code > 299) {
                 return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
             }
-            if (!game.data.game || !game.data.game.teams) {
-                return Utils.formatResponse(500, 'Game or teams not found', null, null);
-            }
             let newGame = Utils.initTeamEntityPlayingWithCards(
-                game.data.game.teams,
-                game.data.sessionStatusGame.lobby,
+                game.data.game.game.teams,
+                game.data.game.sessionStatusGame.lobby,
                 data.lobbyPosition,
                 data.teamPosition,
                 data.cardPosition
@@ -390,10 +362,17 @@ export class SessionsServices {
                 return Utils.formatResponse(newGame.code, `${newGame.message}`, newGame.data, newGame.error);
             }
             game.data.game.teams = newGame.data;
-            const session = await this.setDataInsideDb(game)
+            const session = await this.setDataInsideDb({
+                date: new Date().toISOString(),
+                code: 200,
+                message: 'Document created succes',
+                data: game.data,
+                error: null
+            })
             if (session.code < 200 || session.code > 299) {
                 return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
             }
+            console.log('session', session)
             return Utils.formatResponse(200, 'Document created succes', session.data, null);
         } catch (error: any) {
             return Utils.formatResponse(500, error.message, null, null);
@@ -408,17 +387,17 @@ export class SessionsServices {
             if (existed.code < 200 || existed.code > 299) {
                 return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
             }
-            if (!game.data.game || !game.data.game.teams) {
+            if (!game.data.game.game || !game.data.game.game.teams) {
                 return Utils.formatResponse(500, 'Game or teams not found', null, null);
             }
             let newGame = Utils.initPlaceTeamCard(
                 data,
-                game.data.game.teams,
-                game.data.sessionStatusGame.lobby)
+                game.data.game.game.teams,
+                game.data.game.sessionStatusGame.lobby)
             if (newGame.code < 200 || newGame.code > 299 || !newGame) {
                 return Utils.formatResponse(newGame.code, `${newGame.message}`, newGame.data, newGame.error);
             }
-            game.data.game.teams = newGame.data;
+            game.data.game.game.teams = newGame.data;
             const session = await this.setDataInsideDb(game)
             if (session.code < 200 || session.code > 299) {
                 return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
@@ -429,7 +408,7 @@ export class SessionsServices {
         }
     }
 
-    async startGame(room: string) {
+    async creatList(room: string) {
         try {
             const dataSource: DataSource = await this.dataSourceConfig;
             const cardsRepository: Repository<CardsDto> = dataSource.getRepository(CardsDto);
@@ -441,7 +420,7 @@ export class SessionsServices {
             if (game.code < 200 || game.code > 299) {
                 return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
             }
-            let needMinimumOnePlayer = Utils.getIfJustOnePlayerHaveCard(game.data.game.teams)
+            let needMinimumOnePlayer = Utils.getIfJustOnePlayerHaveCard(game.data.game.game.teams)
             if (!needMinimumOnePlayer) {
                 return Utils.formatResponse(500, 'Need minimum one player have card', null, null);
             }
@@ -470,13 +449,13 @@ export class SessionsServices {
             if (!cards) {
                 return Utils.formatResponse(500, 'Cards not found', null, null);
             }
-            game.data.sessionStatusGame.status = StatusGame.GAME;
-            game.data.game.monsters = Utils.initMonsterEntityPlaying(cards, game.data.maps.cellsGrid)
-            const monsterCells = game.data.game.monsters.map(monster => {
+            game.data.game.sessionStatusGame.status = StatusGame.GAME;
+            game.data.game.game.monsters = Utils.initMonsterEntityPlaying(cards, game.data.game.maps.cellsGrid)
+            const monsterCells = game.data.game.game.monsters.map(monster => {
                 return monster.cellPosition
             })
-            game.data.game.teams = Utils.placeEntityPlayer(game.data.game.teams, game.data.maps.cellsGrid, monsterCells)
-            game.data.sessionStatusGame.entityTurn = Utils.turnInit(game.data.game)
+            game.data.game.game.teams = Utils.placeEntityPlayer(game.data.game.game.teams, game.data.game.maps.cellsGrid, monsterCells)
+            game.data.game.sessionStatusGame.entityTurn = Utils.turnInit(game.data.game.game)
             const session = await this.setDataInsideDb(game)
             if (session.code < 200 || session.code > 299) {
                 return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
@@ -487,7 +466,7 @@ export class SessionsServices {
         }
     }
 
-    async whoIsTurn(room: string) {
+    async roolingTurn(room: string, entityTurn: CurrentTurnAction) {
         try {
             const existed = await this.roomExists(room)
             if (existed.code < 200 || existed.code > 299) {
@@ -497,202 +476,86 @@ export class SessionsServices {
             if (game.code < 200 || game.code > 299) {
                 return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
             }
-            const entity = game.data.sessionStatusGame.entityTurn[0]
-            game.data.sessionStatusGame.currentTurnEntity = {
-                turnEntity: entity,
-                currentCell: {
-                    id: -1,
-                    x: -1,
-                    y: -1,
-                    value: 0
-                },
-                dice: -1,
-                move: {
-                    id: -1,
-                    x: -1,
-                    y: -1,
-                    value: 0
-                },
-                moves: [],
-                currentAction: Can.START_TURN
+            switch (entityTurn.currentAction) {
+                case Can.WHO_IS_TURN:
+                    game.data.game.sessionStatusGame.currentTurnEntity = {
+                        turnEntity: entityTurn.turnEntity,
+                        dice: -1,
+                        move: {
+                            id: -1,
+                            x: -1,
+                            y: -1,
+                            value: 0
+                        },
+                        moves: [],
+                        currentAction: Can.SEND_DICE
+                    }
+                    break
+                case Can.SEND_DICE:
+                    let cell = entityTurn.turnEntity.cellPosition?.id ?? -1
+                    if (cell === -1) {
+                        return Utils.formatResponse(500, 'Entity not found', null, null);
+                    }
+                    let findAllMoving = Utils.findCellsAtDistance(game.data.game.maps.cellsGrid, cell, entityTurn.dice)
+                    if (findAllMoving.code < 200 || findAllMoving.code > 299) {
+                        return Utils.formatResponse(findAllMoving.code, `${findAllMoving.message}`, findAllMoving.data, findAllMoving.error);
+                    }
+                    game.data.game.sessionStatusGame.currentTurnEntity = {
+                        ...entityTurn,
+                        moves: findAllMoving.data,
+                        currentAction: Can.CHOOSE_MOVE
+                    }
+                    break
+                case Can.CHOOSE_MOVE:
+                    game.data.game.sessionStatusGame.currentTurnEntity = {
+                        ...entityTurn,
+                        currentAction: Can.MOVE
+                    }
+                    break
+                case Can.MOVE:
+                    game.data.game.sessionStatusGame.currentTurnEntity = {
+                        ...entityTurn,
+                        currentAction: Can.END_MOVE
+                    }
+                    break
+                case Can.END_MOVE:
+                    game.data.game.sessionStatusGame.currentTurnEntity = {
+                        ...entityTurn,
+                        currentAction: Can.END_TURN
+                    }
+                    game.data.game.sessionStatusGame.entityTurn.shift()
+                    break
+                case Can.END_TURN:
+                    if (game.data.game.sessionStatusGame.entityTurn.length === 0) {
+                        await this.creatList(room)
+                    }
+                    game.data.game.sessionStatusGame.currentTurnEntity =
+                        {
+                            turnEntity: game.data.game.sessionStatusGame.entityTurn[0],
+                            dice: -1,
+                            moves: [],
+                            move: {
+                                id: -1,
+                                x: -1,
+                                y: -1,
+                                value: -1,
+                            },
+                            currentAction: Can.NEXT_TURN
+                        }
+                    break
+                case Can.END_GAME:
+                    break
+                default:
+                    return Utils.formatResponse(200, 'error Action', null, null)
             }
             const session = await this.setDataInsideDb(game)
             if (session.code < 200 || session.code > 299) {
                 return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
             }
-            return Utils.formatResponse(200, 'Document created succes', session.data, null);
+            return Utils.formatResponse(200, 'Document created succes', game.data, null);
         } catch (error: any) {
             return Utils.formatResponse(500, error.message, null, null);
         }
     }
-
-    async startTurn(action: CurrentTurnAction, room: string) {
-        try {
-            const existed = await this.roomExists(room)
-            if (existed.code < 200 || existed.code > 299) {
-                return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
-            }
-            let game = await this.getSession(room)
-            if (game.code < 200 || game.code > 299) {
-                return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
-            }
-            game.data.sessionStatusGame.currentTurnEntity = {
-                ...action,
-                currentAction: Can.SEND_DICE
-            }
-            const session = await this.setDataInsideDb(game)
-            if (session.code < 200 || session.code > 299) {
-                return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
-            }
-            return Utils.formatResponse(200, 'Document created succes', session.data, null);
-        } catch (error: any) {
-            return Utils.formatResponse(500, error.message, null, null);
-        }
-    }
-
-
-    async sendDice(action: CurrentTurnAction, room: string) {
-        try {
-            const existed = await this.roomExists(room)
-            if (existed.code < 200 || existed.code > 299) {
-                return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
-            }
-            let game = await this.getSession(room)
-            if (game.code < 200 || game.code > 299) {
-                return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
-            }
-            if (action.currentCell.id === -1) {
-                return Utils.formatResponse(500, 'Current cell not found', null, null);
-            }
-            if (action.dice === -1) {
-                return Utils.formatResponse(500, 'Dice not found', null, null);
-            }
-            const startId = action.currentCell.id ?? -1
-            if (startId === -1) {
-                return Utils.formatResponse(500, 'Current cell not found', null, null);
-            }
-            const cells = Utils.findCellsAtDistance(
-                game.data.maps.cellsGrid,
-                startId,
-                action.dice
-            )
-            if (cells.data.length === 0) {
-                return Utils.formatResponse(500, 'Cells not found', null, null);
-            }
-            game.data.sessionStatusGame.currentTurnEntity = {
-                ...action,
-                currentAction: Can.CHOOSE_MOVE,
-                moves: cells.data
-            }
-            const session = await this.setDataInsideDb(game)
-            if (session.code < 200 || session.code > 299) {
-                return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
-            }
-            return Utils.formatResponse(200, 'Document created succes', session.data, null);
-        } catch (error: any) {
-            return Utils.formatResponse(500, error.message, null, null);
-        }
-    }
-
-    async chooseMove(action: CurrentTurnAction, room: string) {
-        try {
-            const existed = await this.roomExists(room)
-            if (existed.code < 200 || existed.code > 299) {
-                return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
-            }
-            let game = await this.getSession(room)
-            if (game.code < 200 || game.code > 299) {
-                return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
-            }
-            if (game.data.sessionStatusGame.currentTurnEntity.move.id === -1) {
-                return Utils.formatResponse(500, 'Move not found', null, null);
-            }
-            game.data.sessionStatusGame.currentTurnEntity = {
-                ...action,
-                currentAction: Can.MOVE,
-            }
-            const session = await this.setDataInsideDb(game)
-            if (session.code < 200 || session.code > 299) {
-                return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
-            }
-            return Utils.formatResponse(200, 'Document created succes', session.data, null);
-        } catch (error: any) {
-            return Utils.formatResponse(500, error.message, null, null);
-        }
-    }
-
-    async move(action: CurrentTurnAction, room: string) {
-        try {
-            const existed = await this.roomExists(room)
-            if (existed.code < 200 || existed.code > 299) {
-                return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
-            }
-            let game = await this.getSession(room)
-            if (game.code < 200 || game.code > 299) {
-                return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
-            }
-
-            game.data.sessionStatusGame.currentTurnEntity = {
-                ...action,
-                currentAction: Can.END_MOVE,
-            }
-            const session = await this.setDataInsideDb(game)
-            if (session.code < 200 || session.code > 299) {
-                return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
-            }
-            return Utils.formatResponse(200, 'Document created succes', session.data, null);
-        } catch (error: any) {
-            return Utils.formatResponse(500, error.message, null, null);
-        }
-    }
-
-    async endMove(action: CurrentTurnAction, room: string) {
-        try {
-            const existed = await this.roomExists(room)
-            if (existed.code < 200 || existed.code > 299) {
-                return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
-            }
-            let game = await this.getSession(room)
-            if (game.code < 200 || game.code > 299) {
-                return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
-            }
-            game.data.sessionStatusGame.currentTurnEntity = {
-                ...action,
-                currentAction: Can.END_TURN,
-            }
-            const session = await this.setDataInsideDb(game)
-            if (session.code < 200 || session.code > 299) {
-                return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
-            }
-            return Utils.formatResponse(200, 'Document created succes', session.data, null);
-        } catch (error: any) {
-            return Utils.formatResponse(500, error.message, null, null);
-        }
-    }
-
-    async endTurn(action: CurrentTurnAction, room: string) {
-        try {
-            const existed = await this.roomExists(room)
-            if (existed.code < 200 || existed.code > 299) {
-                return Utils.formatResponse(existed.code, `${existed.message}`, existed.data, existed.error);
-            }
-            let game = await this.getSession(room)
-            if (game.code < 200 || game.code > 299) {
-                return Utils.formatResponse(game.code, `${game.message}`, game.data, game.error);
-            }
-            game.data.sessionStatusGame.currentTurnEntity = {
-                ...action,
-                currentAction: Can.START_GAME,
-            }
-            const session = await this.setDataInsideDb(game)
-            if (session.code < 200 || session.code > 299) {
-                return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
-            }
-            return Utils.formatResponse(200, 'Document created succes', session.data, null);
-        } catch (error: any) {
-            return Utils.formatResponse(500, error.message, null, null);
-        }
-    }
-
 
 }

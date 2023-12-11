@@ -30,7 +30,6 @@ export interface SessionCreated {
 }
 
 export interface SessionGame {
-    id?: number;
     sessionStatusGame: SessionStatusGame;
     game: Game;
     maps: Maps;
@@ -77,6 +76,7 @@ export interface TurnListEntity {
     teamIndex: number
     cardIndex: number
     typeEntity: EntityCategorie
-    luk: number
+    luk: number,
+    cellPosition?: Cells
 }
 

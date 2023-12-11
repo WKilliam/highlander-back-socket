@@ -161,4 +161,26 @@ export class UsersServices {
             return Utils.formatResponse(500, 'Internal server error', null, error.message);
         }
     }
+
+    async getUserSimplified(token: string) {
+        try {
+            const dataSource: DataSource = await this.dataSourceConfig;
+            const tokenManager = new TokenManager('votre_clé_secrète');
+            const tokenData = tokenManager.verifyToken(token);
+            if (tokenData.code < 200 || tokenData.code > 299) {
+                return Utils.formatResponse(tokenData.code, `${tokenData.message}`, tokenData.data, tokenData.error);
+            }
+            const login = await this.login({
+                email: tokenData.data.email,
+                password: tokenData.data.password
+            });
+            if (login.code < 200 || login.code > 299) {
+                return Utils.formatResponse(login.code, `${login.message}`, login.data, login.error);
+            }else{
+                return Utils.formatResponse(200, 'User logged in successfully', login.data, null);
+            }
+        }catch (error: any) {
+            return Utils.formatResponse(500, 'Internal server error', null, error.message);
+        }
+    }
 }

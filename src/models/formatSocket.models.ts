@@ -17,6 +17,11 @@ export interface JoinSessionSocket {
     token: string;
 }
 
+export interface PlayerStatusSession {
+    room?: string | null;
+    token: string;
+}
+
 export interface JoinSessionTeam {
     room: string;
     lobbyPosition: number;
@@ -35,7 +40,6 @@ export interface JoinSessionTeamCard {
 export interface CurrentTurnAction {
     turnEntity: TurnListEntity;
     dice: number,
-    currentCell: Cells,
     moves: Cells[],
     move: Cells,
     currentAction:string

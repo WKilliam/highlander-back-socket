@@ -8,7 +8,7 @@ import {CardsDto} from "../dto/cards.dto";
 
 export class Utils {
 
-    static randomName() {
+    static randomName(teamEntityPlaying: Array<EntityPlaying>) {
         let nomsMonstres = [
             "Ombre Funeste",
             "Griffes de Nuit",
@@ -31,7 +31,14 @@ export class Utils {
             "Gobelins des Marais",
             "Liche Immortelle"
         ];
-        return nomsMonstres[Math.floor(Math.random() * nomsMonstres.length)];
+        const generateUniqueName = (): string => {
+            let newName = nomsMonstres[Math.floor(Math.random() * nomsMonstres.length)];
+            while (teamEntityPlaying.some(entity => entity.name === newName)) {
+                newName = nomsMonstres[Math.floor(Math.random() * nomsMonstres.length)];
+            }
+            return newName;
+        };
+        return generateUniqueName();
     }
 
 
@@ -104,11 +111,12 @@ export class Utils {
 
 
     // give posibility to move player
-    static findCellsAtDistance(gridCellData: Cells[][], startId: number, distance: number) {
+    static findCellsAtDistance(cells: Cells[], startId: number, distance: number) {
         const result: Cells[] = [];
         let startX: number | null = null;
         let startY: number | null = null;
-        gridCellData.forEach((rowArray, rowIndex) => {
+        let gridCells = this.convertListCellsToMatrix(cells)
+        gridCells.forEach((rowArray, rowIndex) => {
             rowArray.forEach((cell, colIndex) => {
                 if (cell.id === startId) {
                     startX = rowIndex;
@@ -127,7 +135,7 @@ export class Utils {
                 const dy = Math.abs(y - startX);
                 const manhattanDistance = dx + dy;
                 if (manhattanDistance === distance) {
-                    result.push(gridCellData[y][x]);
+                    result.push(gridCells[y][x]);
                 }
             }
         }
@@ -136,23 +144,12 @@ export class Utils {
 
 
     static formatResponse(code: number, message?: string, data?: any, error?: any): FormatRestApiModels {
-        let messageFormat: FormatRestApiModels;
-        if (error) {
-            messageFormat = {
-                date: new Date().toISOString(),
-                error: error,
-                code: code,
-                message: null
-            }
-            return messageFormat;
-        } else {
-            messageFormat = {
-                date: new Date().toISOString(),
-                data: data,
-                code: code,
-                message: message || null
-            }
-            return messageFormat;
+        return {
+            date: new Date().toISOString(),
+            data: data,
+            code: code,
+            message: message || null,
+            error: error || null
         }
     }
 
@@ -425,7 +422,7 @@ export class Utils {
                 capacities: cards[indexTwo].capacities,
             }
             teamEntityPlaying.push({
-                name: this.randomName(),
+                name: this.randomName(teamEntityPlaying),
                 commonLife: 200,
                 commonMaxLife: 200,
                 commonAttack: cardOne.atk + cardTwo.atk,
@@ -565,6 +562,7 @@ export class Utils {
                         cardIndex: cardIndex,
                         typeEntity: EntityCategorie.HUMAIN,
                         luk: card.luk,
+                        cellPosition: team.cellPosition
                     });
                 }
             });
@@ -580,6 +578,7 @@ export class Utils {
                     cardIndex: cardIndex,
                     typeEntity: EntityCategorie.COMPUTER,
                     luk: card.luk,
+                    cellPosition: monster.cellPosition
                 });
             });
         });
