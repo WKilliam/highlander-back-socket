@@ -346,7 +346,6 @@ export class SessionsServices {
     async joinTeam(data: JoinSessionTeam) {
         try {
             const dataSource: DataSource = await this.dataSourceConfig;
-            const sessionRepository: Repository<SessionDto> = dataSource.getRepository(SessionDto);
             if (data.lobbyPosition < 0 || data.lobbyPosition > 7 || data.teamPosition < 0 || data.teamPosition > 3 || data.cardPosition < 0 || data.cardPosition > 1) {
                 return Utils.formatResponse(500, 'Position not valid', null, null);
             }
@@ -379,7 +378,7 @@ export class SessionsServices {
             if (session.code < 200 || session.code > 299) {
                 return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
             }
-            console.log('session', session)
+            this.ecrireObjetJSONDansFichier(session.data)
             return Utils.formatResponse(200, 'Document created succes', session.data, null);
         } catch (error: any) {
             return Utils.formatResponse(500, error.message, null, null);

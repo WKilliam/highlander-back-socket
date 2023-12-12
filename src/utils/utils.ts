@@ -5,6 +5,7 @@ import {EntityCategorie, EntityPlaying, EntityStatus, Game, TurnListEntity} from
 import {PlayerLobby} from "../models/player.models";
 import {CardByEntityPlaying} from "../models/cards.models";
 import {CardsDto} from "../dto/cards.dto";
+import {log} from "node:util";
 
 export class Utils {
 
@@ -235,15 +236,45 @@ export class Utils {
         lobby: Array<PlayerLobby>,
         lobbyPosition: number,
         teamPosition: number,
-        cardPosition: number) {
-        // Vérifier si la position dans cardPlayer n'est pas déjà prise
-        const existingPlayer = lobby[lobbyPosition]
-        const placeIsTaken = session[teamPosition].cardsPlayer ?? [];
-        if (placeIsTaken[cardPosition].player?.pseudo !== '' && placeIsTaken[cardPosition].player?.pseudo !== '') {
-            return Utils.formatResponse(400, 'Place is not free.', null, null);
-        } else {
-            if (placeIsTaken[cardPosition].player !== undefined) {
-                placeIsTaken[cardPosition] = {
+        cardPosition: number
+    ) {
+        let checkUpSession = session ?? []
+        let checkUpLobby = lobby ?? []
+        let checkUpLobbyPosition = lobbyPosition ?? -1
+        let checkUpTeamPosition = teamPosition ?? -1
+        let checkUpCardPosition = cardPosition ?? -1
+        if(checkUpSession.length === 0 || checkUpLobby.length === 0 || checkUpLobbyPosition === -1 || checkUpTeamPosition === -1 || checkUpCardPosition === -1){
+            return Utils.formatResponse(400, 'Error initTeamEntityPlayingWithCards', null, null);
+        }else{
+            const userInformation = lobby[lobbyPosition];
+            const checkSession = session[teamPosition].cardsPlayer ?? [];
+            if (checkSession.length === 0) {
+                return Utils.formatResponse(400, 'The seat is already taken.', null, null);
+            }
+
+            // Vérifier si le joueur demandant n'est pas déjà placé dans une autre carte
+            let isUserPlaced = false;
+            for (let i = 0; i < session.length; i++) {
+                const sessionEndPoint = session[i].cardsPlayer ?? [];
+                if(sessionEndPoint.length === 0){
+                    return Utils.formatResponse(400, 'Error initTeamEntityPlayingWithCards', null, null);
+                }else{
+                    for (let j = 0; j < sessionEndPoint.length; j++) {
+                        if (sessionEndPoint[j].player?.avatar === userInformation.avatar &&
+                            sessionEndPoint[j].player?.pseudo === userInformation.pseudo) {
+                            isUserPlaced = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (isUserPlaced) break;
+            }
+
+            // Si le joueur demandant n'est pas déjà placé
+            if (!isUserPlaced) {
+                // Set session[teamPosition].cardsPlayer[cardPosition] par les informations du joueur
+                checkSession[cardPosition] = {
                     atk: -1,
                     def: -1,
                     spd: -1,
@@ -256,49 +287,42 @@ export class Utils {
                     capacities: [],
                     status: EntityStatus.ALIVE,
                     player: {
-                        avatar: existingPlayer.avatar,
-                        pseudo: existingPlayer.pseudo,
+                        avatar: userInformation.avatar,
+                        pseudo: userInformation.pseudo,
                     },
-                }
-            } else {
-                return Utils.formatResponse(400, 'Data is Undefined.', null, null);
-            }
-        }
-        // Parcourir toutes les équipes et réinitialiser les cartes des autres joueurs
-        for (let i = 0; i < session.length; i++) {
-            let cards: Array<CardByEntityPlaying> = session[i].cardsPlayer ?? [];
-            for (let j = 0; j < cards.length; j++) {
-                // Vérifier si la carte correspond à la position actuelle et réinitialiser si nécessaire
-                if (i !== teamPosition || j !== cardPosition) {
-                    cards[j] = {
-                        atk: -1,
-                        def: -1,
-                        spd: -1,
-                        luk: -1,
-                        rarity: '',
-                        imageSrc: '',
-                        description: '',
-                        name: '',
-                        effects: [],
-                        capacities: [],
-                        status: EntityStatus.ALIVE,
-                        player: {
-                            avatar: '',
-                            pseudo: '',
-                        },
-                    };
-                    session[i].commonLuck = Utils.initCommunStat(session[i], 'luk')
-                    session[i].commonSpeed = Utils.initCommunStat(session[i], 'spd')
-                    session[i].commonDefense = Utils.initCommunStat(session[i], 'def')
-                    session[i].commonAttack = Utils.initCommunStat(session[i], 'atk')
-                    session[i].commonMaxLife = Utils.initCommunStat(session[i], 'maxLife')
-                    session[i].commonLife = Utils.initCommunStat(session[i], 'life')
-                } else {
-                    console.log('Card already in place');
+                };
+
+                // Supprimer l'ancienne position du joueur s'il existe
+                for (let i = 0; i < session.length; i++) {
+                    const sessionEndPoint = session[i].cardsPlayer ?? [];
+                    for (let j = 0; j < sessionEndPoint.length; j++) {
+                        if (sessionEndPoint[j].player?.avatar === userInformation.avatar &&
+                            sessionEndPoint[j].player?.pseudo === userInformation.pseudo &&
+                            (i !== teamPosition || j !== cardPosition)) {
+                            sessionEndPoint[j] = {
+                                atk: -1,
+                                def: -1,
+                                spd: -1,
+                                luk: -1,
+                                rarity: '',
+                                imageSrc: '',
+                                description: '',
+                                name: '',
+                                effects: [],
+                                capacities: [],
+                                status: EntityStatus.ALIVE,
+                                player: {
+                                    avatar: '',
+                                    pseudo: '',
+                                },
+                            };
+                            break;
+                        }
+                    }
                 }
             }
+            return Utils.formatResponse(200, 'Card Change', session, null);
         }
-        return Utils.formatResponse(200, 'Card Change', session, null);
     }
 
 
