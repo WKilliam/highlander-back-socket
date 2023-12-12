@@ -40,6 +40,7 @@ export interface JoinSessionTeamCard {
 export interface CurrentTurnAction {
     turnEntity: TurnListEntity;
     dice: number,
+    indexInsideArray: number,
     moves: Cells[],
     move: Cells,
     currentAction:string

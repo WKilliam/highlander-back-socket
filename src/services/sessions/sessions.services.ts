@@ -191,6 +191,7 @@ export class SessionsServices {
                             value: 0
                         },
                     },
+                    indexInsideArray: -1,
                     dice: -1,
                     moves: [],
                     move: {
@@ -456,6 +457,19 @@ export class SessionsServices {
             })
             game.data.game.game.teams = Utils.placeEntityPlayer(game.data.game.game.teams, game.data.game.maps.cellsGrid, monsterCells)
             game.data.game.sessionStatusGame.entityTurn = Utils.turnInit(game.data.game.game)
+            game.data.game.sessionStatusGame.currentTurnEntity = {
+                turnEntity: game.data.game.sessionStatusGame.entityTurn[0],
+                dice: -1,
+                moves: [],
+                indexInsideArray: 0,
+                move: {
+                    id: -1,
+                    x: -1,
+                    y: -1,
+                    value: 0
+                },
+                currentAction: Can.WHO_IS_TURN
+            }
             const session = await this.setDataInsideDb(game)
             if (session.code < 200 || session.code > 299) {
                 return Utils.formatResponse(session.code, `${session.message}`, session.data, session.error);
@@ -479,15 +493,7 @@ export class SessionsServices {
             switch (entityTurn.currentAction) {
                 case Can.WHO_IS_TURN:
                     game.data.game.sessionStatusGame.currentTurnEntity = {
-                        turnEntity: entityTurn.turnEntity,
-                        dice: -1,
-                        move: {
-                            id: -1,
-                            x: -1,
-                            y: -1,
-                            value: 0
-                        },
-                        moves: [],
+                        ...entityTurn,
                         currentAction: Can.SEND_DICE
                     }
                     break
@@ -523,15 +529,16 @@ export class SessionsServices {
                         ...entityTurn,
                         currentAction: Can.END_TURN
                     }
-                    game.data.game.sessionStatusGame.entityTurn.shift()
                     break
                 case Can.END_TURN:
-                    if (game.data.game.sessionStatusGame.entityTurn.length === 0) {
-                        await this.creatList(room)
-                    }
-                    game.data.game.sessionStatusGame.currentTurnEntity =
-                        {
-                            turnEntity: game.data.game.sessionStatusGame.entityTurn[0],
+                    console.log('currentTurnEntity', entityTurn);
+                    const nextPlayerIndex = entityTurn.indexInsideArray + 1;
+                    if (nextPlayerIndex < game.data.game.sessionStatusGame.entityTurn.length) {
+                        // Le joueur suivant existe dans la liste
+                        const nextPlayer = game.data.game.sessionStatusGame.entityTurn[nextPlayerIndex];
+                        game.data.game.sessionStatusGame.currentTurnEntity = {
+                            turnEntity: nextPlayer,
+                            indexInsideArray: nextPlayerIndex,
                             dice: -1,
                             moves: [],
                             move: {
@@ -541,7 +548,33 @@ export class SessionsServices {
                                 value: -1,
                             },
                             currentAction: Can.NEXT_TURN
+                        };
+                    } else {
+                        // Le cycle de tours est terminé, recréez la liste des joueurs
+                        const newTurn = await this.creatList(room);
+                        if (newTurn.code < 200 || newTurn.code > 299) {
+                            return Utils.formatResponse(newTurn.code, `${newTurn.message}`, newTurn.data, newTurn.error);
                         }
+                        newTurn.data.game.sessionStatusGame.turnCount++;
+
+                        // Réinitialise le jeu avec le premier joueur dans la liste
+                        const firstPlayer = newTurn.data.game.sessionStatusGame.entityTurn[0];
+
+                        newTurn.data.game.sessionStatusGame.currentTurnEntity = {
+                            turnEntity: firstPlayer,
+                            indexInsideArray: 0,
+                            dice: -1,
+                            moves: [],
+                            move: {
+                                id: -1,
+                                x: -1,
+                                y: -1,
+                                value: -1,
+                            },
+                            currentAction: Can.NEXT_TURN
+                        };
+                        game = newTurn;
+                    }
                     break
                 case Can.END_GAME:
                     break

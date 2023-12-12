@@ -1,13 +1,13 @@
 {
   "sessionStatusGame": {
-    "room": "SKrif",
+    "room": "KN4Jo",
     "teamNames": [
       "Alpha",
       "Beta",
       "Charlie",
-      "Session de test"
+      "Delta"
     ],
-    "status": "LOBBY",
+    "status": "GAME",
     "turnCount": 0,
     "lobby": [
       {
@@ -277,30 +277,75 @@
         ]
       }
     ],
-    "entityTurn": [],
+    "entityTurn": [
+      {
+        "team": "Alpha",
+        "pseudo": "Joe",
+        "teamIndex": 0,
+        "cardIndex": 0,
+        "typeEntity": "HUMAIN",
+        "luk": 7,
+        "cellPosition": {
+          "id": 170,
+          "x": 768,
+          "y": 160,
+          "value": 1
+        }
+      },
+      {
+        "team": "Ombre Funeste",
+        "pseudo": "monster-1",
+        "teamIndex": 0,
+        "cardIndex": 1,
+        "typeEntity": "COMPUTER",
+        "luk": 3,
+        "cellPosition": {
+          "id": 509,
+          "x": 480,
+          "y": 544,
+          "value": 1
+        }
+      },
+      {
+        "team": "Ombre Funeste",
+        "pseudo": "monster-0",
+        "teamIndex": 0,
+        "cardIndex": 0,
+        "typeEntity": "COMPUTER",
+        "luk": 1,
+        "cellPosition": {
+          "id": 509,
+          "x": 480,
+          "y": 544,
+          "value": 1
+        }
+      }
+    ],
     "currentTurnEntity": {
       "turnEntity": {
-        "pseudo": "",
-        "teamIndex": -1,
-        "cardIndex": -1,
+        "team": "Alpha",
+        "pseudo": "Joe",
+        "teamIndex": 0,
+        "cardIndex": 0,
         "typeEntity": "HUMAIN",
-        "luk": -1,
+        "luk": 7,
         "cellPosition": {
-          "id": -1,
-          "x": -1,
-          "y": -1,
-          "value": 0
+          "id": 170,
+          "x": 768,
+          "y": 160,
+          "value": 1
         }
       },
       "dice": -1,
       "moves": [],
+      "indexInsideArray": 0,
       "move": {
         "id": -1,
         "x": -1,
         "y": -1,
         "value": 0
       },
-      "currentAction": ""
+      "currentAction": "WHO_IS_TURN"
     }
   },
   "game": {
@@ -314,10 +359,10 @@
         "commonLuck": 7,
         "commonSpeed": 30,
         "cellPosition": {
-          "id": -1,
-          "x": -1,
-          "y": -1,
-          "value": -1
+          "id": 170,
+          "x": 768,
+          "y": 160,
+          "value": 1
         },
         "entityStatus": "ALIVE",
         "cardsPlayer": [
@@ -486,7 +531,7 @@
         ]
       },
       {
-        "name": "Session de test",
+        "name": "Delta",
         "commonLife": -1,
         "commonMaxLife": -1,
         "commonAttack": -1,
@@ -538,7 +583,100 @@
         ]
       }
     ],
-    "monsters": [],
+    "monsters": [
+      {
+        "name": "Ombre Funeste",
+        "commonLife": 200,
+        "commonMaxLife": 200,
+        "commonAttack": 20,
+        "commonDefense": 40,
+        "commonLuck": 4,
+        "commonSpeed": 60,
+        "cellPosition": {
+          "id": 509,
+          "x": 480,
+          "y": 544,
+          "value": 1
+        },
+        "entityStatus": "ALIVE",
+        "cardsMonster": [
+          {
+            "atk": 10,
+            "def": 20,
+            "spd": 30,
+            "luk": 1,
+            "description": "Attain balance with the celestial forces using this divine card. It enhances both offensive and defensive capabilities.",
+            "name": "Celestial Harmony",
+            "rarity": "LEGENDARY",
+            "status": "ALIVE",
+            "imageSrc": "https://cdn.discordapp.com/attachments/1060501071056879618/1173696252148469821/kyrasw_Celestial_Harmony_Attain_balance_with_the_celestial_forc_fba0ed35-4303-4716-8c1c-80efa3ef7553.png?ex=6564e4d0&is=65526fd0&hm=ddfd36b9c33ba202c8771722b1d33427f722aefa0bd5166eb1b79184fd5e6baa&",
+            "effects": [
+              {
+                "id": 3,
+                "name": "Effects Data",
+                "description": "description data",
+                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+                "rarity": "COMMUN",
+                "action": "A"
+              }
+            ],
+            "capacities": [
+              {
+                "id": 1,
+                "name": "Effects Data",
+                "description": "description data",
+                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+                "action": "A"
+              },
+              {
+                "id": 3,
+                "name": "Effects Data",
+                "description": "description data",
+                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+                "action": "A"
+              }
+            ]
+          },
+          {
+            "atk": 10,
+            "def": 20,
+            "spd": 30,
+            "luk": 3,
+            "description": "Summon a celestial guardian with this divine card. It shields its wielder from harm and retaliates with divine retribution.",
+            "name": "Astral Guardian",
+            "rarity": "LEGENDARY",
+            "status": "ALIVE",
+            "imageSrc": "https://cdn.discordapp.com/attachments/1060501071056879618/1173697305828937749/kyrasw_Astral_Guardian_Summon_a_celestial_guardian_with_this_di_90be06aa-a080-481f-bcc2-54bcf383d27f.png?ex=6564e5cb&is=655270cb&hm=0c3259e2c2bd9b09fc11855e38a04627a1e44a1f47af25614a4ba1ce21faa05a&",
+            "effects": [
+              {
+                "id": 3,
+                "name": "Effects Data",
+                "description": "description data",
+                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+                "rarity": "COMMUN",
+                "action": "A"
+              }
+            ],
+            "capacities": [
+              {
+                "id": 1,
+                "name": "Effects Data",
+                "description": "description data",
+                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+                "action": "A"
+              },
+              {
+                "id": 3,
+                "name": "Effects Data",
+                "description": "description data",
+                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
+                "action": "A"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "fightings": []
   },
   "maps": {

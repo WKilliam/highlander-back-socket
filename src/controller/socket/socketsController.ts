@@ -116,62 +116,65 @@ module.exports = (io: any) => {
                 io.to(`${socketEndPoints}-${data.room}`).emit(`${data.room}`, createTurnList);
             })
 
-            let queueBot: Array<string> = [];
+            let queueRoom: Array<string> = [];
 
-            function processQueueBot(room: string) {
-                return !queueBot.includes(room);
+            function objFormat(socket:FormatRestApiModels){
+                const action: CurrentTurnAction = socket.data.game.sessionStatusGame.currentTurnEntity
+                console.log('socket.data', action)
+                return action
             }
 
-            async function botMsg(room: string, socket: CurrentTurnAction) {
-                let sessionDtoInstance: FormatRestApiModels | null = null;
-                sessionDtoInstance = await socketService.botAction(room, socket)
-                io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, sessionDtoInstance)
-                return sessionDtoInstance
-            }
-
-            socket.on('botTurn', async (data: { room: string, entityTurn: CurrentTurnAction }) => {
+            socket.on('botTurn', async (data: { room: string, action: CurrentTurnAction }) => {
                 const room = data.room;
-                if (processQueueBot(room)) {
-                    queueBot.push(room);
-                    // WHO_IS_TURN
-                    const next = await botMsg(room, data.entityTurn)
-                    if (next.code < 200 || next.code > 299) {
-                        io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, null);
+                const botAction = data.action;
+                if (!queueRoom.includes(room)) {
+                    queueRoom.push(room);
+                    const next = await socketService.botAction(room, botAction)
+                    if(next.code < 200 || next.code > 299) {
+                        console.log('error next.code', next)
                     }
-                    // SEND_DICE
-                    const next1 = await botMsg(room, next.data.game.sessionStatusGame.currentTurnEntity)
-                    if (next1.code < 200 || next1.code > 299) {
-                        io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, null);
+                    io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, next)
+                    const sendDice = objFormat(next)
+                    const next0 = await socketService.botAction(room, sendDice)
+                    if(next0.code < 200 || next0.code > 299) {
+                        console.log('error next0.code', next0)
                     }
-                    // CHOOSE_MOVE
-                    const next2 = await botMsg(room, next1.data.game.sessionStatusGame.currentTurnEntity)
-                    if (next2.code < 200 || next2.code > 299) {
-                        io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, null);
+                    io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, next0)
+                    const chooseMove = objFormat(next0)
+                    const next1 = await socketService.botAction(room, chooseMove)
+                    if(next1.code < 200 || next1.code > 299) {
+                        console.log('error next1.code', next1)
                     }
-                    // MOVE
-                    const next3 = await botMsg(room, next2.data.game.sessionStatusGame.currentTurnEntity)
-                    if (next3.code < 200 || next3.code > 299) {
-                        io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, null);
+                    io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, next1)
+                    const move = objFormat(next1)
+                    const next2 = await socketService.botAction(room, move)
+                    if(next2.code < 200 || next2.code > 299) {
+                        console.log('error next2.code', next2)
                     }
-                    // END_MOVE
-                    const next4 = await botMsg(room, next3.data.game.sessionStatusGame.currentTurnEntity)
-                    if (next4.code < 200 || next4.code > 299) {
-                        io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, null);
+                    io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, next2)
+                    const endMove = objFormat(next2)
+                    const next3 = await socketService.botAction(room, endMove)
+                    if(next3.code < 200 || next3.code > 299) {
+                        console.log('error next3.code', next3)
                     }
-                    const findIndex = queueBot.indexOf(room);
-                    if (findIndex !== -1) {
-                        // END_TURN
-                        const next5 = await botMsg(room, next4.data.game.sessionStatusGame.currentTurnEntity)
-                        if (next5.code < 200 || next5.code > 299) {
-                            io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, null);
-                        }
-                        const findIndex = queueBot.indexOf(room);
-                        queueBot.splice(findIndex, 1);
+                    io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, next3)
+                    const endTurn = objFormat(next3)
+                    const next4 = await socketService.botAction(room, endTurn)
+                    if(next4.code < 200 || next4.code > 299) {
+                        console.log('error next4.code', next4)
                     }
+                    io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, next4)
                 }
-
             });
 
+            socket.on('botLeaveQueue', async (data: { room: string }) => {
+                const room = data.room;
+                if (queueRoom.includes(room)) {
+                    queueRoom.splice(queueRoom.indexOf(room), 1);
+                } else {
+                    console.log('error room not in queue')
+                }
+            })
 
             socket.on('humainTurn', async (data: { room: string, action: CurrentTurnAction }) => {
                 const room = data.room;
@@ -180,6 +183,26 @@ module.exports = (io: any) => {
                     case 'WHO_IS_TURN':
                         const next = await socketService.humainAction(room, humainAction)
                         io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, next)
+                        break;
+                    case 'SEND_DICE':
+                        const next0 = await socketService.humainAction(room, humainAction)
+                        io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, next0)
+                        break;
+                    case 'CHOOSE_MOVE':
+                        const next1 = await socketService.humainAction(room, humainAction)
+                        io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, next1)
+                        break;
+                    case 'MOVE':
+                        const next2 = await socketService.humainAction(room, humainAction)
+                        io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, next2)
+                        break;
+                    case 'END_MOVE':
+                        const next3 = await socketService.humainAction(room, humainAction)
+                        io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, next3)
+                        break;
+                    case 'END_TURN':
+                        const next4 = await socketService.humainAction(room, humainAction)
+                        io.to(`${socketEndPoints}-${room}`).emit(`${room}-turn`, next4)
                         break;
                 }
             })
