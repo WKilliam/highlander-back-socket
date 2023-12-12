@@ -529,9 +529,24 @@ export class SessionsServices {
                         ...entityTurn,
                         currentAction: Can.END_TURN
                     }
+                    if(entityTurn.turnEntity.typeEntity === EntityCategorie.COMPUTER) {
+                        game.data.game.game.monsters[entityTurn.turnEntity.teamIndex].cellPosition = entityTurn.move
+                        game.data.game.sessionStatusGame.entityTurn.forEach((entity: TurnListEntity, index: number) => {
+                            if(entity.team === entityTurn.turnEntity.team){
+                                entity.cellPosition = entityTurn.move
+                            }
+                        })
+                    }else{
+                        game.data.game.game.teams[entityTurn.turnEntity.teamIndex].cellPosition = entityTurn.move
+                        game.data.game.sessionStatusGame.entityTurn.forEach((entity: TurnListEntity, index: number) => {
+                            if(entity.team === entityTurn.turnEntity.team){
+                                entity.cellPosition = entityTurn.move
+                            }
+                        })
+                    }
                     break
                 case Can.END_TURN:
-                    console.log('currentTurnEntity', entityTurn);
+
                     const nextPlayerIndex = entityTurn.indexInsideArray + 1;
                     if (nextPlayerIndex < game.data.game.sessionStatusGame.entityTurn.length) {
                         // Le joueur suivant existe dans la liste
@@ -549,18 +564,13 @@ export class SessionsServices {
                             },
                             currentAction: Can.NEXT_TURN
                         };
+                        // console.log('nextPlayer', game.data.game.sessionStatusGame.currentTurnEntity);
                     } else {
-                        // Le cycle de tours est terminé, recréez la liste des joueurs
-                        const newTurn = await this.creatList(room);
-                        if (newTurn.code < 200 || newTurn.code > 299) {
-                            return Utils.formatResponse(newTurn.code, `${newTurn.message}`, newTurn.data, newTurn.error);
-                        }
-                        newTurn.data.game.sessionStatusGame.turnCount++;
-
+                        game.data.game.sessionStatusGame.entityTurn = Utils.turnInit(game.data.game.game)
+                        game.data.game.sessionStatusGame.turnCount = game.data.game.sessionStatusGame.turnCount + 1
                         // Réinitialise le jeu avec le premier joueur dans la liste
-                        const firstPlayer = newTurn.data.game.sessionStatusGame.entityTurn[0];
-
-                        newTurn.data.game.sessionStatusGame.currentTurnEntity = {
+                        const firstPlayer = game.data.game.sessionStatusGame.entityTurn[0];
+                        game.data.game.sessionStatusGame.currentTurnEntity = {
                             turnEntity: firstPlayer,
                             indexInsideArray: 0,
                             dice: -1,
@@ -573,7 +583,6 @@ export class SessionsServices {
                             },
                             currentAction: Can.NEXT_TURN
                         };
-                        game = newTurn;
                     }
                     break
                 case Can.END_GAME:
@@ -591,4 +600,15 @@ export class SessionsServices {
         }
     }
 
+    ecrireObjetJSONDansFichier(objet: any): void {
+        const contenuJSON = JSON.stringify(objet, null, 4);
+
+        fs.writeFile("nomFichier.json", contenuJSON, 'utf8', (err) => {
+            if (err) {
+                console.error(`Erreur lors de l'écriture dans le fichier nomFichier: ${err}`);
+                return;
+            }
+            console.log(`Objet JSON écrit dans nomFichier`);
+        });
+    }
 }

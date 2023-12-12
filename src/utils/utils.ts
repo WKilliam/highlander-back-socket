@@ -390,7 +390,8 @@ export class Utils {
 
     static initMonsterEntityPlaying(cards: Array<CardsDto>, map: Array<Cells>): Array<EntityPlaying> {
         let teamEntityPlaying: Array<EntityPlaying> = [];
-        for (let i = 0; i < this.generateRandomNumber(1, 5); i++) {
+        // this.generateRandomNumber(1, 2)
+        for (let i = 0; i < 1; i++) {
             const validCells = map.filter(cell => cell.value !== -1);
             let indexMap = this.generateRandomNumber(0, validCells.length - 1);
             let indexOne = this.generateRandomNumber(0, cards.length - 1);
@@ -551,6 +552,8 @@ export class Utils {
 
         let allEntities: Array<TurnListEntity> = [];
 
+        console.log('teamAlpha', game.teams[0].cellPosition)
+
         // Extract player entities
         game.teams.forEach((team, teamIndex) => {
             team?.cardsPlayer?.forEach((card, cardIndex) => {
@@ -573,7 +576,7 @@ export class Utils {
             monster?.cardsMonster?.forEach((card, cardIndex) => {
                 allEntities.push({
                     team: monster.name,
-                    pseudo: `monster-${cardIndex.toString()}`,
+                    pseudo: card.name,
                     teamIndex: monsterIndex,
                     cardIndex: cardIndex,
                     typeEntity: EntityCategorie.COMPUTER,
@@ -586,6 +589,7 @@ export class Utils {
         let tab = allEntities.sort((a, b) => b.luk - a.luk);
         return tab;
     }
+
 
     static moveEntityPlayer(teams: Array<EntityPlaying>, cellToMove: Cells, pseudo: string) {
         teams.forEach(team => {

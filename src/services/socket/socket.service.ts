@@ -82,17 +82,14 @@ export class SocketService {
     botAction(room: string, entityTurn: CurrentTurnAction) {
         switch (entityTurn.currentAction) {
             case Can.WHO_IS_TURN:
-                console.log('botAction who is turn ', entityTurn)
                 return this.sessionService.roolingTurn(room, entityTurn);
             case Can.SEND_DICE:
-                console.log('botAction send dice ', entityTurn)
                 let newEntityTurn :CurrentTurnAction = {
                     ...entityTurn,
                     dice: this.randomDice()
                 }
                 return this.sessionService.roolingTurn(room, newEntityTurn);
             case Can.CHOOSE_MOVE:
-                console.log('botAction choose move ', entityTurn)
                 let newEntityTurn2 :CurrentTurnAction  = {
                     ...entityTurn,
                     move: this.computerMove(entityTurn)

@@ -120,7 +120,7 @@ module.exports = (io: any) => {
 
             function objFormat(socket:FormatRestApiModels){
                 const action: CurrentTurnAction = socket.data.game.sessionStatusGame.currentTurnEntity
-                console.log('socket.data', action)
+                // console.log('socket.data', action)
                 return action
             }
 
@@ -179,6 +179,7 @@ module.exports = (io: any) => {
             socket.on('humainTurn', async (data: { room: string, action: CurrentTurnAction }) => {
                 const room = data.room;
                 const humainAction = data.action;
+                console.log('init Socket action ', humainAction)
                 switch (humainAction.currentAction) {
                     case 'WHO_IS_TURN':
                         const next = await socketService.humainAction(room, humainAction)
