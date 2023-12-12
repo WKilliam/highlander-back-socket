@@ -316,17 +316,23 @@ export class SessionsServices {
                         null);
                 } else {
                     let isInside = false
-                    let indixSession = -1
+                    let indexSession = -1
                     sessions.forEach((session: SessionDto, index: number) => {
-                        session.game.sessionStatusGame.lobby.forEach((player: PlayerLobby, index: number) => {
+                        session.game.sessionStatusGame.lobby.forEach((player: PlayerLobby, indexPlayer: number) => {
                             if (player.pseudo === user.data.pseudo && player.avatar === user.data.avatar) {
                                 isInside = true
-                                indixSession = index
+                                indexSession = index
                             }
                         })
                     })
+                    console.log('isInside', allSessions)
+                    console.log('sessions', sessions)
                     if (isInside) {
-                        return Utils.formatResponse(200, 'Player already inside session', allSessions.data[indixSession], null);
+                        return Utils.formatResponse(
+                            200,
+                            'Player already inside session',
+                            allSessions.data[indexSession],
+                            null);
                     } else {
                         return Utils.formatResponse(200, 'Player not inside session', [], null);
                     }
