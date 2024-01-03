@@ -3,11 +3,17 @@ import {MapsDto} from "../../dto/maps.dto";
 import {CellsServices} from "../cellulles/cells.services";
 import {Utils} from "../../utils/utils";
 import {Maps, MapsSimplify} from "../../models/maps.models";
-import {FormatRestApiModels} from "../../models/formatRestApi.models";
+import {FormatRestApi, FormatRestApiModels} from "../../models/formatRestApi";
 
 export class MapsServices {
     dataSourceConfig: Promise<DataSource>;
     cellsServices: CellsServices;
+    private successmapCreated:string = 'Map Created';
+    private successcellCreated:string = 'Cells Created';
+    private successMapFound:string = 'Map Found';
+    private failledMapCreated:string = 'Map Not Created';
+    private failledMapNotFound:string = 'Map Not Found';
+    private failledInternalServer:string = 'Internal Server Error';
 
     constructor(dataSourceConfig: Promise<DataSource>) {
         this.dataSourceConfig = dataSourceConfig;
@@ -21,18 +27,17 @@ export class MapsServices {
             const mapEntity = mapsRepository.create(map);
             const mapSaved = await mapsRepository.save(mapEntity);
             if (mapSaved) {
-                const cellsByMap: FormatRestApiModels = await this.cellsServices.create(mapSaved);
-                if (!(cellsByMap.code >= 200 && cellsByMap.code < 300)) {
-                    return Utils.formatResponse(
-                        cellsByMap.code, 'Cells Not Create', cellsByMap.data ,cellsByMap.error);
+                const cellsByMap: FormatRestApi = await this.cellsServices.create(mapSaved);
+                if (Utils.codeErrorChecking(cellsByMap.code)) {
+                    return FormatRestApiModels.createFormatRestApi(cellsByMap.code, this.successcellCreated, cellsByMap.data, cellsByMap.error);
                 }else{
-                    return Utils.formatResponse(201, 'Map Created', mapSaved);
+                    return FormatRestApiModels.createFormatRestApi(201, this.successmapCreated, mapSaved,'');
                 }
             }else{
-                return Utils.formatResponse(400, 'Map Not Created', mapSaved);
+                return FormatRestApiModels.createFormatRestApi(400, this.failledMapCreated, mapSaved,`${this.failledMapCreated} inside create map`);
             }
         } catch (error: any) {
-            return Utils.formatResponse(500, 'Internal Server Error', error.data);
+            return FormatRestApiModels.createFormatRestApi(500, this.failledInternalServer,null, error.data);
         }
     }
 
@@ -45,12 +50,12 @@ export class MapsServices {
                 where: {id: id}
             });
             if(map){
-                return Utils.formatResponse(200, 'Map Found', map);
+                return FormatRestApiModels.createFormatRestApi(200, this.successMapFound, map,'');
             }else{
-                return Utils.formatResponse(404, 'Map Not Found', map);
+                return FormatRestApiModels.createFormatRestApi(404, this.failledMapNotFound, map,'');
             }
         }catch (error:any){
-            return Utils.formatResponse(500, 'Internal Server Error', error.data);
+            return FormatRestApiModels.createFormatRestApi(500, this.failledInternalServer,null, error.data);
         }
     }
 
@@ -79,12 +84,12 @@ export class MapsServices {
                         })
                     }
                 })
-                return Utils.formatResponse(200, 'Maps Found', mapsSimplify);
+                return FormatRestApiModels.createFormatRestApi(200, this.successMapFound, mapsSimplify,'');
             } else {
-                return Utils.formatResponse(404, 'Maps Not Found', maps);
+                return FormatRestApiModels.createFormatRestApi(404, this.failledMapNotFound, maps,'');
             }
         } catch (error: any) {
-            return Utils.formatResponse(500, 'Internal Server Error', error.data);
+            return FormatRestApiModels.createFormatRestApi(500, this.failledInternalServer,null, error.data);
         }
     }
 }

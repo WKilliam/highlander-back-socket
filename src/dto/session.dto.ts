@@ -1,5 +1,6 @@
 import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
-import {SessionGame} from "../models/room.content.models";
+import {SessionGame} from "../models/session.models";
+
 
 @Entity('session')
 export class SessionDto {

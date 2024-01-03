@@ -3,9 +3,11 @@ import {CellsDto} from "../../dto/cells.dto";
 import {Utils} from "../../utils/utils";
 import {MapsDto} from "../../dto/maps.dto";
 import {Cells} from "../../models/maps.models";
+import {FormatRestApiModels} from "../../models/formatRestApi";
 
 export class CellsServices {
     dataSourceConfig: Promise<DataSource>;
+    private successcellCreated:string = 'Cells Created';
 
     constructor(dataSourceConfig: Promise<DataSource>) {
         this.dataSourceConfig = dataSourceConfig;
@@ -30,9 +32,9 @@ export class CellsServices {
                     await cellsRepository.save(newCell);
                 }
             }
-            return Utils.formatResponse(201, 'Cells Created', fixedCellGrid);
+            return FormatRestApiModels.createFormatRestApi(201, this.successcellCreated, fixedCellGrid,'');
         } catch (error: any) {
-            return Utils.formatResponse(error.code, error.message, error.data);
+            return FormatRestApiModels.createFormatRestApi(error.code, error.message, error.data,'');
         }
     }
 }

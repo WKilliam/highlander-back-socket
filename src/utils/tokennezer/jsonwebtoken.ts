@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import {Utils} from "../utils";
-import {FormatRestApiModels} from "../../models/formatRestApi.models";
+import {FormatRestApi, FormatRestApiModels} from "../../models/formatRestApi";
 
 interface TokenData {
     userId: number;
@@ -11,25 +11,31 @@ interface TokenData {
 
 export class TokenManager {
     private readonly secretKey: string;
+    private successTokenCreated:string = 'Token Created';
+    private failledTokenCreated:string = 'Token Not Created';
+    private failledTokenSuccess:string = 'Token Success';
+    private failledTokenError:string = 'Token Error';
+    private failledTokenInvalid:string = 'Token Invalid';
+
 
     constructor(secretKey: string) {
         this.secretKey = secretKey;
     }
 
-    createToken(data: TokenData): FormatRestApiModels {
+    createToken(data: TokenData): FormatRestApi {
         let token=  jwt.sign(data, this.secretKey);
         if (!token) {
-            return Utils.formatResponse(500, 'Token error', null, 'Token error');
+            return FormatRestApiModels.createFormatRestApi(500, this.failledTokenError, null, this.failledTokenError);
         }
-        return Utils.formatResponse(200, 'Token success', token);
+        return FormatRestApiModels.createFormatRestApi(200, this.successTokenCreated, token,'');
     }
 
-    verifyToken(token: string): FormatRestApiModels {
+    verifyToken(token: string): FormatRestApi {
         try {
             let verifie:TokenData =  jwt.verify(token, this.secretKey) as TokenData;
-            return Utils.formatResponse(200, 'Token success', verifie);
+            return FormatRestApiModels.createFormatRestApi(200, this.successTokenCreated, verifie,'');
         } catch (error) {
-            return Utils.formatResponse(401, 'Token invalid', null, error);
+            return FormatRestApiModels.createFormatRestApi(401, this.failledTokenInvalid, null, error);
         }
     }
 }

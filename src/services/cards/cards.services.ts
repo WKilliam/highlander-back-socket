@@ -5,14 +5,20 @@ import {Utils} from "../../utils/utils";
 import {CardCreateArg, CardsRestApi} from "../../models/cards.models";
 import {CapacityDto} from "../../dto/capacity.dto";
 import {DecksDto} from "../../dto/decks.dto";
+import {FormatRestApiModels} from "../../models/formatRestApi";
 
 export class CardsServices {
     dataSourceConfig: Promise<DataSource>;
+    private failledDeckNotFound: string = 'Deck Not Found';
+    private succesCardCreated: string = 'Card Found';
+    private failledInternalServer: string = 'Internal Server Error';
+    private successCardCreated: string = 'Card Created Successfully';
+    private failledCardNotFound: string = 'Card Not Found';
+    private failledCardCreatedError: string = 'Card Created Error';
 
     constructor(dataSourceConfig: Promise<DataSource>) {
         this.dataSourceConfig = dataSourceConfig;
     }
-
 
     async create(cardsCreate:CardCreateArg) {
         try {
@@ -23,7 +29,7 @@ export class CardsServices {
             const capacitiesDtoRepository: Repository<CapacityDto> = dataSource.getRepository(CapacityDto);
             let arrayNewCard: CardsDto[] = [];
             const deck = await decksDtoRepository.findOne({where: {id: cardsCreate.deck}}) as DecksDto;
-            if (!deck) return Utils.formatResponse(404, 'Deck not found', null, null);
+            if (!deck) return FormatRestApiModels.createFormatRestApi(404, this.failledDeckNotFound, null, null);
             for (let i = 0; i < cardsCreate.cards.length; i++) {
                 const effects = await effectsDtoRepository.findBy({id: In(cardsCreate.cards[i].effects)})
                 const capacities = await capacitiesDtoRepository.findBy({id: In(cardsCreate.cards[i].capacities)})
@@ -42,12 +48,12 @@ export class CardsServices {
                     capacities: capacities
                 })
                 const createdCard: CardsDto = await cardsDtoRepository.save(newCard);
-                if (!createdCard) return Utils.formatResponse(500, 'Card created Error', newCard, null);
+                if (!createdCard) return FormatRestApiModels.createFormatRestApi(500, this.failledCardCreatedError, newCard, null);
                 arrayNewCard.push(createdCard);
             }
-            return Utils.formatResponse(200, 'Card created successfully', arrayNewCard, null);
+            return FormatRestApiModels.createFormatRestApi(200, this.successCardCreated, arrayNewCard, null);
         } catch (error: any) {
-            return Utils.formatResponse(500, 'Internal server error', null, error.message);
+            return FormatRestApiModels.createFormatRestApi(500, this.failledInternalServer, null, error.message);
         }
     }
 
@@ -80,12 +86,12 @@ export class CardsServices {
                 where: {id: number},
             });
             if (card) {
-                return Utils.formatResponse(200, 'Card Found', card);
+                return FormatRestApiModels.createFormatRestApi(200, this.succesCardCreated, card,'');
             }else{
-                return Utils.formatResponse(404, 'Card Not Found', card);
+                return FormatRestApiModels.createFormatRestApi(404, this.failledCardNotFound, card,'');
             }
         }catch(error:any){
-            return Utils.formatResponse(500, 'Internal Server Error', error, error.message);
+            return FormatRestApiModels.createFormatRestApi(500, this.failledInternalServer, null, error.message);
         }
     }
 }

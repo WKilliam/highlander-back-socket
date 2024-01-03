@@ -1,25 +1,3 @@
-import {CardByEntityPlaying} from "./cards.models";
-import {Cells, Maps} from "./maps.models";
-import {PlayerLobby} from "./player.models";
-import {CurrentTurnAction} from "./formatSocket.models";
-
-export enum StatusGame {
-    LOBBY = "LOBBY",
-    START = "START",
-    GAME = "GAME",
-    END = "END",
-}
-
-
-export enum EntityStatus {
-    ALIVE = "ALIVE",
-    DEAD = "DEAD",
-    WIN = "WIN",
-    LOSE = "LOSE",
-    FIGTHING = "FIGTHING",
-    DONJON = "DONJON",
-    DONJON_FIGHTING = "DONJON_FIGHTING",
-}
 
 export interface SessionCreated {
     createdAt: string
@@ -29,54 +7,34 @@ export interface SessionCreated {
     teamNames: Array<string>;
 }
 
-export interface SessionGame {
-    sessionStatusGame: SessionStatusGame;
-    game: Game;
-    maps: Maps;
+export interface DiceRolling {
+    room: string,
+    luk: number, // max 20 min -20
+    arrayLimit:Array<number>,
+    min:number,
+    max:number
 }
 
-export interface SessionStatusGame {
-    room: string;
-    teamNames: Array<string>;
-    status: StatusGame;
-    turnCount: number
-    lobby:Array<PlayerLobby>
-    entityTurn : Array<TurnListEntity>,
-    currentTurnEntity: CurrentTurnAction
-}
 
-export interface Game {
-    teams: Array<EntityPlaying>
-    monsters: Array<EntityPlaying>
-    fightings: Array<Array<TurnListEntity>>
-}
 
-export interface EntityPlaying {
-    name: string;
-    commonLife: number;
-    commonMaxLife: number;
-    commonAttack: number;
-    commonDefense: number;
-    commonLuck: number;
-    commonSpeed: number;
-    cellPosition: Cells
-    entityStatus: EntityStatus
-    cardsPlayer?: Array<CardByEntityPlaying>;
-    cardsMonster?: Array<CardByEntityPlaying>;
-}
+export class RoomContentModels {
+    static initSessionCreated(): SessionCreated {
+        return {
+            createdAt: '',
+            name: '',
+            password: '',
+            mapId: 0,
+            teamNames: []
+        }
+    }
 
-export enum EntityCategorie {
-    HUMAIN ='HUMAIN',
-    COMPUTER = 'COMPUTER'
+    static initDiceRolling(): DiceRolling {
+        return {
+            room: '',
+            luk: 0,
+            arrayLimit:[],
+            min:0,
+            max:0
+        }
+    }
 }
-
-export interface TurnListEntity {
-    team?: string
-    pseudo: string
-    teamIndex: number
-    cardIndex: number
-    typeEntity: EntityCategorie
-    luk: number,
-    cellPosition?: Cells
-}
-

@@ -24,10 +24,44 @@ export interface UserFrontData {
     cards: Array<CardEntitySimplify>;
 }
 
-
-export interface TokenData {
-    id: number;
-    email: string;
-    password: string;
+export interface UserSocketConnect{
+    room: string;
+    token: string;
+    pseudo: string;
+    avatar: string;
+    score?:number;
+    cards?:Array<CardEntitySimplify>;
 }
 
+export interface UserIdentitiesGame {
+    room: string;
+    positionPlayerInLobby: number;
+    teamSelectedPerPlayer: number;
+    cardPositionInsideTeamCards: number;
+    cardSelectedForPlay: number
+}
+
+export class UserModels {
+
+    static initUserSubscription() :UserSubscription{
+        return {
+            pseudo: '',
+            password: '',
+            email: '',
+            avatar: '',
+            deckIds: [],
+            cardsIds: []
+        }
+    }
+
+    static initUserFrontData() :UserFrontData{
+        return {
+            token: '',
+            pseudo: '',
+            avatar: '',
+            bearcoins: 0,
+            decks: [],
+            cards: []
+        }
+    }
+}

@@ -8,18 +8,21 @@ import {CapacityDto} from "../../dto/capacity.dto";
 import {EffectsDto} from "../../dto/effects.dto";
 import {CardsServices} from "../cards/cards.services";
 import {CardCreateArg, CardsRestApi} from "../../models/cards.models";
-import {FormatRestApiModels} from "../../models/formatRestApi.models";
+import {FormatRestApi, FormatRestApiModels} from "../../models/formatRestApi";
 
 export class DecksServices {
     dataSourceConfig: Promise<DataSource>;
     cardService: CardsServices;
+    private failledInternalServer:string = 'Internal Server Error';
+    private successDeckCreated:string = 'Deck Created';
+    private successDeckFound:string = 'Deck Found';
+    private failledDeckCreatedError:string = 'Deck Created Error';
+    private successDeckNotFound: string = 'Deck Not Found';
 
     constructor(dataSourceConfig: Promise<DataSource>) {
         this.dataSourceConfig = dataSourceConfig;
         this.cardService = new CardsServices(dataSourceConfig);
     }
-
-
     async create(deck: DecksRestApi) {
         try {
             const dataSource: DataSource = await this.dataSourceConfig;
@@ -35,7 +38,7 @@ export class DecksServices {
                 count: deck.cards.length
             })
             const createdeck: DecksDto = await decksDtoRepository.save(newDeck);
-            if (!createdeck) return Utils.formatResponse(500, 'Deck created Error', newDeck, null);
+            if (!createdeck) return FormatRestApiModels.createFormatRestApi(500, this.failledDeckCreatedError, newDeck, null);
             let cardCreate: CardCreateArg = {
                 deck: createdeck.id,
                 cards: deck.cards
@@ -50,9 +53,9 @@ export class DecksServices {
                 ],
                 where: {id: newDeck.id},
             });
-            return Utils.formatResponse(200, 'Deck created successfully', deckCompleted, null);
+            return FormatRestApiModels.createFormatRestApi(200, this.successDeckCreated, deckCompleted, null);
         } catch (error: any) {
-            return Utils.formatResponse(500, 'Error Internal Server', null, error.message);
+            return FormatRestApiModels.createFormatRestApi(500, this.failledInternalServer, error, error.message);
         }
     }
 
@@ -70,12 +73,12 @@ export class DecksServices {
                 where: {id: number},
             });
             if (decks) {
-                return Utils.formatResponse(200, 'Deck Found', decks);
+                return FormatRestApiModels.createFormatRestApi(200, this.successDeckFound, decks,'');
             } else {
-                return Utils.formatResponse(404, 'Deck Not Found', decks);
+                return FormatRestApiModels.createFormatRestApi(404, this.successDeckNotFound, decks,'');
             }
         } catch (error: any) {
-            return Utils.formatResponse(500, 'Internal Server Error', error, error.message);
+            return FormatRestApiModels.createFormatRestApi(500, this.failledInternalServer, error, error.message);
         }
     }
 }

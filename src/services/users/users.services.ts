@@ -1,13 +1,14 @@
 import {DataSource, In, Repository} from "typeorm";
-
 import {ClientDto} from "../../dto/clients.dto";
-import {Utils} from "../../utils/utils";
 import {CardsDto} from "../../dto/cards.dto";
-import {TokenData, UserFrontData, UsersLogin, UserSubscription} from "../../models/users.models";
+import { UserFrontData, UsersLogin, UserSubscription} from "../../models/users.models";
 import {DecksDto} from "../../dto/decks.dto";
 import { TokenManager} from "../../utils/tokennezer/jsonwebtoken";
-import {CardEntitySimplify, CardsRestApi} from "../../models/cards.models";
-import {DecksRestApi, DecksRestApiUser} from "../../models/decks.models";
+import {CardEntitySimplify} from "../../models/cards.models";
+import {DecksRestApiUser} from "../../models/decks.models";
+import {FormatRestApiModels} from "../../models/formatRestApi";
+import {EnumString, TYPE} from "../../models/enums";
+import {Utils} from "../../utils/utils";
 
 export class UsersServices {
 
@@ -27,13 +28,13 @@ export class UsersServices {
             // Vérifier si l'email existe déjà dans la base de données
             const existingUserWithEmail = await usersDtoRepository.findOne({where: {email: user.email}});
             if (existingUserWithEmail) {
-                return Utils.formatResponse(400, 'Email already exists', null, null);
+                return FormatRestApiModels.createFormatRestApi(400, 'Email already exists', null, null);
             }
 
             // Vérifier si l'avatar existe déjà dans la base de données
             const existingUserWithAvatar = await usersDtoRepository.findOne({where: {avatar: user.avatar}});
             if (existingUserWithAvatar) {
-                return Utils.formatResponse(400, 'Avatar already exists', null, null);
+                return FormatRestApiModels.createFormatRestApi(400, 'Avatar already exists', null, null);
             }
 
             // Obtenez les decks associés à l'utilisateur
@@ -67,9 +68,9 @@ export class UsersServices {
                 bearcoin: 0,
             })
             const createdUser = await usersDtoRepository.save(createUser);
-            return Utils.formatResponse(201, 'User created successfully', createUser, null);
+            return FormatRestApiModels.createFormatRestApi(201, 'User created successfully', createUser, null);
         } catch (error: any) {
-            return Utils.formatResponse(500, 'Internal server error', null, error.message);
+            return FormatRestApiModels.createFormatRestApi(500, 'Internal server error', null, error.message);
         }
     }
 
@@ -87,7 +88,7 @@ export class UsersServices {
                 ]
             });
             if (!existingUser) {
-                return Utils.formatResponse(400, 'Email or password incorrect', null, null);
+                return FormatRestApiModels.createFormatRestApi(400, 'Email or password incorrect', null, null);
             }
             const tokenManager = new TokenManager('votre_clé_secrète');
             const token = tokenManager.createToken({
@@ -97,7 +98,7 @@ export class UsersServices {
                 roles: ['user']
             });
             if (token.code < 200 || token.code > 299) {
-                return Utils.formatResponse(token.code, `${token.message}`, token.data, token.error);
+                return FormatRestApiModels.createFormatRestApi(token.code, `${token.message}`, token.data, token.error);
             }
             const decks: Array<DecksRestApiUser> = [];
             const cards: Array<CardEntitySimplify> = [];
@@ -120,8 +121,10 @@ export class UsersServices {
                     name: existingUser.userCards[i].deck.name,
                     description: existingUser.userCards[i].deck.description,
                     image: existingUser.userCards[i].deck.image,
-                    type: existingUser.userCards[i].deck.type,
-                    rarity: existingUser.userCards[i].deck.rarity,
+                    type: EnumString.convertStringToEnum(TYPE, existingUser.userCards[i].deck.type),
+                    rarity: EnumString.convertStringToEnum(TYPE, existingUser.userCards[i].deck.rarity),
+                    // type: existingUser.userCards[i].deck.type,
+                    // rarity: existingUser.userCards[i].deck.rarity,
                 })
             }
             const tokenData: UserFrontData = {
@@ -156,31 +159,31 @@ export class UsersServices {
                     }
                 })
             }
-            return Utils.formatResponse(200, 'User logged in successfully', tokenData, null);
+            return FormatRestApiModels.createFormatRestApi(200, 'User logged in successfully', tokenData, null);
         } catch (error: any) {
-            return Utils.formatResponse(500, 'Internal server error', null, error.message);
+            return FormatRestApiModels.createFormatRestApi(500, 'Internal server error', null, error.message);
         }
     }
 
-    async getUserSimplified(token: string) {
-        try {
-            const dataSource: DataSource = await this.dataSourceConfig;
-            const tokenManager = new TokenManager('votre_clé_secrète');
-            const tokenData = tokenManager.verifyToken(token);
-            if (tokenData.code < 200 || tokenData.code > 299) {
-                return Utils.formatResponse(tokenData.code, `${tokenData.message}`, tokenData.data, tokenData.error);
-            }
-            const login = await this.login({
-                email: tokenData.data.email,
-                password: tokenData.data.password
-            });
-            if (login.code < 200 || login.code > 299) {
-                return Utils.formatResponse(login.code, `${login.message}`, login.data, login.error);
-            }else{
-                return Utils.formatResponse(200, 'User logged in successfully', login.data, null);
-            }
-        }catch (error: any) {
-            return Utils.formatResponse(500, 'Internal server error', null, error.message);
-        }
-    }
+    // async getUserSimplified(token: string) {
+    //     try {
+    //         const dataSource: DataSource = await this.dataSourceConfig;
+    //         const tokenManager = new TokenManager('votre_clé_secrète');
+    //         const tokenData = tokenManager.verifyToken(token);
+    //         if (Utils.codeErrorChecking(tokenData.code)) {
+    //             return FormatRestApiModels.createFormatRestApi(tokenData.code, `${tokenData.message}`, tokenData.data, tokenData.error);
+    //         }
+    //         const login = await this.login({
+    //             email: tokenData.data.email,
+    //             password: tokenData.data.password
+    //         });
+    //         if (Utils.codeErrorChecking(login.code)) {
+    //             return FormatRestApiModels.createFormatRestApi(login.code, `${login.message}`, login.data, login.error);
+    //         }else{
+    //             return FormatRestApiModels.createFormatRestApi(200, 'User logged in successfully', login.data, null);
+    //         }
+    //     }catch (error: any) {
+    //         return FormatRestApiModels.createFormatRestApi(500, 'Internal server error', null, error.message);
+    //     }
+    // }
 }

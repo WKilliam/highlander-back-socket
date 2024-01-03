@@ -11,3 +11,22 @@ export interface PlayerLobby {
     pseudo: string;
     cards :Array<CardEntitySimplify>;
 }
+
+
+export class PlayerModels {
+    static initPlayerLobby() :PlayerLobby{
+        return {
+            score: 0,
+            avatar: '',
+            pseudo: '',
+            cards: []
+        }
+    }
+
+    static initPlayerCards() :PlayerCards{
+        return {
+            avatar: '',
+            pseudo: ''
+        }
+    }
+}

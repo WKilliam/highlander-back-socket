@@ -1,6 +1,5 @@
-import {Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
 import {CardsDto} from "./cards.dto";
-import {ClientDto} from "./clients.dto";
 
 @Entity('decks')
 export class DecksDto {

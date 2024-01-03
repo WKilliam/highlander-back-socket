@@ -35,3 +35,50 @@ export interface GridLimit {
     minY: number,
     maxY: number
 }
+
+export class  MapsModels {
+    static initMaps() : Maps {
+        return {
+            id: 0,
+            backgroundImg: '',
+            cellsGrid: [],
+            height: 0,
+            width: 0,
+            name: ''
+        }
+    }
+
+    static initCells() : Cells{
+        return {
+            id: 0,
+            x: 0,
+            y: 0,
+            value: 0
+        }
+    }
+
+    static initCellsGrid() : CellsGrid {
+        return {
+            cellsGrid: []
+        }
+    }
+
+    static initGridLimit(): GridLimit{
+        return {
+            minX: 0,
+            maxX: 0,
+            minY: 0,
+            maxY: 0
+        }
+    }
+
+    static initMapsSimplify(): MapsSimplify{
+        return {
+            id: 0,
+            backgroundImage: '',
+            height: 0,
+            width: 0,
+            name: ''
+        }
+    }
+}

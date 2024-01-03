@@ -2,9 +2,15 @@ import {DataSource, Repository} from "typeorm";
 import {EffectsDto} from "../../dto/effects.dto";
 import {Utils} from "../../utils/utils";
 import {Effects} from "../../models/cards.models";
+import {FormatRestApiModels} from "../../models/formatRestApi";
 
 export class EffectsServices {
     dataSourceConfig: Promise<DataSource>;
+    private successEffectsCreated:string = 'Effects Created';
+    private failledEffectsCreated:string = 'Effects Not Created';
+    private failledEffectsNotFound:string = 'Effects Not Found';
+    private failledInternalServer:string = 'Internal Server Error';
+    private successEffectsFound:string = 'Effects Found';
 
     constructor(dataSourceConfig: Promise<DataSource>) {
         this.dataSourceConfig = dataSourceConfig;
@@ -17,12 +23,12 @@ export class EffectsServices {
             const effectsEntity = effectsRepository.create(effects);
             const effectsSaved = await effectsRepository.save(effectsEntity);
             if (effectsSaved) {
-                return Utils.formatResponse(201, 'Effects Created', effectsSaved);
+                return FormatRestApiModels.createFormatRestApi(201, this.successEffectsCreated, effectsSaved,'');
             }else{
-                return Utils.formatResponse(400, 'Effects Not Created', effectsSaved);
+                return FormatRestApiModels.createFormatRestApi(400, this.failledEffectsCreated, effectsSaved,'');
             }
         }catch (error:any){
-            return Utils.formatResponse(500, 'Internal Server Error', error, error.message);
+            return FormatRestApiModels.createFormatRestApi(500, this.failledInternalServer, error, error.message);
         }
     }
 
@@ -35,12 +41,12 @@ export class EffectsServices {
                 where: {id: number}
             });
             if (effects) {
-                return Utils.formatResponse(200, 'Effects Found', effects);
+                return FormatRestApiModels.createFormatRestApi(200, this.successEffectsFound, effects,'');
             }else{
-                return Utils.formatResponse(404, 'Effects Not Found', effects);
+                return FormatRestApiModels.createFormatRestApi(404, this.failledEffectsNotFound, effects,'');
             }
         }catch(error:any){
-            return Utils.formatResponse(500, 'Internal Server Error', error, error.message);
+            return FormatRestApiModels.createFormatRestApi(500, this.failledInternalServer, error, error.message);
         }
     }
 }
