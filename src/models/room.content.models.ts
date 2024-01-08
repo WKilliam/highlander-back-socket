@@ -15,6 +15,24 @@ export interface DiceRolling {
     max:number
 }
 
+export interface PartieInitChrono {
+    room: string,
+    timer:any
+    initAfterStart: number,
+    initInGame: number
+}
+
+export interface PartieFightChrono {
+    room: string,
+    fightAfterStart: number,
+    fightInGame: number
+}
+
+export interface Parties {
+    parties : PartieInitChrono
+    partiesFight : PartieFightChrono
+}
+
 
 
 export class RoomContentModels {
@@ -35,6 +53,30 @@ export class RoomContentModels {
             arrayLimit:[],
             min:0,
             max:0
+        }
+    }
+
+    static initPartieInitChrono(): PartieInitChrono {
+        return {
+            room: '',
+            timer: null,
+            initAfterStart: 15,
+            initInGame: 50
+        }
+    }
+
+    static initPartieFightChrono(): PartieFightChrono {
+        return {
+            room: '',
+            fightAfterStart: 15,
+            fightInGame: 30
+        }
+    }
+
+    static initParties(): Parties {
+        return {
+            parties: RoomContentModels.initPartieInitChrono(),
+            partiesFight: RoomContentModels.initPartieFightChrono()
         }
     }
 }

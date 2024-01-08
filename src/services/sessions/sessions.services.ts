@@ -86,15 +86,7 @@ export class SessionsServices {
             if(Utils.codeErrorChecking(existed.code)) return FormatRestApiModels.createFormatRestApi(existed.code, `${existed.message}`, existed.data, existed.error);
             const dataSource: DataSource = await this.dataSourceConfig;
             const sessionRepository: Repository<SessionDto> = dataSource.getRepository(SessionDto);
-            const updateSend = {
-                id: session.id,
-                game: {
-                    sessionStatusGame: session.game.sessionStatusGame,
-                    game: session.game.game,
-                    maps: session.game.maps
-                }
-            }
-            const updateResult = await sessionRepository.update(session.id, updateSend);
+            const updateResult = await sessionRepository.update(session.id, session);
             const updatedSession = await sessionRepository.findOne({
                 where: {id: session.id},
             });

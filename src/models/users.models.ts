@@ -1,5 +1,6 @@
 import {DecksRestApi, DecksRestApiUser} from "./decks.models";
 import {CardByEntityPlaying, CardEntitySimplify, CardsRestApi} from "./cards.models";
+import {EntityActionMoving} from "./actions.game.models";
 
 export interface UsersLogin {
     email: string;
@@ -39,6 +40,12 @@ export interface UserIdentitiesGame {
     teamSelectedPerPlayer: number;
     cardPositionInsideTeamCards: number;
     cardSelectedForPlay: number
+}
+
+
+export interface UserGamePlay {
+    room: string;
+    action: EntityActionMoving;
 }
 
 export class UserModels {

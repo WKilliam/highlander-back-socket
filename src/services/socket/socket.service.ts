@@ -9,10 +9,15 @@ import {ConstantText} from "../../utils/constant.text";
 import {UsersServices} from "../users/users.services";
 import {TokenManager} from "../../utils/tokennezer/jsonwebtoken";
 import {Dice} from "../dice";
+import {CardsServices} from "../cards/cards.services";
+import {Can, EntityCategorie} from "../../models/enums";
+import {PlayerCardsEntity} from "../../models/cards.player.entity.models";
+import {Cells} from "../../models/maps.models";
 
 export class SocketService {
     dataSourceConfig: Promise<DataSource>;
     sessionService: SessionsServices;
+    cardsService: CardsServices;
     usersService: UsersServices;
     private textSuccesCanJoinRoom0 = ConstantText.hashMapText.get('Succes-canJoinRoom-0') ?? 'XXX'
     private textSuccesCanJoinRoom = ConstantText.hashMapText.get('Succes-canJoinRoom') ?? 'XXX'
@@ -25,6 +30,7 @@ export class SocketService {
         this.dataSourceConfig = dataSourceConfig;
         this.sessionService = new SessionsServices(dataSourceConfig);
         this.usersService = new UsersServices(dataSourceConfig);
+        this.cardsService = new CardsServices(dataSourceConfig);
     }
 
 
@@ -135,13 +141,9 @@ export class SocketService {
                 null)
             if(changeCard.code !== 200) return FormatRestApiModels.createFormatRestApi(changeCard.code, changeCard.message, changeCard.data, changeCard.error)
             const sessionDto = changeCard.data
-            const dataSource: DataSource = await this.dataSourceConfig;
-            const sessionRepository: Repository<SessionDto> = dataSource.getRepository(SessionDto);
-            await sessionRepository.update(sessionDto.id, sessionDto);
-            const updatedSession = await sessionRepository.findOne({
-                where: {id: sessionDto.id},
-            });
-            return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, updatedSession, null);
+            const update = await this.sessionService.updateSession(room,sessionDto)
+            if (Utils.codeErrorChecking(update.code)) return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error)
+            return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, update, null);
         } catch (error: any) {
             return FormatRestApiModels.createFormatRestApi(500,
                 this.failledInternalServer,
@@ -167,15 +169,28 @@ export class SocketService {
                 teamPosition,
                 cardPosition,
                 selectedCard)
-            if(changeCard.code !== 200) return FormatRestApiModels.createFormatRestApi(changeCard.code, changeCard.message, changeCard.data, changeCard.error)
+            if(Utils.codeErrorChecking(changeCard.code)) return FormatRestApiModels.createFormatRestApi(changeCard.code, changeCard.message, changeCard.data, changeCard.error)
             const sessionDto = changeCard.data
-            const dataSource: DataSource = await this.dataSourceConfig;
-            const sessionRepository: Repository<SessionDto> = dataSource.getRepository(SessionDto);
-            await sessionRepository.update(sessionDto.id, sessionDto);
-            const updatedSession = await sessionRepository.findOne({
-                where: {id: sessionDto.id},
-            });
-            return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, updatedSession, null);
+            const update = await this.sessionService.updateSession(room,sessionDto)
+            if (Utils.codeErrorChecking(update.code)) return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error)
+            return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, update, null);
+        } catch (error: any) {
+            return FormatRestApiModels.createFormatRestApi(500,
+                this.failledInternalServer,
+                null,
+                error.message);
+        }
+
+    }
+
+    async initGame(room: string) {
+        try {
+            const session = await this.sessionService.getSession(room);
+            if (Utils.codeErrorChecking(session.code)) return session;
+            const cardsDB = await this.cardsService.getAllCards()
+            const sessionDto = Utils.createGameContent(session.data,cardsDB.data)
+            const update = await this.sessionService.updateSession(room,sessionDto)
+            return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error)
         } catch (error: any) {
             return FormatRestApiModels.createFormatRestApi(500,
                 this.failledInternalServer,
@@ -184,105 +199,74 @@ export class SocketService {
         }
     }
 
+    async countReturn(room: string) {
+        try {
+            const session = await this.sessionService.getSession(room);
+            if (Utils.codeErrorChecking(session.code)) return session;
+            const count = Utils.countReturn(session.data)
+            return FormatRestApiModels.createFormatRestApi(200, 'Count return', count, null)
+        } catch (error: any) {
+            return FormatRestApiModels.createFormatRestApi(500,
+                this.failledInternalServer,
+                null,
+                error.message);
+        }
+    }
 
-    //
-    // async joinSession(data: PlayerStatusSession) {
-    //     try {
-    //         return this.sessionService.playerStatusSession(data);
-    //     } catch (error: any) {
-    //         return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
-    //     }
-    // }
-    //
-    // async joinTeam(data: JoinSessionTeam) {
-    //     try {
-    //         return this.sessionService.joinTeam(data);
-    //     } catch (error: any) {
-    //         return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
-    //     }
-    // }
-    //
-    // async cardSelected(data: JoinSessionTeamCard) {
-    //     try {
-    //         return this.sessionService.cardSelected(data);
-    //     } catch (error: any) {
-    //         return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
-    //     }
-    // }
-    //
-    // async createTurnList(room: string) {
-    //     try {
-    //         return this.sessionService.creatList(room);
-    //     } catch (error: any) {
-    //         return Utils.formatSocketMessage('', null, 'Error Internal Server', 500, error.message)
-    //     }
-    // }
-    //
-    // humainAction(room: string, entityTurn: CurrentTurnAction) {
-    //     switch (entityTurn.currentAction) {
-    //         case Can.WHO_IS_TURN:
-    //             return this.sessionService.roolingTurn(room, entityTurn);
-    //         case Can.SEND_DICE:
-    //             return this.sessionService.roolingTurn(room, entityTurn);
-    //         case Can.CHOOSE_MOVE:
-    //             return this.sessionService.roolingTurn(room, entityTurn);
-    //         case Can.MOVE:
-    //             return this.sessionService.roolingTurn(room, entityTurn);
-    //         case Can.END_MOVE:
-    //             return this.sessionService.roolingTurn(room, entityTurn);
-    //         case Can.END_TURN:
-    //             return this.sessionService.roolingTurn(room, entityTurn);
-    //         case Can.END_GAME:
-    //             return this.sessionService.roolingTurn(room, entityTurn);
-    //         default:
-    //             return FormatRestApiModels.createFormatRestApi(200, "", null, 'Error Internal Server')
-    //     }
-    // }
-    //
-    // /**
-    //  * COMPUTER
-    //  */
-    //
-    // botAction(room: string, entityTurn: CurrentTurnAction) {
-    //     switch (entityTurn.currentAction) {
-    //         case Can.WHO_IS_TURN:
-    //             return this.sessionService.roolingTurn(room, entityTurn);
-    //         case Can.SEND_DICE:
-    //             let newEntityTurn: CurrentTurnAction = {
-    //                 ...entityTurn,
-    //                 dice: this.randomDice()
-    //             }
-    //             return this.sessionService.roolingTurn(room, newEntityTurn);
-    //         case Can.CHOOSE_MOVE:
-    //             let newEntityTurn2: CurrentTurnAction = {
-    //                 ...entityTurn,
-    //                 move: this.computerMove(entityTurn)
-    //             }
-    //             return this.sessionService.roolingTurn(room, newEntityTurn2);
-    //         case Can.MOVE:
-    //             return this.sessionService.roolingTurn(room, entityTurn);
-    //         case Can.END_MOVE:
-    //             return this.sessionService.roolingTurn(room, entityTurn);
-    //         case Can.END_TURN:
-    //             return this.sessionService.roolingTurn(room, entityTurn);
-    //         case Can.END_GAME:
-    //             return this.sessionService.roolingTurn(room, entityTurn);
-    //         default:
-    //             return FormatRestApiModels.createFormatRestApi(200, "", null, 'Error Internal Server bad action selected')
-    //     }
-    //
-    // }
-    //
-    //
-    // computerMove(data: CurrentTurnAction) {
-    //     const moves = data.moves
-    //     let indexMap = Utils.generateRandomNumber(0, moves.length - 1);
-    //     return moves[indexMap]
-    // }
-    //
-    // randomDice() {
-    //     return Utils.generateRandomNumber(1, 20);
-    // }
+    async nextEntityTurn(room: string) {
+        try {
+            const session = await this.sessionService.getSession(room);
+            if (Utils.codeErrorChecking(session.code)) return session;
+            const next = Utils.nextEntityTurn(session.data)
+        } catch (error: any) {
+            return FormatRestApiModels.createFormatRestApi(500,
+                this.failledInternalServer,
+                null,
+                error.message);
+        }
+    }
 
+    async whoIsPlayEntityType(room: string) {
+        try {
+            const session = await this.sessionService.getSession(room);
+            if (Utils.codeErrorChecking(session.code)) return session;
+            const play = Utils.checkEntityPlay(session.data)
+            return FormatRestApiModels.createFormatRestApi(200, 'Who is play', play, null)
+        }catch (error: any) {
+            return FormatRestApiModels.createFormatRestApi(500,
+                this.failledInternalServer,
+                null,
+                error.message);
+        }
+    }
 
+    async humainActionMoving(
+        room: string,
+        teamIndex: number,
+        cardIndex: number,
+        typeEntity: EntityCategorie,
+        playerCardsEntity: PlayerCardsEntity,
+        dice: number | null,
+        indexInsideArray: number | null,
+        movesCans: Array<Cells> | null,
+        moveTo: Cells | null,
+        currentCan: Can) {
+        try {
+            const session = await this.sessionService.getSession(room);
+            if (Utils.codeErrorChecking(session.code)) return session;
+            const turnAction = Utils.humainAction(
+                session.data,
+                teamIndex,
+                cardIndex,
+                dice,
+                movesCans,
+                moveTo,
+                currentCan)
+        }catch (error: any) {
+            return FormatRestApiModels.createFormatRestApi(500,
+                this.failledInternalServer,
+                null,
+                error.message);
+        }
+    }
 }

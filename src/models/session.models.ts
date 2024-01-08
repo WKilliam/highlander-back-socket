@@ -22,9 +22,14 @@ export interface SessionStatusGame {
 }
 
 export interface Game {
-    teams: Array<PlayerCardsEntity>
-    monsters: Array<PlayerCardsEntity>
-    fightings: Array<Map<string,EntityActionFight>>
+    challenger: Array<PlayerCardsEntity>
+    fightings: Map<string,FightSession>
+}
+
+export interface FightSession {
+    challenger:Array<PlayerCardsEntity>
+    entityTurn:Array<EntityActionFight>
+    currentEntityActionFightPosition:number
 }
 
 export class SessionModels {
@@ -38,14 +43,13 @@ export class SessionModels {
 
     static initGame(ArrayStringTeam:Array<string>): Game{
         const teamTabDefault:Array<PlayerCardsEntity> = []
-        teamTabDefault.push(CardPlayerEntityModels.initPlayerCardsEntity(true,ArrayStringTeam[0]))
-        teamTabDefault.push(CardPlayerEntityModels.initPlayerCardsEntity(true,ArrayStringTeam[1]))
-        teamTabDefault.push(CardPlayerEntityModels.initPlayerCardsEntity(true,ArrayStringTeam[2]))
-        teamTabDefault.push(CardPlayerEntityModels.initPlayerCardsEntity(true,ArrayStringTeam[3]))
+        teamTabDefault.push(CardPlayerEntityModels.initPlayerCardsEntity(true,ArrayStringTeam[0],[]))
+        teamTabDefault.push(CardPlayerEntityModels.initPlayerCardsEntity(true,ArrayStringTeam[1],[]))
+        teamTabDefault.push(CardPlayerEntityModels.initPlayerCardsEntity(true,ArrayStringTeam[2],[]))
+        teamTabDefault.push(CardPlayerEntityModels.initPlayerCardsEntity(true,ArrayStringTeam[3],[]))
         return {
-            teams: teamTabDefault,
-            monsters: [],
-            fightings: []
+            challenger: teamTabDefault,
+            fightings: new Map<string,FightSession>()
         }
     }
 
@@ -71,7 +75,14 @@ export class SessionModels {
             entityTurn : [],
             currentEntityActionMovingPosition: -1
         }
+    }
 
+    static initFightSession(): FightSession{
+        return {
+            challenger:[],
+            entityTurn:[],
+            currentEntityActionFightPosition:0
+        }
     }
 }
 

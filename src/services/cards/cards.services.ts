@@ -94,4 +94,36 @@ export class CardsServices {
             return FormatRestApiModels.createFormatRestApi(500, this.failledInternalServer, null, error.message);
         }
     }
+
+    async getAllCards() {
+        try {
+            const dataSource: DataSource = await this.dataSourceConfig;
+            const cardsRepository: Repository<CardsDto> = dataSource.getRepository(CardsDto);
+            const cards = await cardsRepository.find({
+                select: [
+                    "id",
+                    "name",
+                    "description",
+                    "image",
+                    "rarity",
+                    "atk",
+                    "def",
+                    "spd",
+                    "luk",
+                    "createdAt",
+                    "deck",
+                    "effects",
+                    "capacities"
+                ],
+                relations :[
+                    "deck",
+                    "effects",
+                    "capacities"
+                ],
+            });
+            return FormatRestApiModels.createFormatRestApi(200, this.succesCardCreated, cards, '');
+        } catch (error: any) {
+            return FormatRestApiModels.createFormatRestApi(500, this.failledInternalServer, null, error.message);
+        }
+    }
 }

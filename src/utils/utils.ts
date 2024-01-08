@@ -1,46 +1,70 @@
 import {Cells} from "../models/maps.models";
 import {SessionDto} from "../dto/session.dto";
 import {FormatRestApiModels} from "../models/formatRestApi";
-import {CardByEntityPlaying, CardEntitySimplify, CardsModels} from "../models/cards.models";
-import {PlayerCardsEntity} from "../models/cards.player.entity.models";
+import {CardByEntityPlaying, CardsModels} from "../models/cards.models";
+import {CardPlayerEntityModels, PlayerCardsEntity} from "../models/cards.player.entity.models";
 import {PlayerLobby} from "../models/player.models";
+import {CardsDto} from "../dto/cards.dto";
+import {Can, EntityCategorie, EntityStatus} from "../models/enums";
+import {EntityActionFight, EntityActionMoving} from "../models/actions.game.models";
+import {FightSession, SessionModels} from "../models/session.models";
 
 export class Utils {
 
-    // static randomName(teamEntityPlaying: Array<EntityPlaying>) {
-    //     let nomsMonstres = [
-    //         "Ombre Funeste",
-    //         "Griffes de Nuit",
-    //         "Fléau Ténébreux",
-    //         "Harpies Maudites",
-    //         "Gargouilles Infernales",
-    //         "Hydra de l'Ombre",
-    //         "Chimère Dévoreuse",
-    //         "Basilic Venimeux",
-    //         "Démons Sanguinaires",
-    //         "Minotaure Furieux",
-    //         "Spectres Vengeurs",
-    //         "Gobelins Maléfiques",
-    //         "Loups Nocturnes",
-    //         "Dragon de l'Abîme",
-    //         "Goules Affamées",
-    //         "Kraken Abyssal",
-    //         "Wyvernes Sombres",
-    //         "Banshees Hurlantes",
-    //         "Gobelins des Marais",
-    //         "Liche Immortelle"
-    //     ];
-    //     const generateUniqueName = (): string => {
-    //         let newName = nomsMonstres[Math.floor(Math.random() * nomsMonstres.length)];
-    //         while (teamEntityPlaying.some(entity => entity.name === newName)) {
-    //             newName = nomsMonstres[Math.floor(Math.random() * nomsMonstres.length)];
-    //         }
-    //         return newName;
-    //     };
-    //     return generateUniqueName();
-    // }
-    //
-    //
+    private static adjectives = ["Féroces", "Mystiques", "Terrifiants", "Anciens", "Surnaturels"];
+    private static names = ["Gargouilles", "Spectres", "Griffons", "Hydres", "Minotaures"];
+    private static themes = ["des Abysses", "de la Nuit", "des Ombres", "de l'Infini", "du Chaos"];
+
+    static randomMonsterName() {
+        let pseudoMonstres = [
+            "Ombre Funeste",
+            "Griffes de Nuit",
+            "Fléau Ténébreux",
+            "Harpies Maudites",
+            "Gargouilles Infernales",
+            "Hydra de l'Ombre",
+            "Chimère Dévoreuse",
+            "Basilic Venimeux",
+            "Démons Sanguinaires",
+            "Minotaure Furieux",
+            "Spectres Vengeurs",
+            "Gobelins Maléfiques",
+            "Loups Nocturnes",
+            "Dragon de l'Abîme",
+            "Goules Affamées",
+            "Kraken Abyssal",
+            "Wyvernes Sombres",
+            "Banshees Hurlantes",
+            "Gobelins des Marais",
+            "Liche Immortelle"
+        ];
+        let avatarMonstres = [
+            "https://fiverr-res.cloudinary.com/images/t_main1,q_auto,f_auto,q_auto,f_auto/gigs/343344341/original/f6f27d307c3080a6590744b8e093f85877939079/do-a-horror-dark-fantasy-character-or-creature-for-your-dnd-campaign.jfif",
+        ];
+        return {
+            pseudo: pseudoMonstres[Math.floor(Math.random() * pseudoMonstres.length)],
+            avatar: avatarMonstres[Math.floor(Math.random() * avatarMonstres.length)],
+        }
+    }
+
+    private static getRandomElement(array: string[]): string {
+        return array[Math.floor(Math.random() * array.length)];
+    }
+
+    public static generateTeamNames(existingNames: string[], count: number): string[] {
+        const newNames: string[] = [];
+        while (newNames.length < count) {
+            const adjective = this.getRandomElement(this.adjectives);
+            const name = this.getRandomElement(this.names);
+            const theme = this.getRandomElement(this.themes);
+            const teamName = `${adjective} ${name} ${theme}`;
+
+            if (!existingNames.includes(teamName) && !newNames.includes(teamName)) {
+                newNames.push(teamName);
+            }
+        }
+        return newNames;
+    }
 
     static createGrid(mapWidth: number, mapHeight: number): Cells[][] {
         const cellWidth = 32;
@@ -75,12 +99,13 @@ export class Utils {
         data: SessionDto, lobbyPosition: number, teamPosition: number,
         cardPosition: number, cardByPlayer: number | null = null
     ) {
-        let teams = data.game.game.teams ?? []
+        let teams = data.game.game.challenger ?? []
         let lobby = data.game.sessionStatusGame.lobby ?? []
 
         // Check if teams[teamPosition].cardsPlayer[cardPosition] is not already taken
         let userInformation = lobby[lobbyPosition];
-        let checkSession = teams[teamPosition].cardsPlayer ?? [];
+        let checkSession = teams[teamPosition].cardsInfo ?? [];
+        console.log(cardByPlayer)
         if (checkSession.length === 0) {
             return FormatRestApiModels.createFormatRestApi(400, 'The seat is already taken.', null, null);
         } else {
@@ -93,51 +118,49 @@ export class Utils {
             if (this.codeErrorChecking(processSet.code)) return FormatRestApiModels.createFormatRestApi(400, processSet.message, processSet.data, processSet.error);
             const checkAnotherTeamRefresh = this.checkAnotherTeamRefresh(teams, teamPosition, cardPosition, userInformation);
             if (this.codeErrorChecking(checkAnotherTeamRefresh.code)) return FormatRestApiModels.createFormatRestApi(400, checkAnotherTeamRefresh.message, checkAnotherTeamRefresh.data, checkAnotherTeamRefresh.error);
-            data.game.game.teams = checkAnotherTeamRefresh.data
+            data.game.game.challenger = checkAnotherTeamRefresh.data
             return FormatRestApiModels.createFormatRestApi(200, 'Card Change', data, null);
         }
     }
 
     private static setCardByPlayer(teams: Array<PlayerCardsEntity>, teamPosition: number, cardPosition: number, userInformation: PlayerLobby, cardByPlayer: number | null) {
         for (let i = 0; i < teams.length; i++) {
-            const sessionEndPoint = teams[i].cardsPlayer ?? [];
+            const sessionEndPoint = teams[i].cardsInfo ?? [];
             for (let j = 0; j < sessionEndPoint.length; j++) {
-                const ifIsPlayer = sessionEndPoint[j].player?.avatar === userInformation.avatar && sessionEndPoint[j].player?.pseudo === userInformation.pseudo
-                const ifIsEmptyRender = sessionEndPoint[j].player?.avatar === "" && sessionEndPoint[j].player?.pseudo === ""
-                const ifIsCoordonate = j === cardPosition && i === teamPosition
-                if (ifIsEmptyRender && ifIsCoordonate) {
-                    if (ifIsPlayer || ifIsEmptyRender) {
-                        if (cardByPlayer === null) {
-                            const card: CardByEntityPlaying = {
-                                ...sessionEndPoint[j],
-                                player: {
-                                    avatar: userInformation.avatar,
-                                    pseudo: userInformation.pseudo,
-                                },
-                            }
-                            sessionEndPoint[j] = card
-                        } else {
-                            const card: CardByEntityPlaying = {
-                                player: {
-                                    avatar: userInformation.avatar,
-                                    pseudo: userInformation.pseudo,
-                                },
-                                atk: userInformation.cards[cardByPlayer].atk,
-                                def: userInformation.cards[cardByPlayer].def,
-                                spd: userInformation.cards[cardByPlayer].spd,
-                                luk: userInformation.cards[cardByPlayer].luk,
-                                description: userInformation.cards[cardByPlayer].description,
-                                name: userInformation.cards[cardByPlayer].name,
-                                rarity: userInformation.cards[cardByPlayer].rarity,
-                                imageSrc: userInformation.cards[cardByPlayer].image,
-                                effects: userInformation.cards[cardByPlayer].effects,
-                                capacities: userInformation.cards[cardByPlayer].capacities,
-                            }
-                            sessionEndPoint[j] = card
+                const ifSeatIsEmty = sessionEndPoint[j].player?.avatar === "" && sessionEndPoint[j].player?.pseudo === ""
+                const ifSeatIsEqualPlayer = sessionEndPoint[j].player?.avatar === userInformation.avatar && sessionEndPoint[j].player?.pseudo === userInformation.pseudo
+                if (ifSeatIsEmty || ifSeatIsEqualPlayer) {
+                    if (cardByPlayer === null) {
+                        const card: CardByEntityPlaying = {
+                            ...sessionEndPoint[j],
+                            player: {
+                                avatar: userInformation.avatar,
+                                pseudo: userInformation.pseudo,
+                            },
                         }
+                        sessionEndPoint[j] = card
                     } else {
-                        return FormatRestApiModels.createFormatRestApi(400, 'The seat does not belong to the player.', null, null);
+                        const card: CardByEntityPlaying = {
+                            player: {
+                                avatar: userInformation.avatar,
+                                pseudo: userInformation.pseudo,
+                            },
+                            atk: userInformation.cards[cardByPlayer].atk,
+                            def: userInformation.cards[cardByPlayer].def,
+                            spd: userInformation.cards[cardByPlayer].spd,
+                            luk: userInformation.cards[cardByPlayer].luk,
+                            description: userInformation.cards[cardByPlayer].description,
+                            name: userInformation.cards[cardByPlayer].name,
+                            entityStatus: EntityStatus.ALIVE,
+                            rarity: userInformation.cards[cardByPlayer].rarity,
+                            imageSrc: userInformation.cards[cardByPlayer].image,
+                            effects: userInformation.cards[cardByPlayer].effects,
+                            capacities: userInformation.cards[cardByPlayer].capacities,
+                        }
+                        sessionEndPoint[j] = card
                     }
+                } else {
+                    return FormatRestApiModels.createFormatRestApi(400, 'The seat does not belong to the player.', null, null);
                 }
             }
         }
@@ -146,7 +169,7 @@ export class Utils {
 
     private static checkAnotherTeamRefresh(teams: Array<PlayerCardsEntity>, teamPosition: number, cardPosition: number, userInformation: PlayerLobby) {
         for (let i = 0; i < teams.length; i++) {
-            const sessionEndPoint = teams[i].cardsPlayer ?? [];
+            const sessionEndPoint = teams[i].cardsInfo ?? [];
             for (let j = 0; j < sessionEndPoint.length; j++) {
                 const currentPositionNotChange = i === teamPosition && j === cardPosition
                 const isSamePlayer = sessionEndPoint[j].player?.pseudo === userInformation.pseudo && sessionEndPoint[j].player?.avatar === userInformation.avatar
@@ -161,566 +184,280 @@ export class Utils {
         return FormatRestApiModels.createFormatRestApi(200, 'Card Change', teams, null);
     }
 
-//
-    // // convert list of cells to matrix
-    // static convertListCellsToMatrix(listeCellules: Cells[]): Cells[][] {
-    //     const mapWidth: number = 936;
-    //     const mapHeight: number = 620;
-    //     const cellWidth = 32;
-    //     const cellHeight = 32;
-    //     const numCols = Math.floor(mapWidth / cellWidth);
-    //     const numRows = Math.floor(mapHeight / cellHeight);
-    //     let gridCellData: Cells[][] = [];
-    //     let cellId = 1;
-    //
-    //     for (let row = 0; row < numRows; row++) {
-    //         const rowArray: Cells[] = [];
-    //         for (let col = 0; col < numCols; col++) {
-    //             const existingCell = listeCellules.find(cell => cell.id === cellId);
-    //             const cell: Cells = existingCell || {
-    //                 id: cellId,
-    //                 x: col * cellWidth + 5,
-    //                 y: row * cellHeight + 5,
-    //                 value: 1,
-    //             };
-    //             rowArray.push(cell);
-    //             cellId++;
-    //         }
-    //         gridCellData.push(rowArray);
-    //     }
-    //     return gridCellData;
-    // }
-    //
-    // // get limit of grid
-    // static getGridIndices(cells: Cells[]): GridLimit {
-    //     let gridCellData: Cells[][] = this.convertListCellsToMatrix(cells)
-    //     const numRows = gridCellData.length;
-    //     const numCols = gridCellData[0].length;
-    //     const minX = 0;
-    //     const maxX = numCols - 1;
-    //     const minY = 0;
-    //     const maxY = numRows - 1;
-    //     console.log(`Limites de la matrice : minRow=${minX}, maxRow=${maxX}, minCol=${minY}, maxCol=${maxY}`);
-    //     return {minX, maxX, minY, maxY};
-    // }
-    //
-    //
-    // // give posibility to move player
-    // static findCellsAtDistance(cells: Cells[], startId: number, distance: number) {
-    //     const result: Cells[] = [];
-    //     let startX: number | null = null;
-    //     let startY: number | null = null;
-    //     let gridCells = this.convertListCellsToMatrix(cells)
-    //     gridCells.forEach((rowArray, rowIndex) => {
-    //         rowArray.forEach((cell, colIndex) => {
-    //             if (cell.id === startId) {
-    //                 startX = rowIndex;
-    //                 startY = colIndex;
-    //             }
-    //         });
-    //     });
-    //
-    //     if (startX === null || startY === null) {
-    //         return FormatRestApiModels.createFormatRestApi(400, 'Start cell not found.', null, null);
-    //     }
-    //     const {minX, maxX, minY, maxY} = this.getGridIndices(result);
-    //     for (let x = minX; x <= maxX; x++) {
-    //         for (let y = minY; y <= maxY; y++) {
-    //             const dx = Math.abs(x - startY);
-    //             const dy = Math.abs(y - startX);
-    //             const manhattanDistance = dx + dy;
-    //             if (manhattanDistance === distance) {
-    //                 result.push(gridCells[y][x]);
-    //             }
-    //         }
-    //     }
-    //     return FormatRestApiModels.createFormatRestApi(200, 'Cells found.', result, null);
-    // }
-    //
-    //
 
-    //
-    // static initTeamEntityPlaying(teamName: Array<string>): Array<EntityPlaying> {
-    //     let teamEntityPlaying: Array<EntityPlaying> = [];
-    //     for (let i = 0; i < teamName.length; i++) {
-    //         teamEntityPlaying.push({
-    //             name: teamName[i],
-    //             commonLife: -1,
-    //             commonMaxLife: -1,
-    //             commonAttack: -1,
-    //             commonDefense: -1,
-    //             commonLuck: -1,
-    //             commonSpeed: -1,
-    //             cellPosition: {
-    //                 id: -1,
-    //                 x: -1,
-    //                 y: -1,
-    //                 value: -1
-    //             },
-    //             entityStatus: EntityStatus.ALIVE,
-    //             cardsPlayer: [
-    //                 {
-    //                     player: {
-    //                         avatar: '',
-    //                         pseudo: '',
-    //                     },
-    //                     atk: -1,
-    //                     def: -1,
-    //                     spd: -1,
-    //                     luk: -1,
-    //                     description: '',
-    //                     name: '',
-    //                     rarity: '',
-    //                     status: EntityStatus.ALIVE,
-    //                     imageSrc: '',
-    //                     effects: [],
-    //                     capacities: [],
-    //                 },
-    //                 {
-    //                     player: {
-    //                         avatar: '',
-    //                         pseudo: '',
-    //                     },
-    //                     atk: -1,
-    //                     def: -1,
-    //                     spd: -1,
-    //                     luk: -1,
-    //                     description: '',
-    //                     name: '',
-    //                     rarity: '',
-    //                     status: EntityStatus.ALIVE,
-    //                     imageSrc: '',
-    //                     effects: [],
-    //                     capacities: [],
-    //                 }
-    //             ],
-    //         });
-    //     }
-    //     return teamEntityPlaying;
-    // }
-    //
-    // static initTeamEntityPlayingWithCards(
-    //     session: Array<EntityPlaying>,
-    //     lobby: Array<PlayerLobby>,
-    //     lobbyPosition: number,
-    //     teamPosition: number,
-    //     cardPosition: number
-    // ) {
-    //     let checkUpSession = session ?? []
-    //     let checkUpLobby = lobby ?? []
-    //     let checkUpLobbyPosition = lobbyPosition ?? -1
-    //     let checkUpTeamPosition = teamPosition ?? -1
-    //     let checkUpCardPosition = cardPosition ?? -1
-    //     if(checkUpSession.length === 0 || checkUpLobby.length === 0 || checkUpLobbyPosition === -1 || checkUpTeamPosition === -1 || checkUpCardPosition === -1){
-    //         return FormatRestApiModels.createFormatRestApi(400, 'Error initTeamEntityPlayingWithCards', null, null);
-    //     }else{
-    //         const userInformation = lobby[lobbyPosition];
-    //         const checkSession = session[teamPosition].cardsPlayer ?? [];
-    //         if (checkSession.length === 0) {
-    //             return FormatRestApiModels.createFormatRestApi(400, 'The seat is already taken.', null, null);
-    //         }
-    //
-    //         // Vérifier si le joueur demandant n'est pas déjà placé dans une autre carte
-    //         let isUserPlaced = false;
-    //         for (let i = 0; i < session.length; i++) {
-    //             const sessionEndPoint = session[i].cardsPlayer ?? [];
-    //             if(sessionEndPoint.length === 0){
-    //                 return FormatRestApiModels.createFormatRestApi(400, 'Error initTeamEntityPlayingWithCards', null, null);
-    //             }else{
-    //                 for (let j = 0; j < sessionEndPoint.length; j++) {
-    //                     if (sessionEndPoint[j].player?.avatar === userInformation.avatar &&
-    //                         sessionEndPoint[j].player?.pseudo === userInformation.pseudo) {
-    //                         isUserPlaced = true;
-    //                         break;
-    //                     }
-    //                 }
-    //             }
-    //
-    //             if (isUserPlaced) break;
-    //         }
-    //
-    //         // Si le joueur demandant n'est pas déjà placé
-    //         if (!isUserPlaced) {
-    //             // Set session[teamPosition].cardsPlayer[cardPosition] par les informations du joueur
-    //             checkSession[cardPosition] = {
-    //                 atk: -1,
-    //                 def: -1,
-    //                 spd: -1,
-    //                 luk: -1,
-    //                 rarity: '',
-    //                 imageSrc: '',
-    //                 description: '',
-    //                 name: '',
-    //                 effects: [],
-    //                 capacities: [],
-    //                 status: EntityStatus.ALIVE,
-    //                 player: {
-    //                     avatar: userInformation.avatar,
-    //                     pseudo: userInformation.pseudo,
-    //                 },
-    //             };
-    //
-    //             // Supprimer l'ancienne position du joueur s'il existe
-    //             for (let i = 0; i < session.length; i++) {
-    //                 const sessionEndPoint = session[i].cardsPlayer ?? [];
-    //                 for (let j = 0; j < sessionEndPoint.length; j++) {
-    //                     if (sessionEndPoint[j].player?.avatar === userInformation.avatar &&
-    //                         sessionEndPoint[j].player?.pseudo === userInformation.pseudo &&
-    //                         (i !== teamPosition || j !== cardPosition)) {
-    //                         sessionEndPoint[j] = {
-    //                             atk: -1,
-    //                             def: -1,
-    //                             spd: -1,
-    //                             luk: -1,
-    //                             rarity: '',
-    //                             imageSrc: '',
-    //                             description: '',
-    //                             name: '',
-    //                             effects: [],
-    //                             capacities: [],
-    //                             status: EntityStatus.ALIVE,
-    //                             player: {
-    //                                 avatar: '',
-    //                                 pseudo: '',
-    //                             },
-    //                         };
-    //                         break;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //         return FormatRestApiModels.createFormatRestApi(200, 'Card Change', session, null);
-    //     }
-    // }
-    //
-    //
-    // // static initPlaceTeamCard(
-    // //     data: JoinSessionTeamCard,
-    // //     session: Array<EntityPlaying>,
-    // //     lobby: Array<PlayerLobby>,
-    // // ): FormatRestApiModels {
-    // //     // Vérifier si la position dans cardPlayer n'est pas déjà prise
-    // //     const existingPlayer: PlayerLobby = lobby[data.lobbyPosition];
-    // //     const placeIsTaken = session[data.teamPosition].cardsPlayer ?? [];
-    // //     const cardSelected = lobby[data.lobbyPosition].cards[data.cardByPlayer];
-    // //     if (existingPlayer.pseudo === '' || existingPlayer.avatar === '') {
-    // //         return FormatRestApiModels.createFormatRestApi(400, 'Player not found.', null, null);
-    // //     }
-    // //     if (placeIsTaken[data.cardPosition].player?.pseudo !== existingPlayer.pseudo && placeIsTaken[data.cardPosition].player?.avatar !== existingPlayer.avatar) {
-    // //         return FormatRestApiModels.createFormatRestApi(400, 'The seat does not belong to the player.', null, null);
-    // //     }
-    // //     if (cardSelected.name === '') {
-    // //         return FormatRestApiModels.createFormatRestApi(400, 'Card not found.', null, null);
-    // //     }
-    // //
-    // //     for (let i = 0; i < session.length; i++) {
-    // //         if (i === data.teamPosition) {
-    // //             let cards: Array<CardByEntityPlaying> = session[i].cardsPlayer ?? [];
-    // //             for (let j = 0; j < cards.length; j++) {
-    // //                 // Vérifier si la carte correspond à la position actuelle et réinitialiser si nécessaire
-    // //                 if (i === data.teamPosition && j === data.cardPosition) {
-    // //                     cards[j] = {
-    // //                         atk: cardSelected.atk,
-    // //                         def: cardSelected.def,
-    // //                         spd: cardSelected.spd,
-    // //                         luk: cardSelected.luk,
-    // //                         rarity: cardSelected.rarity,
-    // //                         imageSrc: cardSelected.image,
-    // //                         description: cardSelected.description,
-    // //                         name: cardSelected.name,
-    // //                         effects: cardSelected.effects,
-    // //                         capacities: cardSelected.capacities,
-    // //                         status: EntityStatus.ALIVE,
-    // //                         player: {
-    // //                             avatar: existingPlayer.avatar,
-    // //                             pseudo: existingPlayer.pseudo,
-    // //                         },
-    // //                     };
-    // //                     session[i].commonLuck = Utils.initCommunStat(session[i], 'luk')
-    // //                     session[i].commonSpeed = Utils.initCommunStat(session[i], 'spd')
-    // //                     session[i].commonDefense = Utils.initCommunStat(session[i], 'def')
-    // //                     session[i].commonAttack = Utils.initCommunStat(session[i], 'atk')
-    // //                     session[i].commonMaxLife = Utils.initCommunStat(session[i], 'maxLife')
-    // //                     session[i].commonLife = Utils.initCommunStat(session[i], 'life')
-    // //                 } else {
-    // //                     console.log('Card already in place');
-    // //                 }
-    // //             }
-    // //         }
-    // //     }
-    // //     return FormatRestApiModels.createFormatRestApi(200, 'Card Change', session, null);
-    // // }
-    //
-    // static getIfJustOnePlayerHaveCard(session: Array<EntityPlaying>): boolean {
-    //     let count = 0;
-    //     for (let i = 0; i < session.length; i++) {
-    //         const team = session[i].cardsPlayer ?? [];
-    //         for (let j = 0; j < team.length; j++) {
-    //             if (
-    //                 team[j].player?.pseudo !== '' &&
-    //                 team[j].player?.avatar !== '' &&
-    //                 team[j].name !== '' &&
-    //                 team[j].imageSrc !== '' &&
-    //                 team[j].rarity !== '' &&
-    //                 team[j].description !== '' &&
-    //                 team[j].atk !== -1 &&
-    //                 team[j].def !== -1 &&
-    //                 team[j].spd !== -1 &&
-    //                 team[j].luk !== -1 &&
-    //                 team[j].effects.length !== 0 &&
-    //                 team[j].capacities.length !== 0) {
-    //                 count++;
-    //             }
-    //         }
-    //     }
-    //     return count !== 0;
-    // }
-    //
-    // static generateRandomNumber(min: number, max: number): number {
-    //     return Math.floor(Math.random() * (max - min + 1)) + min;
-    // }
-    //
-    // static initMonsterEntityPlaying(cards: Array<CardsDto>, map: Array<Cells>): Array<EntityPlaying> {
-    //     let teamEntityPlaying: Array<EntityPlaying> = [];
-    //     // this.generateRandomNumber(1, 2)
-    //     for (let i = 0; i < 1; i++) {
-    //         const validCells = map.filter(cell => cell.value !== -1);
-    //         let indexMap = this.generateRandomNumber(0, validCells.length - 1);
-    //         let indexOne = this.generateRandomNumber(0, cards.length - 1);
-    //         let indexTwo = this.generateRandomNumber(0, cards.length - 1);
-    //         let cardOne = {
-    //             atk: cards[indexOne].atk,
-    //             def: cards[indexOne].def,
-    //             spd: cards[indexOne].spd,
-    //             luk: cards[indexOne].luk,
-    //             description: cards[indexOne].description,
-    //             name: cards[indexOne].name,
-    //             rarity: cards[indexOne].rarity,
-    //             status: EntityStatus.ALIVE,
-    //             imageSrc: cards[indexOne].image,
-    //             effects: cards[indexOne].effects,
-    //             capacities: cards[indexOne].capacities,
-    //         }
-    //         let cardTwo = {
-    //             atk: cards[indexTwo].atk,
-    //             def: cards[indexTwo].def,
-    //             spd: cards[indexTwo].spd,
-    //             luk: cards[indexTwo].luk,
-    //             description: cards[indexTwo].description,
-    //             name: cards[indexTwo].name,
-    //             rarity: cards[indexTwo].rarity,
-    //             status: EntityStatus.ALIVE,
-    //             imageSrc: cards[indexTwo].image,
-    //             effects: cards[indexTwo].effects,
-    //             capacities: cards[indexTwo].capacities,
-    //         }
-    //         teamEntityPlaying.push({
-    //             name: this.randomName(teamEntityPlaying),
-    //             commonLife: 200,
-    //             commonMaxLife: 200,
-    //             commonAttack: cardOne.atk + cardTwo.atk,
-    //             commonDefense: cardOne.def + cardTwo.def,
-    //             commonLuck: cardOne.luk + cardTwo.luk,
-    //             commonSpeed: cardOne.spd + cardTwo.spd,
-    //             cellPosition: {
-    //                 id: validCells[indexMap].id,
-    //                 x: validCells[indexMap].x,
-    //                 y: validCells[indexMap].y,
-    //                 value: validCells[indexMap].value
-    //             },
-    //             entityStatus: EntityStatus.ALIVE,
-    //             cardsMonster: [
-    //                 cardOne,
-    //                 cardTwo
-    //             ],
-    //         });
-    //     }
-    //     return teamEntityPlaying;
-    // }
-    //
-    // static placeEntityPlayer(session: Array<EntityPlaying>, map: Array<Cells>, monsterCells: Array<Cells>) {
-    //     let playerPositionCells: Array<Cells> = []
-    //     for (let i = 0; i < session.length; i++) {
-    //         const team = session[i].cardsPlayer ?? [];
-    //         for (let j = 0; j < team.length; j++) {
-    //             if (team[j].player?.pseudo !== '' && team[j].player?.avatar !== '') {
-    //                 if (session[i].cellPosition) {
-    //                     const validCells = map.filter(cell => cell.value !== -1);
-    //                     const validCellsWithNotMonster = validCells.filter(cell => {
-    //                         let monster = monsterCells.length === 0 || monsterCells.some(monsterCell => monsterCell.id !== cell.id)
-    //                         let player = playerPositionCells.length === 0 || playerPositionCells.some(playerCell => playerCell.id !== cell.id)
-    //                         return monster && player
-    //                     });
-    //                     let indexMap = this.generateRandomNumber(0, validCellsWithNotMonster.length - 1);
-    //                     session[i].cellPosition = {
-    //                         id: validCellsWithNotMonster[indexMap].id,
-    //                         x: validCellsWithNotMonster[indexMap].x,
-    //                         y: validCellsWithNotMonster[indexMap].y,
-    //                         value: validCellsWithNotMonster[indexMap].value
-    //                     }
-    //                     playerPositionCells.push(validCellsWithNotMonster[indexMap])
-    //                 } else {
-    //                     console.log('Cell position is null')
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     return session;
-    // }
-    //
-    // static initCommunStat(session: EntityPlaying, type: string) {
-    //     let players = session.cardsPlayer ?? [];
-    //
-    //     const playerOne = players[0];
-    //     const playerTwo = players[1];
-    //
-    //     switch (type) {
-    //         case 'luk':
-    //             if (playerOne.luk !== -1 && playerTwo.luk !== -1) {
-    //                 return playerOne.luk + playerTwo.luk
-    //             } else if (playerOne.luk !== -1 && playerTwo.luk === -1) {
-    //                 return playerOne.luk
-    //             } else if (playerOne.luk === -1 && playerTwo.luk !== -1) {
-    //                 return playerTwo.luk
-    //             } else {
-    //                 return -1
-    //             }
-    //         case 'atk':
-    //             if (playerOne.atk !== -1 && playerTwo.atk !== -1) {
-    //                 return playerOne.atk + playerTwo.atk
-    //             } else if (playerOne.atk !== -1 && playerTwo.atk === -1) {
-    //                 return playerOne.atk
-    //             } else if (playerOne.atk === -1 && playerTwo.atk !== -1) {
-    //                 return playerTwo.atk
-    //             } else {
-    //                 return -1
-    //             }
-    //         case 'def':
-    //             if (playerOne.def !== -1 && playerTwo.def !== -1) {
-    //                 return playerOne.def + playerTwo.def
-    //             } else if (playerOne.def !== -1 && playerTwo.def === -1) {
-    //                 return playerOne.def
-    //             } else if (playerOne.def === -1 && playerTwo.def !== -1) {
-    //                 return playerTwo.def
-    //             } else {
-    //                 return -1
-    //             }
-    //         case 'spd':
-    //             if (playerOne.spd !== -1 && playerTwo.spd !== -1) {
-    //                 return playerOne.spd + playerTwo.spd
-    //             } else if (playerOne.spd !== -1 && playerTwo.spd === -1) {
-    //                 return playerOne.spd
-    //             } else if (playerOne.spd === -1 && playerTwo.spd !== -1) {
-    //                 return playerTwo.spd
-    //             } else {
-    //                 return -1
-    //             }
-    //         case 'maxLife':
-    //             if (playerOne.name !== '' && playerTwo.name !== '') {
-    //                 return 200
-    //             } else if (playerOne.name !== '' && playerTwo.name === '') {
-    //                 return 100
-    //             } else if (playerOne.name === '' && playerTwo.name !== '') {
-    //                 return 100
-    //             } else {
-    //                 return -1
-    //             }
-    //         case 'life':
-    //             if (playerOne.name !== '' && playerTwo.name !== '') {
-    //                 return 200
-    //             } else if (playerOne.name !== '' && playerTwo.name === '') {
-    //                 return 100
-    //             } else if (playerOne.name === '' && playerTwo.name !== '') {
-    //                 return 100
-    //             } else {
-    //                 return -1
-    //             }
-    //         default:
-    //             return -1
-    //     }
-    // }
-    //
-    // static turnInit(game: Game) {
-    //
-    //     let allEntities: Array<TurnListEntity> = [];
-    //
-    //     console.log('teamAlpha', game.teams[0].cellPosition)
-    //
-    //     // Extract player entities
-    //     game.teams.forEach((team, teamIndex) => {
-    //         team?.cardsPlayer?.forEach((card, cardIndex) => {
-    //             if (card.player?.pseudo !== '') {
-    //                 allEntities.push({
-    //                     team: team.name,
-    //                     pseudo: card?.player?.pseudo ?? 'none',
-    //                     teamIndex: teamIndex,
-    //                     cardIndex: cardIndex,
-    //                     typeEntity: EntityCategorie.HUMAIN,
-    //                     luk: card.luk,
-    //                     cellPosition: team.cellPosition
-    //                 });
-    //             }
-    //         });
-    //     });
-    //
-    //     // Extract monster entities
-    //     game.monsters.forEach((monster, monsterIndex) => {
-    //         monster?.cardsMonster?.forEach((card, cardIndex) => {
-    //             allEntities.push({
-    //                 team: monster.name,
-    //                 pseudo: card.name,
-    //                 teamIndex: monsterIndex,
-    //                 cardIndex: cardIndex,
-    //                 typeEntity: EntityCategorie.COMPUTER,
-    //                 luk: card.luk,
-    //                 cellPosition: monster.cellPosition
-    //             });
-    //         });
-    //     });
-    //
-    //     let tab = allEntities.sort((a, b) => b.luk - a.luk);
-    //     return tab;
-    // }
-    //
-    //
-    // static moveEntityPlayer(teams: Array<EntityPlaying>, cellToMove: Cells, pseudo: string) {
-    //     teams.forEach(team => {
-    //         const {cardsPlayer, cellPosition} = team;
-    //         if (cardsPlayer) {
-    //             const player = cardsPlayer.find(card => card.player?.pseudo === pseudo);
-    //             if (player) {
-    //                 team.cellPosition = cellToMove;
-    //             }
-    //         }
-    //     });
-    //     return teams;
-    // }
-    //
-    // static moveEntityMonster(monsters: Array<EntityPlaying>, cellToMove: Cells, pseudo: string) {
-    //     monsters.forEach(team => {
-    //         const {cardsPlayer, cellPosition} = team;
-    //         if (cardsPlayer) {
-    //             const player = cardsPlayer.find(card => card.name === pseudo);
-    //             if (player) {
-    //                 team.cellPosition = cellToMove;
-    //             }
-    //         }
-    //     });
-    //     return monsters;
-    // }
-    //
-    // static findEntityByTurnListEntity(teams: Array<EntityPlaying>, entity: TurnListEntity) {
-    //     let cell = teams[entity.teamIndex].cellPosition
-    // }
-    //
-    //
-    // static checkIfPawnCellEqualAnotherPawnCell(
-    //     teams: Array<EntityPlaying>,
-    //     monsters: Array<EntityPlaying>,
-    //     entity:TurnListEntity,
-    // ) {
-    //
-    // }
+    static createGameContent(data: SessionDto, cards: Array<CardsDto>) {
+        const playerInit = this.playerInit(data)
+        const content = this.createMonsterEntityPlaying(data, cards)
+        data.game.game.challenger =  playerInit.game.game.challenger.concat(content)
+        data.game.sessionStatusGame.entityTurn = this.rollingTunrBySpeedEntity(data)
+        return data
+    }
 
+    static cardCommonFusionStat(team: PlayerCardsEntity,key:string) {
+        const valueCardOne = team?.cardsInfo?.[0][key] ?? 0
+        const valueCardTwo = team?.cardsInfo?.[1][key] ?? 0
+        return (team?.cardsInfo?.[0][key] === -21 && team?.cardsInfo?.[1][key] === -21) ? -21 :
+            (team?.cardsInfo?.[0][key] === -21 && team?.cardsInfo?.[1][key]!== -21) ? valueCardTwo :
+                (team?.cardsInfo?.[0][key] !== -21 && team?.cardsInfo?.[1][key] === -21) ? valueCardOne :
+                    (team?.cardsInfo?.[0][key] !== -21 && team?.cardsInfo?.[1][key] !== -21) ? valueCardOne + valueCardTwo : -1
+    }
 
+    static playerInit(data: SessionDto) {
+        for (let i = 0; i < 4 ; i++) {
+            console.log(data.game.game.challenger[i].name)
+            data.game.game.challenger[i].commonAttack = this.cardCommonFusionStat(data.game.game.challenger[i],'atk')
+            data.game.game.challenger[i].commonDefense = this.cardCommonFusionStat(data.game.game.challenger[i],'def')
+            data.game.game.challenger[i].commonLuck = this.cardCommonFusionStat(data.game.game.challenger[i],'luk')
+            data.game.game.challenger[i].commonSpeed = this.cardCommonFusionStat(data.game.game.challenger[i],'spd')
+            const common = (data.game.game.challenger[i].commonAttack === -21 &&
+                data.game.game.challenger[i].commonDefense === -21 &&
+                data.game.game.challenger[i].commonLuck === -21 &&
+                data.game.game.challenger[i].commonSpeed === -21) ? -21 : 200
+            data.game.game.challenger[i].commonMaxLife = common
+            data.game.game.challenger[i].commonLife = common
+        }
+        return data
+    }
+
+    private static createMonsterEntityPlaying(data: SessionDto, cards: Array<CardsDto>): Array<PlayerCardsEntity> {
+        const randomNum = Math.floor(Math.random() * 5) + 1;
+        let tabMonsters: Array<PlayerCardsEntity> = []
+        for (let i = 0; i < randomNum; i++) {
+            const cardOne = cards[Math.floor(Math.random() * cards.length)];
+            const cardTwo = cards[Math.floor(Math.random() * cards.length)];
+            const cell = data.game.maps.cellsGrid[Math.floor(Math.random() * data.game.maps.cellsGrid.length)];
+            const monsterOne: CardByEntityPlaying = {
+                atk: cardOne.atk,
+                def: cardOne.def,
+                spd: cardOne.spd,
+                luk: cardOne.luk,
+                rarity: cardOne.rarity,
+                imageSrc: cardOne.image,
+                description: cardOne.description,
+                name: cardOne.name,
+                entityStatus: EntityStatus.ALIVE,
+                effects: cardOne.effects,
+                capacities: cardOne.capacities,
+                player: this.randomMonsterName(),
+            }
+            const monsterTwo: CardByEntityPlaying = {
+                atk: cardTwo.atk,
+                def: cardTwo.def,
+                spd: cardTwo.spd,
+                luk: cardTwo.luk,
+                rarity: cardTwo.rarity,
+                imageSrc: cardTwo.image,
+                description: cardTwo.description,
+                entityStatus: EntityStatus.ALIVE,
+                name: cardTwo.name,
+                effects: cardTwo.effects,
+                capacities: cardTwo.capacities,
+                player: this.randomMonsterName(),
+            }
+            let monster = CardPlayerEntityModels.initPlayerCardsEntity(false, this.generateTeamNames([], 1)[0], [monsterOne, monsterTwo])
+            tabMonsters.push(monster)
+        }
+        return tabMonsters;
+    }
+
+    private static noSimilarCellPosition(data: SessionDto, tabMonsters: Array<PlayerCardsEntity>) {
+        let cells: Array<Cells> = []
+        for (let i = 0; i < data.game.maps.cellsGrid.length; i++) {
+            for (let j = 0; j < tabMonsters.length; j++) {
+                if (data.game.maps.cellsGrid[i].id !== tabMonsters[j].cellPosition.id) {
+                    cells.push(data.game.maps.cellsGrid[i])
+                }
+            }
+        }
+        return cells
+    }
+
+    private static rollingTunrBySpeedEntity(data: SessionDto) {
+        const challenger = data.game.game.challenger ?? []
+        let entityTurn: Array<EntityActionMoving> = []
+        challenger.forEach((player, index) => {
+            player.cardsInfo?.forEach((card, indexCard) => {
+                if (card.player.avatar !== "" && card.player.pseudo !== "" && card.description !== "" && card.name !== "" && player.typeEntity === EntityCategorie.HUMAIN) {
+                    entityTurn.push({
+                        teamIndex: index,
+                        cardIndex: indexCard,
+                        typeEntity: EntityCategorie.HUMAIN,
+                        playerCardsEntity: player,
+                        currentCan: Can.NULL,
+                    })
+                } else if (card.player.avatar !== "" && card.player.pseudo !== "" && card.description !== "" && card.name !== "" && player.typeEntity === EntityCategorie.COMPUTER) {
+                    entityTurn.push({
+                        teamIndex: index,
+                        cardIndex: indexCard,
+                        typeEntity: EntityCategorie.COMPUTER,
+                        playerCardsEntity: player,
+                        currentCan: Can.NULL,
+                    })
+                }
+            })
+        })
+        const turn = entityTurn.sort((a: EntityActionMoving, b: EntityActionMoving) => {
+            return b.playerCardsEntity.commonSpeed - a.playerCardsEntity.commonSpeed
+        });
+        for (let i = 0; i < turn.length; i++) {
+            turn[i].indexInsideArray = i
+        }
+        return turn
+    }
+
+    static countReturn(data: SessionDto) {
+        let count = 0
+        for (let i = 0; i < data.game.game.challenger.length; i++) {
+            const cardsPlayer = data.game.game.challenger[i].cardsInfo ?? [];
+            for (let j = 0; j < cardsPlayer.length; j++) {
+                if (cardsPlayer[j].entityStatus === EntityStatus.ALIVE) {
+                    count++
+                }
+            }
+        }
+        return count
+    }
+
+    static nextEntityTurn(data: SessionDto) {
+        data.game.sessionStatusGame.entityTurn
+    }
+
+    static checkEntityPlay(data: SessionDto) {
+        const currentEntityActionMovingPosition = data.game.sessionStatusGame.currentEntityActionMovingPosition
+        const limitArrayTurn = data.game.sessionStatusGame.entityTurn.length
+        if (currentEntityActionMovingPosition === -1) {
+            data.game.sessionStatusGame.currentEntityActionMovingPosition = 0
+            return FormatRestApiModels.createFormatRestApi(200, 'Entity Play', data, null);
+        } else {
+            if (currentEntityActionMovingPosition === limitArrayTurn - 1) {
+                data.game.sessionStatusGame.currentEntityActionMovingPosition = 0
+                data.game.sessionStatusGame.entityTurn = this.rollingTunrBySpeedEntity(data)
+                return FormatRestApiModels.createFormatRestApi(200, 'Entity Play', data, null);
+            } else {
+                data.game.sessionStatusGame.currentEntityActionMovingPosition = currentEntityActionMovingPosition + 1
+                return FormatRestApiModels.createFormatRestApi(200, 'Entity Play', data, null);
+            }
+        }
+    }
+
+    static humainAction(
+        data: SessionDto,
+        teamIndex: number,
+        cardIndex: number,
+        dice: number | null,
+        movesCans: Array<Cells> | null,
+        moveTo: Cells | null,
+        currentCan: Can) {
+        const turnList = data.game.sessionStatusGame.entityTurn ?? []
+        const currentEntityActionMovingPosition = data.game.sessionStatusGame.currentEntityActionMovingPosition
+
+        if (turnList.length === 0) {
+            return FormatRestApiModels.createFormatRestApi(400, 'No entity turn', null, null);
+        } else {
+            const teamIndexInTurnList = turnList[currentEntityActionMovingPosition].teamIndex
+            const cardIndexInTurnList = turnList[currentEntityActionMovingPosition].cardIndex
+            if (turnList[currentEntityActionMovingPosition].typeEntity !== EntityCategorie.HUMAIN) return FormatRestApiModels.createFormatRestApi(400, 'Entity is not Humain', null, null);
+            if (teamIndexInTurnList !== teamIndex && cardIndexInTurnList !== cardIndex) return FormatRestApiModels.createFormatRestApi(400, 'Entity is not Humain', null, null);
+            switch (currentCan) {
+                case Can.START_TURN:
+                    data.game.sessionStatusGame.entityTurn[currentEntityActionMovingPosition].currentCan = Can.SEND_DICE
+                    return FormatRestApiModels.createFormatRestApi(200, 'Entity Play START_TURN', data, null);
+                case Can.SEND_DICE:
+                    if (dice === null) return FormatRestApiModels.createFormatRestApi(400, 'Dice is null', null, null);
+                    data.game.sessionStatusGame.entityTurn[currentEntityActionMovingPosition].currentCan = Can.CHOOSE_MOVE
+                    return FormatRestApiModels.createFormatRestApi(200, 'Entity Play SEND_DICE', data, null);
+                case Can.CHOOSE_MOVE:
+                    if (movesCans === null) return FormatRestApiModels.createFormatRestApi(400, 'movesCans is null', null, null);
+                    data.game.sessionStatusGame.entityTurn[currentEntityActionMovingPosition].currentCan = Can.MOVE
+                    return FormatRestApiModels.createFormatRestApi(200, 'Entity Play CHOOSE_MOVE', data, null);
+                case Can.MOVE:
+                    if (moveTo === null) return FormatRestApiModels.createFormatRestApi(400, 'moveTo is null', null, null);
+                    const checkIfFightConditionIsOk = this.checkIfFightConditionIsOk(data, teamIndex, cardIndex, moveTo)
+                    if (this.codeErrorChecking(checkIfFightConditionIsOk.code)) return FormatRestApiModels.createFormatRestApi(
+                        400, checkIfFightConditionIsOk.message, checkIfFightConditionIsOk.data, checkIfFightConditionIsOk.error);
+                    data = checkIfFightConditionIsOk.data
+                    if(!checkIfFightConditionIsOk.data.fight){
+                        data.game.sessionStatusGame.entityTurn[currentEntityActionMovingPosition].currentCan = Can.FINISH_TURN
+                        return FormatRestApiModels.createFormatRestApi(200, 'Entity Play MOVE', data, null);
+                    }else{
+                        return FormatRestApiModels.createFormatRestApi(200, 'Entity Play MOVE', Can.START_FIGHT, null);
+                    }
+                case Can.FINISH_TURN:
+                    data.game.sessionStatusGame.entityTurn[currentEntityActionMovingPosition].currentCan = Can.START_TURN
+                    const next  = this.checkEntityPlay(data)
+                    if (this.codeErrorChecking(next.code)) return FormatRestApiModels.createFormatRestApi(
+                        400, next.message, next.data, next.error);
+                    data = next.data
+                    return FormatRestApiModels.createFormatRestApi(200, 'Entity Play FINISH_TURN', data, null);
+                case Can.START_FIGHT:
+                    break
+                default:
+                    break
+            }
+        }
+    }
+
+    static updateEntityPosition(data: SessionDto, teamIndex: number,moveTo: Cells) {
+        // update inside data.game.sessionStatusGame.entityTurn
+        for (let i = 0; i < data.game.sessionStatusGame.entityTurn.length; i++) {
+            if(data.game.sessionStatusGame.entityTurn[i].teamIndex === teamIndex){
+                data.game.sessionStatusGame.entityTurn[i].playerCardsEntity.cellPosition = moveTo
+            }
+        }
+        // update inside data.game.game.challenger
+        for (let i = 0; i < data.game.game.challenger.length; i++) {
+            if(i === teamIndex){
+                data.game.game.challenger[i].cellPosition = moveTo
+            }
+        }
+        return data
+    }
+
+    static checkIfFightConditionIsOk(data: SessionDto, teamIndex: number, cardIndex: number, moveTo: Cells) {
+        let player:Array<EntityActionMoving> = [];
+        data.game.sessionStatusGame.entityTurn.filter((entityActionMoving: EntityActionMoving) =>{
+            if(entityActionMoving.playerCardsEntity.cellPosition.id === moveTo.id){
+                player.push(entityActionMoving)
+            }
+        })
+        if(player.length === 0) {
+            return FormatRestApiModels.createFormatRestApi(400, 'No entity in this cell', null, null);
+        }else if(player.length === 1) {
+            // reset toutes les position lié au player dans la liste
+            const resetPosition = this.updateEntityPosition(data, teamIndex, moveTo)
+            return  FormatRestApiModels.createFormatRestApi(200, 'One entity in this cell', {
+                update : resetPosition,
+                fight : false
+            }, null);
+        }else if (player.length === 2) {
+           // crée l'instance de combat
+            const resetPosition = this.updateEntityPosition(data, teamIndex, moveTo)
+            const fightSession = this.updateFightSession(resetPosition, teamIndex, moveTo)
+            return FormatRestApiModels.createFormatRestApi(200, 'Two entity in this cell',
+                {
+                    update:fightSession,
+                    fight : true
+                }, null);
+        }else{
+            return FormatRestApiModels.createFormatRestApi(400, 'More than two entity in this cell', null, null);
+        }
+    }
+
+    static updateFightSession(data: SessionDto, teamIndex: number, moveTo: Cells) {
+        data = this.updateEntityPosition(data, teamIndex, moveTo)
+        let fightSession: FightSession  = SessionModels.initFightSession()
+        let challenger:Array<PlayerCardsEntity> = []
+        data.game.game.challenger.filter((player: PlayerCardsEntity) =>{
+            if(player.cellPosition.id === moveTo.id){
+                challenger.push(player)
+            }
+        })
+        data.game.game.challenger.filter((player: PlayerCardsEntity) => player.name !== challenger[0].name || player.name !== challenger[1].name)
+        data.game.sessionStatusGame.entityTurn.filter((entityActionMoving: EntityActionMoving) => entityActionMoving.playerCardsEntity.name !== challenger[0].name || entityActionMoving.playerCardsEntity.name !== challenger[1].name)
+        fightSession.challenger = challenger
+        fightSession.currentEntityActionFightPosition = 0
+        const titleKey = `${challenger[0].name} VS ${challenger[1].name}`
+        data.game.game.fightings.set(titleKey, fightSession)
+        return data
+    }
 }

@@ -1,5 +1,5 @@
 import {Cells} from "./maps.models";
-import {Attack, CardByEntityPlaying} from "./cards.models";
+import {Attack} from "./cards.models";
 import {Can, EntityCategorie} from "./enums";
 import {CardPlayerEntityModels, PlayerCardsEntity} from "./cards.player.entity.models";
 
@@ -8,12 +8,11 @@ export interface EntityActionMoving {
     cardIndex: number
     typeEntity: EntityCategorie,
     playerCardsEntity: PlayerCardsEntity,
-    cellPosition?: Cells,
     dice?: number,
     indexInsideArray?: number,
-    movesCans?: Cells[],
+    movesCans?: Array<Cells>,
     moveTo?: Cells,
-    currentCan?: Can
+    currentCan: Can
 }
 
 export interface EntityActionFight {
@@ -21,13 +20,13 @@ export interface EntityActionFight {
     cardIndex: number
     typeEntity: EntityCategorie,
     playerCardsEntity: PlayerCardsEntity,
-    dice?: number,
-    currentCan?: Can,
     effectApplicatedTeam: Array<number>
     capacityUsingsByCard: Array<Attack>
     orderCapacityUsingsByCard: Array<number>
     targetEnemyPositionByCapacityPosition: Array<number>
     successCriticalForCapacityUsingsByCard: Array<number>
+    dice?: number,
+    currentCan?: Can,
 }
 
 
@@ -35,10 +34,11 @@ export class ActionGameModels {
 
     initEntityActionMoving(): EntityActionMoving {
         return {
+            currentCan: Can.NULL,
             teamIndex: -1,
             cardIndex: -1,
             typeEntity: EntityCategorie.NULL,
-            playerCardsEntity: CardPlayerEntityModels.initPlayerCardsEntity()
+            playerCardsEntity: CardPlayerEntityModels.initPlayerCardsEntity(true,'Name',[])
         }
     }
 
@@ -47,7 +47,7 @@ export class ActionGameModels {
             teamIndex: -1,
             cardIndex: -1,
             typeEntity: EntityCategorie.NULL,
-            playerCardsEntity: CardPlayerEntityModels.initPlayerCardsEntity(),
+            playerCardsEntity: CardPlayerEntityModels.initPlayerCardsEntity(true,'Name',[]),
             effectApplicatedTeam: [],
             capacityUsingsByCard: [],
             orderCapacityUsingsByCard: [],

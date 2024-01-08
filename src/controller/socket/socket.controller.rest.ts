@@ -83,4 +83,13 @@ SocketController.post(
         response.status(received.code).json(received);
     });
 
+SocketController.post(
+    '/init-game', async (
+        request,
+        response) => {
+        const {room} = request.body;
+        const received = await socketService.initGame(room);
+        response.status(received.code).json(received);
+    });
+
 export default SocketController;

@@ -1,6 +1,6 @@
 import {Cells, MapsModels} from "./maps.models";
 import {CardByEntityPlaying, CardsModels} from "./cards.models";
-import {EntityStatus} from "./enums";
+import {EntityCategorie, EntityStatus} from "./enums";
 
 export interface PlayerCardsEntity {
     name: string;
@@ -11,41 +11,43 @@ export interface PlayerCardsEntity {
     commonLuck: number;
     commonSpeed: number;
     cellPosition: Cells
+    typeEntity: EntityCategorie
     entityStatus: EntityStatus
-    cardsPlayer?: Array<CardByEntityPlaying>;
-    cardsMonster?: Array<CardByEntityPlaying>;
+    cardsInfo?: Array<CardByEntityPlaying>;
 }
 
 export class CardPlayerEntityModels{
-    static initPlayerCardsEntity(isHumain:boolean,stringTeamName:string) :PlayerCardsEntity{
+    static initPlayerCardsEntity(isHumain:boolean,stringTeamName:string,cards:Array<CardByEntityPlaying>) :PlayerCardsEntity{
         let tabcards:Array<CardByEntityPlaying> = []
-        tabcards.push(CardsModels.initCardByEntityPlaying())
-        tabcards.push(CardsModels.initCardByEntityPlaying())
         if(isHumain){
+            tabcards.push(CardsModels.initCardByEntityPlaying())
+            tabcards.push(CardsModels.initCardByEntityPlaying())
             return {
                 name: stringTeamName,
-                commonLife: 0,
-                commonMaxLife: 0,
-                commonAttack: 0,
-                commonDefense: 0,
-                commonLuck: 0,
-                commonSpeed: 0,
+                commonLife: -1,
+                commonMaxLife: -1,
+                commonAttack: -1,
+                commonDefense: -1,
+                commonLuck: -1,
+                commonSpeed: -1,
+                typeEntity: EntityCategorie.HUMAIN,
                 cellPosition: MapsModels.initCells(),
                 entityStatus: EntityStatus.NULL,
-                cardsPlayer: tabcards,
+                cardsInfo: tabcards,
             }
         }else{
             return {
-                name: '',
-                commonLife: 0,
-                commonMaxLife: 0,
-                commonAttack: 0,
-                commonDefense: 0,
-                commonLuck: 0,
-                commonSpeed: 0,
+                name: stringTeamName,
+                commonLife: 200,
+                commonMaxLife: 200,
+                commonAttack: cards[0].atk + cards[1].atk,
+                commonDefense: cards[0].def + cards[1].def,
+                commonLuck: cards[0].luk + cards[1].luk,
+                commonSpeed: cards[0].spd + cards[1].spd,
+                typeEntity: EntityCategorie.COMPUTER,
                 cellPosition: MapsModels.initCells(),
-                entityStatus: EntityStatus.NULL,
-                cardsMonster: tabcards,
+                entityStatus: EntityStatus.ALIVE,
+                cardsInfo: cards,
             }
         }
     }

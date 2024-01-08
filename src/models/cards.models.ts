@@ -25,6 +25,7 @@ export interface CardByEntityPlaying {
     description: string;
     rarity: string;
     imageSrc: string;
+    entityStatus: EntityStatus
     effects: Array<Effects>;
     capacities: Array<Attack>;
 }
@@ -78,10 +79,10 @@ export class CardsModels {
     static initCardEntitySimplify(): CardEntitySimplify{
         return {
             id: 0,
-            atk: 0,
-            def: 0,
-            spd: 0,
-            luk: 0,
+            atk: -21,
+            def: -21,
+            spd: -21,
+            luk: -21,
             name: '',
             description: '',
             rarity: '',
@@ -97,12 +98,13 @@ export class CardsModels {
                 pseudo: '',
                 avatar: '',
             },
-            atk: 0,
-            def: 0,
-            spd: 0,
-            luk: 0,
+            atk: -21,
+            def: -21,
+            spd: -21,
+            luk: -21,
             name: '',
             description: '',
+            entityStatus: EntityStatus.NULL,
             rarity: '',
             imageSrc: '',
             effects: [],
@@ -117,10 +119,10 @@ export class CardsModels {
             description: '',
             image: '',
             rarity: '',
-            atk: 0,
-            def: 0,
-            spd: 0,
-            luk: 0,
+            atk: -21,
+            def: -21,
+            spd: -21,
+            luk: -21,
             effects: [],
             capacities: [],
             deckId: 0
