@@ -1,8 +1,10 @@
 import {CardByEntityPlaying, CardEntitySimplify} from "./cards.models";
+import {EntityStatus} from "./enums";
 
 export interface PlayerCards {
     avatar: string;
     pseudo: string;
+    status: EntityStatus
 }
 
 export interface PlayerLobby {
@@ -26,7 +28,8 @@ export class PlayerModels {
     static initPlayerCards() :PlayerCards{
         return {
             avatar: '',
-            pseudo: ''
+            pseudo: '',
+            status: EntityStatus.NULL
         }
     }
 }

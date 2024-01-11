@@ -13,6 +13,7 @@ import {CardsServices} from "../cards/cards.services";
 import {Can, EntityCategorie} from "../../models/enums";
 import {PlayerCardsEntity} from "../../models/cards.player.entity.models";
 import {Cells} from "../../models/maps.models";
+import {EntityEvolving, EntityResume} from "../../models/actions.game.models";
 
 export class SocketService {
     dataSourceConfig: Promise<DataSource>;
@@ -143,7 +144,7 @@ export class SocketService {
             const sessionDto = changeCard.data
             const update = await this.sessionService.updateSession(room,sessionDto)
             if (Utils.codeErrorChecking(update.code)) return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error)
-            return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, update, null);
+            return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, update.data, null);
         } catch (error: any) {
             return FormatRestApiModels.createFormatRestApi(500,
                 this.failledInternalServer,
@@ -213,19 +214,6 @@ export class SocketService {
         }
     }
 
-    async nextEntityTurn(room: string) {
-        try {
-            const session = await this.sessionService.getSession(room);
-            if (Utils.codeErrorChecking(session.code)) return session;
-            const next = Utils.nextEntityTurn(session.data)
-        } catch (error: any) {
-            return FormatRestApiModels.createFormatRestApi(500,
-                this.failledInternalServer,
-                null,
-                error.message);
-        }
-    }
-
     async whoIsPlayEntityType(room: string) {
         try {
             const session = await this.sessionService.getSession(room);
@@ -240,28 +228,27 @@ export class SocketService {
         }
     }
 
-    async humainActionMoving(
-        room: string,
-        teamIndex: number,
-        cardIndex: number,
-        typeEntity: EntityCategorie,
-        playerCardsEntity: PlayerCardsEntity,
-        dice: number | null,
-        indexInsideArray: number | null,
-        movesCans: Array<Cells> | null,
-        moveTo: Cells | null,
-        currentCan: Can) {
+    async humainActionMoving(entityResume: EntityResume, entityEvolving: EntityEvolving, room: string) {
         try {
             const session = await this.sessionService.getSession(room);
             if (Utils.codeErrorChecking(session.code)) return session;
-            const turnAction = Utils.humainAction(
-                session.data,
-                teamIndex,
-                cardIndex,
-                dice,
-                movesCans,
-                moveTo,
-                currentCan)
+            switch (entityEvolving.currentCan) {
+                case Can.NULL:
+                    break;
+                case Can.START_TURN:
+                    break;
+                case Can.SEND_DICE:
+                    break;
+                case Can.CHOOSE_MOVE:
+                    break;
+                case Can.MOVE:
+                    break;
+                case Can.FINISH_TURN:
+                    break;
+                case Can.START_FIGHT:
+                    break;
+            }
+            // return FormatRestApiModels.createFormatRestApi(200, 'Who is play', turnAction, null)
         }catch (error: any) {
             return FormatRestApiModels.createFormatRestApi(500,
                 this.failledInternalServer,

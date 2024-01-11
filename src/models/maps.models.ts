@@ -50,10 +50,10 @@ export class  MapsModels {
 
     static initCells() : Cells{
         return {
-            id: 0,
-            x: 0,
-            y: 0,
-            value: 0
+            id: -1,
+            x: -1,
+            y: -1,
+            value: -1
         }
     }
 

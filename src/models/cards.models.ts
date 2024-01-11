@@ -1,4 +1,4 @@
-import {PlayerCards} from "./player.models";
+import {PlayerCards, PlayerModels} from "./player.models";
 import {EntityStatus} from "./enums";
 
 export interface CardEntitySimplify {
@@ -25,7 +25,6 @@ export interface CardByEntityPlaying {
     description: string;
     rarity: string;
     imageSrc: string;
-    entityStatus: EntityStatus
     effects: Array<Effects>;
     capacities: Array<Attack>;
 }
@@ -94,21 +93,17 @@ export class CardsModels {
 
     static initCardByEntityPlaying(): CardByEntityPlaying{
         return {
-            player: {
-                pseudo: '',
-                avatar: '',
-            },
+            player: PlayerModels.initPlayerCards(),
             atk: -21,
             def: -21,
             spd: -21,
             luk: -21,
             name: '',
             description: '',
-            entityStatus: EntityStatus.NULL,
             rarity: '',
             imageSrc: '',
             effects: [],
-            capacities: []
+            capacities: [],
         }
     }
 

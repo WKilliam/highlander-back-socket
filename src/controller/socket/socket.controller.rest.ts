@@ -92,4 +92,13 @@ SocketController.post(
         response.status(received.code).json(received);
     });
 
+// SocketController.post(
+//     '/humain-action', async (
+//         request,
+//         response) => {
+//         const {room,teamIndex,cardIndex,typeEntity,playerCardsEntity,dice} = request.body;
+//         const received = await socketService.humainActionMoving()
+//         response.status(received.code).json(received);
+//     });
+
 export default SocketController;

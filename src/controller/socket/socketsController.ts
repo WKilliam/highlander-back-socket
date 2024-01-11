@@ -238,28 +238,25 @@ module.exports = (io: any) => {
              * @path {{room}}-game
              * */
             socket.on('humain-turn', async (data: UserGamePlay) => {
-                const room = data.room
-                const teamIndex: number = data.action.teamIndex
-                const cardIndex: number = data.action.cardIndex
-                const typeEntity: EntityCategorie = data.action.typeEntity
-                const playerCardsEntity: PlayerCardsEntity = data.action.playerCardsEntity
-                const dice: number | null = data.action.dice ?? null
-                const indexInsideArray: number | null = data.action.indexInsideArray ?? null
-                const movesCans: Array<Cells> | null = data.action.movesCans ?? null
-                const moveTo: Cells  | null = data.action.moveTo ?? null
-                const currentCan: Can = data.action.currentCan
-                const humainTurn = await socketService.humainActionMoving(
-                    room,
-                    teamIndex,
-                    cardIndex,
-                    typeEntity,
-                    playerCardsEntity,
-                    dice,
-                    indexInsideArray,
-                    movesCans,
-                    moveTo,
-                    currentCan)
-                messageSocket(room, '-game', humainTurn)
+                // const room = data.room
+                // const teamIndex: number = data.action.teamIndex
+                // const cardIndex: number = data.action.cardIndex
+                // const typeEntity: EntityCategorie = data.action.typeEntity
+                // const playerCardsEntity: PlayerCardsEntity = data.action.playerCardsEntity
+                // const dice: number | null = data.action.dice ?? null
+                // const indexInsideArray: number | null = data.action.indexInsideArray ?? null
+                // const movesCans: Array<Cells> | null = data.action.movesCans ?? null
+                // const moveTo: Cells  | null = data.action.moveTo ?? null
+                // const currentCan: Can = data.action.currentCan
+                // const humainTurn = await socketService.humainActionMoving(
+                //     room,
+                //     teamIndex,
+                //     cardIndex,
+                //     dice,
+                //     movesCans,
+                //     moveTo,
+                //     currentCan)
+                // messageSocket(room, '-game', humainTurn)
             })
 
 
