@@ -232,31 +232,29 @@ module.exports = (io: any) => {
             })
 
             /**
-             * humain-turn
+             * humain-action
+             * @path humain-action **** input ***
+             * @room highlander-socket-{{room}}
+             * @path {{room}}-game
+             * */
+            socket.on('humain-action', async (data: UserGamePlay) => {
+                const room = data.room
+                const resume = data.action.resume
+                const evolving = data.action.evolving
+                const play = await socketService.humainActionMoving(room, resume, evolving)
+                messageSocket(room, '-game', play)
+            })
+
+            /**
+             * bot-turn
              * @path humain-turn **** input ***
              * @room highlander-socket-{{room}}
              * @path {{room}}-game
              * */
-            socket.on('humain-turn', async (data: UserGamePlay) => {
-                // const room = data.room
-                // const teamIndex: number = data.action.teamIndex
-                // const cardIndex: number = data.action.cardIndex
-                // const typeEntity: EntityCategorie = data.action.typeEntity
-                // const playerCardsEntity: PlayerCardsEntity = data.action.playerCardsEntity
-                // const dice: number | null = data.action.dice ?? null
-                // const indexInsideArray: number | null = data.action.indexInsideArray ?? null
-                // const movesCans: Array<Cells> | null = data.action.movesCans ?? null
-                // const moveTo: Cells  | null = data.action.moveTo ?? null
-                // const currentCan: Can = data.action.currentCan
-                // const humainTurn = await socketService.humainActionMoving(
-                //     room,
-                //     teamIndex,
-                //     cardIndex,
-                //     dice,
-                //     movesCans,
-                //     moveTo,
-                //     currentCan)
-                // messageSocket(room, '-game', humainTurn)
+            socket.on('bot-turn', async (data: UserGamePlay) => {
+                const room = data.room
+                // const play = await socketService.humainTurn(room, data)
+                // messageSocket(room, '-game', play)
             })
 
 

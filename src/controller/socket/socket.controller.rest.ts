@@ -84,6 +84,15 @@ SocketController.post(
     });
 
 SocketController.post(
+    '/check-turn', async (
+        request,
+        response) => {
+        const {room} = request.body;
+        const received = await socketService.whoIsPlayEntityType(room);
+        response.status(received.code).json(received);
+    });
+
+SocketController.post(
     '/init-game', async (
         request,
         response) => {
@@ -92,13 +101,14 @@ SocketController.post(
         response.status(received.code).json(received);
     });
 
-// SocketController.post(
-//     '/humain-action', async (
-//         request,
-//         response) => {
-//         const {room,teamIndex,cardIndex,typeEntity,playerCardsEntity,dice} = request.body;
-//         const received = await socketService.humainActionMoving()
-//         response.status(received.code).json(received);
-//     });
+SocketController.post(
+    '/humain-action', async (
+        request,
+        response) => {
+        const {room,action} = request.body;
+        const received = await socketService
+            .humainActionMoving(room,action.resume,action.evolving);
+        response.status(received.code).json(received);
+    });
 
 export default SocketController;

@@ -1,12 +1,14 @@
 import {Cells} from "../models/maps.models";
 import {SessionDto} from "../dto/session.dto";
-import {FormatRestApiModels} from "../models/formatRestApi";
+import {FormatRestApi, FormatRestApiModels} from "../models/formatRestApi";
 import {CardByEntityPlaying, CardsModels} from "../models/cards.models";
 import {CardPlayerEntityModels, PlayerCardsEntity} from "../models/cards.player.entity.models";
 import {PlayerLobby, PlayerModels} from "../models/player.models";
 import {CardsDto} from "../dto/cards.dto";
 import {Can, EntityCategorie, EntityStatus} from "../models/enums";
-import {EntityActionMoving} from "../models/actions.game.models";
+import {EntityActionMoving, EntityEvolving, EntityResume} from "../models/actions.game.models";
+import {SessionGame} from "../models/session.models";
+import {CellsDto} from "../dto/cells.dto";
 
 export class Utils {
 
@@ -46,9 +48,11 @@ export class Utils {
             status: EntityStatus.ALIVE
         }
     }
+
     private static getRandomElement(array: string[]): string {
         return array[Math.floor(Math.random() * array.length)];
     }
+
     public static generateTeamNames(existingNames: string[], count: number): string[] {
         const newNames: string[] = [];
         while (newNames.length < count) {
@@ -63,6 +67,7 @@ export class Utils {
         }
         return newNames;
     }
+
     static createGrid(mapWidth: number, mapHeight: number): Cells[][] {
         const cellWidth = 32;
         const cellHeight = 32;
@@ -87,15 +92,92 @@ export class Utils {
         }
         return gridCellData;
     }
+
+    // convert list of cells to matrix
+    static convertListCellsToMatrix(listeCellules: Cells[]): Cells[][] {
+        const mapWidth: number = 936;
+        const mapHeight: number = 620;
+        const cellWidth = 32;
+        const cellHeight = 32;
+        const numCols = Math.floor(mapWidth / cellWidth);
+        const numRows = Math.floor(mapHeight / cellHeight);
+        let gridCellData: Cells[][] = [];
+        let cellId = 1;
+
+        for (let row = 0; row < numRows; row++) {
+            const rowArray: Cells[] = [];
+            for (let col = 0; col < numCols; col++) {
+                const existingCell = listeCellules.find(cell => cell.id === cellId);
+                const cell: Cells = existingCell || {
+                    id: cellId,
+                    x: col * cellWidth + 5,
+                    y: row * cellHeight + 5,
+                    value: 1,
+                };
+                rowArray.push(cell);
+                cellId++;
+            }
+            gridCellData.push(rowArray);
+        }
+        return gridCellData;
+    }
+
+    // get limit of grid
+    static getGridIndices(cells: Cells[]) {
+        let gridCellData: Cells[][] = this.convertListCellsToMatrix(cells)
+        const numRows = gridCellData.length;
+        const numCols = gridCellData[0].length;
+        const minX = 0;
+        const maxX = numCols - 1;
+        const minY = 0;
+        const maxY = numRows - 1;
+        console.log(`Limites de la matrice : minRow=${minX}, maxRow=${maxX}, minCol=${minY}, maxCol=${maxY}`);
+        return {minX, maxX, minY, maxY};
+    }
+
+    // give posibility to move player
+    static findCellsAtDistance(cells: Cells[], startId: number, distance: number) {
+        const result: Cells[] = [];
+        let startX: number | null = null;
+        let startY: number | null = null;
+        let gridCells = this.convertListCellsToMatrix(cells)
+        gridCells.forEach((rowArray, rowIndex) => {
+            rowArray.forEach((cell, colIndex) => {
+                if (cell.id === startId) {
+                    startX = rowIndex;
+                    startY = colIndex;
+                }
+            });
+        });
+
+        if (startX === null || startY === null) {
+            return FormatRestApiModels.createFormatRestApi(400, 'Start cell not found.', null, null);
+        } else {
+            const {minX, maxX, minY, maxY} = this.getGridIndices(result);
+            for (let x = minX; x <= maxX; x++) {
+                for (let y = minY; y <= maxY; y++) {
+                    const dx = Math.abs(x - startY);
+                    const dy = Math.abs(y - startX);
+                    const manhattanDistance = dx + dy;
+                    if (manhattanDistance === distance) {
+                        result.push(gridCells[y][x]);
+                    }
+                }
+            }
+            return FormatRestApiModels.createFormatRestApi(200, 'Cells found.', result, null);
+        }
+    }
+
     static codeErrorChecking(code: number): boolean {
         return code < 200 || code > 299;
     }
+
     static setPlayerTeam(data: SessionDto, lobbyPosition: number, teamPosition: number, cardPosition: number, cardByPlayer: number | null = null) {
         // Check if teams[teamPosition].cardsPlayer[cardPosition] is not already taken
-        let userInformation:PlayerLobby =  data.game.sessionStatusGame.lobby[lobbyPosition];
-        let challenger:PlayerCardsEntity = (data.game && data.game.game && data.game.game.challenger && data.game.game.challenger[teamPosition]) ?? PlayerModels.initPlayerCards();
-        let cardInfo:CardByEntityPlaying = (challenger.cardsInfo && challenger.cardsInfo[cardPosition]) ?? CardsModels.initCardByEntityPlaying();
-        if(
+        let userInformation: PlayerLobby = data.game.sessionStatusGame.lobby[lobbyPosition];
+        let challenger: PlayerCardsEntity = (data.game && data.game.game && data.game.game.challenger && data.game.game.challenger[teamPosition]) ?? PlayerModels.initPlayerCards();
+        let cardInfo: CardByEntityPlaying = (challenger.cardsInfo && challenger.cardsInfo[cardPosition]) ?? CardsModels.initCardByEntityPlaying();
+        if (
             cardInfo.player.avatar !== '' &&
             cardInfo.player.pseudo !== '' &&
             cardInfo.player.avatar !== userInformation.avatar &&
@@ -104,12 +186,13 @@ export class Utils {
             return FormatRestApiModels.createFormatRestApi(400, 'The seat is already taken.', null, null);
         }
         // set the card to the player
-        const challenge = this.setOnlyPlayerInChallenger(data.game.game.challenger,userInformation,cardByPlayer,teamPosition,cardPosition)
+        const challenge = this.setOnlyPlayerInChallenger(data.game.game.challenger, userInformation, cardByPlayer, teamPosition, cardPosition)
         data.game.game.challenger = challenge
         // check if another team has the card
         data.game.game.challenger = this.checkAnotherTeamRefresh(data.game.game.challenger, teamPosition, cardPosition, userInformation);
         return FormatRestApiModels.createFormatRestApi(200, 'Card Change', data, null);
     }
+
     static setOnlyPlayerInChallenger(challenger: Array<PlayerCardsEntity>, playerLobby: PlayerLobby, cardByPlayer: number | null, teamPosition: number, cardPosition: number): Array<PlayerCardsEntity> {
         return challenger.map((team, currentTeamIndex) => {
             if (currentTeamIndex === teamPosition) {
@@ -150,10 +233,11 @@ export class Utils {
             return team;
         });
     }
+
     static checkAnotherTeamRefresh(challenger: Array<PlayerCardsEntity>, teamPosition: number, cardPosition: number, userInformation: PlayerLobby) {
         let refreshChallenger: Array<PlayerCardsEntity> = challenger.map((player, teamIndex) => {
             // Cloner les informations du joueur
-            let updatedPlayer = { ...player };
+            let updatedPlayer = {...player};
             // Réinitialiser les cartes correspondant aux critères, sauf à la position spécifiée
             updatedPlayer.cardsInfo = player.cardsInfo?.map((card, indexCard) => {
                 if (teamIndex !== teamPosition || indexCard !== cardPosition) {
@@ -167,6 +251,7 @@ export class Utils {
         });
         return refreshChallenger;
     }
+
     static countReturn(data: SessionDto) {
         let count = 0
         for (let i = 0; i < data.game.game.challenger.length; i++) {
@@ -179,6 +264,7 @@ export class Utils {
         }
         return count
     }
+
     static checkEntityPlay(data: SessionDto) {
         const currentEntityActionMovingPosition = data.game.sessionStatusGame.currentEntityActionMovingPosition
         const limitArrayTurn = data.game.sessionStatusGame.entityTurn.length
@@ -196,6 +282,7 @@ export class Utils {
             }
         }
     }
+
     private static rollingTunrBySpeedEntity(data: SessionDto) {
         const challenger = data.game.game.challenger ?? []
         let entityTurn: Array<EntityActionMoving> = []
@@ -252,6 +339,7 @@ export class Utils {
         }
         return turn
     }
+
     private static createMonsterEntityPlaying(data: SessionDto, cards: Array<CardsDto>): Array<PlayerCardsEntity> {
         const randomNum = Math.floor(Math.random() * 5) + 1;
         let tabMonsters: Array<PlayerCardsEntity> = []
@@ -290,6 +378,7 @@ export class Utils {
         }
         return tabMonsters;
     }
+
     static initializeChallenger(challenger: Array<PlayerCardsEntity>, cells: Array<Cells>) {
         let cellsIds: Array<number> = [];
         return challenger.map(team => {
@@ -332,21 +421,80 @@ export class Utils {
     }
 
 
-    static caseNULL(data: SessionDto) {
-
+    static caseNULL(data: SessionDto, entityResume: EntityResume) {
+        const turnListPosition = entityResume.indexInsideArray
+        data.game.sessionStatusGame.entityTurn[turnListPosition].evolving = {
+            dice: null,
+            movesCansIds: null,
+            moveToId: null,
+            currentCan: Can.START_TURN
+        }
+        return FormatRestApiModels.createFormatRestApi(200, 'Null', data, null);
     }
-    static caseSTART_TURN(data: SessionDto) {
 
+
+    static caseSTART_TURN(data: SessionDto, entityResume: EntityResume) {
+        const turnListPosition = entityResume.indexInsideArray
+        data.game.sessionStatusGame.entityTurn[turnListPosition].evolving = {
+            dice: null,
+            movesCansIds: null,
+            moveToId: null,
+            currentCan: Can.SEND_DICE
+        }
+        return FormatRestApiModels.createFormatRestApi(200, 'Start Turn', data, null);
     }
 
-    static caseSEND_MOVE(data: SessionDto) {
+    static caseSEND_DICE(data: SessionDto, entityResume: EntityResume, entityEvolving: EntityEvolving) {
+        const turnListPosition = entityResume.indexInsideArray
+        if (entityEvolving.dice !== null) {
+            const movesCansIds = this.findCellsAtDistance(data.game.maps.cellsGrid, entityResume.currentCellsId, entityEvolving.dice)
+            if (this.codeErrorChecking(movesCansIds.code)) return FormatRestApiModels.createFormatRestApi(movesCansIds.code, movesCansIds.message, movesCansIds.data, movesCansIds.error);
+            data.game.sessionStatusGame.entityTurn[turnListPosition].evolving = {
+                dice: entityEvolving.dice,
+                movesCansIds: movesCansIds.data,
+                moveToId: null,
+                currentCan: Can.CHOOSE_MOVE
+            }
+            return FormatRestApiModels.createFormatRestApi(200, 'Dice is send', data, null);
+        } else {
+            return FormatRestApiModels.createFormatRestApi(400, 'Dice is null', null, null);
+        }
+    }
 
+    static caseCHOOSE_MOVE(data: SessionDto, entityResume: EntityResume, entityEvolving: EntityEvolving) {
+        const turnListPosition = entityResume.indexInsideArray
+        const valueMoveToId = entityEvolving.moveToId  ?? -1
+        if (valueMoveToId === -1 && entityEvolving.movesCansIds === null) {
+            return FormatRestApiModels.createFormatRestApi(400, 'MoveToId and MovesCansIds is null', null, null);
+        } else {
+            data.game.sessionStatusGame.entityTurn[turnListPosition].evolving = {
+                dice: entityEvolving.dice,
+                movesCansIds: entityEvolving.movesCansIds,
+                moveToId: entityEvolving.moveToId,
+                currentCan: Can.MOVE
+            }
+            const errorFormatCells = {id: -1, x: -1, y: -1, value: -1}
+            const moveCellSelected = data.game.maps.cellsGrid.find(cell => cell.id === entityEvolving.moveToId)
+            if (moveCellSelected === undefined) return FormatRestApiModels.createFormatRestApi(400, 'MoveToId is not found', null, null);
+            data.game.game.challenger[entityResume.teamIndex].cellPosition = moveCellSelected ?? errorFormatCells
+            if (data.game.game.challenger[entityResume.teamIndex].cellPosition.id === -1) return FormatRestApiModels.createFormatRestApi(400, 'MoveToId is not found', null, null);
+
+            data.game.sessionStatusGame.entityTurn.map((entityActionMoving, index) => {
+                if (entityActionMoving.resume.teamIndex === entityResume.teamIndex && index !== turnListPosition) {
+                    data.game.sessionStatusGame.entityTurn[index].resume.currentCellsId = valueMoveToId
+                }
+            })
+            return FormatRestApiModels.createFormatRestApi(200, 'Move is choose', data, null);
+        }
     }
 
     static caseMOVE(data: SessionDto) {
 
     }
 
+    static caseFINISH_TURN(data: SessionDto) {
+
+    }
 
 
 }

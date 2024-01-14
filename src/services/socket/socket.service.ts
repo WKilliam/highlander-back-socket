@@ -34,6 +34,10 @@ export class SocketService {
         this.cardsService = new CardsServices(dataSourceConfig);
     }
 
+    async updateSession(room: string, session: SessionDto) {
+        const update = await this.sessionService.updateSession(room, session)
+        return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error);
+    }
 
     async canJoinSession(token: string, avatar: string, pseudo: string) {
         try {
@@ -126,11 +130,7 @@ export class SocketService {
         return FormatRestApiModels.createFormatRestApi(200, 'Rolling', dice, null)
     }
 
-    async joinTeam(
-        room: string,
-        positionPlayerInLobby: number,
-        teamSelectedPerPlayer: number,
-        cardPositionInsideTeamCards: number) {
+    async joinTeam(room: string, positionPlayerInLobby: number, teamSelectedPerPlayer: number, cardPositionInsideTeamCards: number) {
         try {
             const session = await this.sessionService.getSession(room);
             if (Utils.codeErrorChecking(session.code)) return session;
@@ -140,11 +140,12 @@ export class SocketService {
                 teamSelectedPerPlayer,
                 cardPositionInsideTeamCards,
                 null)
-            if(changeCard.code !== 200) return FormatRestApiModels.createFormatRestApi(changeCard.code, changeCard.message, changeCard.data, changeCard.error)
-            const sessionDto = changeCard.data
-            const update = await this.sessionService.updateSession(room,sessionDto)
-            if (Utils.codeErrorChecking(update.code)) return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error)
-            return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, update.data, null);
+            if (changeCard.code !== 200) return FormatRestApiModels.createFormatRestApi(changeCard.code, changeCard.message, changeCard.data, changeCard.error)
+            return this.updateSession(room, changeCard.data)
+            // const sessionDto = changeCard.data
+            // const update = await this.sessionService.updateSession(room,sessionDto)
+            // if (Utils.codeErrorChecking(update.code)) return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error)
+            // return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, update.data, null);
         } catch (error: any) {
             return FormatRestApiModels.createFormatRestApi(500,
                 this.failledInternalServer,
@@ -153,14 +154,8 @@ export class SocketService {
         }
     }
 
-    async joinTeamWithCard(
-        room: string,
-        lobbyPosition: number,
-        teamPosition: number,
-        cardPosition: number,
-        selectedCard: number | null
-    ) {
-        if(selectedCard === null) return FormatRestApiModels.createFormatRestApi(400, 'Card is empty', null, null)
+    async joinTeamWithCard(room: string, lobbyPosition: number, teamPosition: number, cardPosition: number, selectedCard: number | null) {
+        if (selectedCard === null) return FormatRestApiModels.createFormatRestApi(400, 'Card is empty', null, null)
         try {
             const session = await this.sessionService.getSession(room);
             if (Utils.codeErrorChecking(session.code)) return session;
@@ -170,11 +165,12 @@ export class SocketService {
                 teamPosition,
                 cardPosition,
                 selectedCard)
-            if(Utils.codeErrorChecking(changeCard.code)) return FormatRestApiModels.createFormatRestApi(changeCard.code, changeCard.message, changeCard.data, changeCard.error)
-            const sessionDto = changeCard.data
-            const update = await this.sessionService.updateSession(room,sessionDto)
-            if (Utils.codeErrorChecking(update.code)) return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error)
-            return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, update, null);
+            if (Utils.codeErrorChecking(changeCard.code)) return FormatRestApiModels.createFormatRestApi(changeCard.code, changeCard.message, changeCard.data, changeCard.error)
+            return this.updateSession(room, changeCard.data)
+            // const sessionDto = changeCard.data
+            // const update = await this.sessionService.updateSession(room,sessionDto)
+            // if (Utils.codeErrorChecking(update.code)) return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error)
+            // return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, update, null);
         } catch (error: any) {
             return FormatRestApiModels.createFormatRestApi(500,
                 this.failledInternalServer,
@@ -182,22 +178,6 @@ export class SocketService {
                 error.message);
         }
 
-    }
-
-    async initGame(room: string) {
-        try {
-            const session = await this.sessionService.getSession(room);
-            if (Utils.codeErrorChecking(session.code)) return session;
-            const cardsDB = await this.cardsService.getAllCards()
-            const sessionDto = Utils.createGameContent(session.data,cardsDB.data)
-            const update = await this.sessionService.updateSession(room,sessionDto)
-            return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error)
-        } catch (error: any) {
-            return FormatRestApiModels.createFormatRestApi(500,
-                this.failledInternalServer,
-                null,
-                error.message);
-        }
     }
 
     async countReturn(room: string) {
@@ -218,9 +198,14 @@ export class SocketService {
         try {
             const session = await this.sessionService.getSession(room);
             if (Utils.codeErrorChecking(session.code)) return session;
-            const play = Utils.checkEntityPlay(session.data)
-            return FormatRestApiModels.createFormatRestApi(200, 'Who is play', play, null)
-        }catch (error: any) {
+            const checkTurn = Utils.checkEntityPlay(session.data)
+            if (Utils.codeErrorChecking(checkTurn.code)) return FormatRestApiModels.createFormatRestApi(checkTurn.code, checkTurn.message, checkTurn.data, checkTurn.error)
+            return this.updateSession(room, checkTurn.data)
+            // const sessionDto = checkTurn.data
+            // const update = await this.sessionService.updateSession(room,sessionDto)
+            // if (Utils.codeErrorChecking(update.code)) return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error)
+            // return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, update.data, null);
+        } catch (error: any) {
             return FormatRestApiModels.createFormatRestApi(500,
                 this.failledInternalServer,
                 null,
@@ -228,28 +213,54 @@ export class SocketService {
         }
     }
 
-    async humainActionMoving(entityResume: EntityResume, entityEvolving: EntityEvolving, room: string) {
+    async initGame(room: string) {
+        try {
+            const session = await this.sessionService.getSession(room);
+            if (Utils.codeErrorChecking(session.code)) return session;
+            const cardsDB = await this.cardsService.getAllCards()
+            const sessionDto = Utils.createGameContent(session.data, cardsDB.data)
+            const update = await this.sessionService.updateSession(room, sessionDto)
+            return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error)
+        } catch (error: any) {
+            return FormatRestApiModels.createFormatRestApi(500,
+                this.failledInternalServer,
+                null,
+                error.message);
+        }
+    }
+
+
+    async humainActionMoving(room: string, entityResume: EntityResume, entityEvolving: EntityEvolving) {
         try {
             const session = await this.sessionService.getSession(room);
             if (Utils.codeErrorChecking(session.code)) return session;
             switch (entityEvolving.currentCan) {
                 case Can.NULL:
-                    break;
+                    const canNull = Utils.caseNULL(session.data, entityResume)
+                    if (Utils.codeErrorChecking(canNull.code)) return FormatRestApiModels.createFormatRestApi(canNull.code, canNull.message, canNull.data, canNull.error)
+                    return this.updateSession(room, canNull.data)
                 case Can.START_TURN:
-                    break;
+                    const canStartTurn = Utils.caseSTART_TURN(session.data, entityResume)
+                    if (Utils.codeErrorChecking(canStartTurn.code)) return FormatRestApiModels.createFormatRestApi(canStartTurn.code, canStartTurn.message, canStartTurn.data, canStartTurn.error)
+                    return this.updateSession(room, canStartTurn.data)
                 case Can.SEND_DICE:
-                    break;
+                    const canSendDice = Utils.caseSEND_DICE(session.data, entityResume, entityEvolving)
+                    if (Utils.codeErrorChecking(canSendDice.code)) return FormatRestApiModels.createFormatRestApi(canSendDice.code, canSendDice.message, canSendDice.data, canSendDice.error)
+                    return this.updateSession(room, canSendDice.data)
                 case Can.CHOOSE_MOVE:
-                    break;
+                    const canChooseMove = Utils.caseCHOOSE_MOVE(session.data, entityResume, entityEvolving)
+                    if (Utils.codeErrorChecking(canChooseMove.code)) return FormatRestApiModels.createFormatRestApi(canChooseMove.code, canChooseMove.message, canChooseMove.data, canChooseMove.error)
+                    return this.updateSession(room, canChooseMove.data)
                 case Can.MOVE:
-                    break;
+                    return FormatRestApiModels.createFormatRestApi(400, 'Can is not valid', null, null)
                 case Can.FINISH_TURN:
-                    break;
+                    return FormatRestApiModels.createFormatRestApi(400, 'Can is not valid', null, null)
                 case Can.START_FIGHT:
-                    break;
+                    return FormatRestApiModels.createFormatRestApi(400, 'Can is not valid', null, null)
+                default:
+                    return FormatRestApiModels.createFormatRestApi(400, 'Can is not valid', null, null)
             }
-            // return FormatRestApiModels.createFormatRestApi(200, 'Who is play', turnAction, null)
-        }catch (error: any) {
+        } catch (error: any) {
             return FormatRestApiModels.createFormatRestApi(500,
                 this.failledInternalServer,
                 null,
