@@ -43,14 +43,14 @@ export interface EntityActionFight {
 
 export class ActionGameModels {
 
-    initEntityActionMoving(): EntityActionMoving {
+    static initEntityActionMoving(): EntityActionMoving {
         return {
             resume: this.initEntityResume(),
             evolving: this.initEntityEvolving(),
         }
     }
 
-    initEntityActionFight(): EntityActionFight {
+    static initEntityActionFight(): EntityActionFight {
         return {
             teamIndex: -1,
             cardIndex: -1,
@@ -64,7 +64,7 @@ export class ActionGameModels {
         }
     }
 
-    initEntityResume(): EntityResume {
+    static initEntityResume(): EntityResume {
         return {
             teamIndex: -1,
             cardIndex: -1,
@@ -77,7 +77,7 @@ export class ActionGameModels {
         }
     }
 
-    initEntityEvolving(): EntityEvolving {
+    static initEntityEvolving(): EntityEvolving {
         return {
             dice: -1,
             movesCansIds: [],

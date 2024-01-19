@@ -7,8 +7,10 @@ import {PlayerLobby, PlayerModels} from "../models/player.models";
 import {CardsDto} from "../dto/cards.dto";
 import {Can, EntityCategorie, EntityStatus} from "../models/enums";
 import {EntityActionMoving, EntityEvolving, EntityResume} from "../models/actions.game.models";
-import {SessionGame} from "../models/session.models";
+import {FightSession, SessionGame, SessionModels} from "../models/session.models";
 import {CellsDto} from "../dto/cells.dto";
+import {MasterMaidData} from "../models/users.models";
+import {pipeline} from "stream";
 
 export class Utils {
 
@@ -478,7 +480,6 @@ export class Utils {
             if (moveCellSelected === undefined) return FormatRestApiModels.createFormatRestApi(400, 'MoveToId is not found', null, null);
             data.game.game.challenger[entityResume.teamIndex].cellPosition = moveCellSelected ?? errorFormatCells
             if (data.game.game.challenger[entityResume.teamIndex].cellPosition.id === -1) return FormatRestApiModels.createFormatRestApi(400, 'MoveToId is not found', null, null);
-
             data.game.sessionStatusGame.entityTurn.map((entityActionMoving, index) => {
                 if (entityActionMoving.resume.teamIndex === entityResume.teamIndex && index !== turnListPosition) {
                     data.game.sessionStatusGame.entityTurn[index].resume.currentCellsId = valueMoveToId
@@ -488,13 +489,74 @@ export class Utils {
         }
     }
 
-    static caseMOVE(data: SessionDto) {
+    static caseMOVE(data: SessionDto, entityResume: EntityResume, entityEvolving: EntityEvolving) {
+        const turnListPosition = entityResume.indexInsideArray
+        let isFitghtOrNot = false
+        let teamIndexChallenger = -1
+        data.game.game.challenger.forEach((player, index) => {
+            isFitghtOrNot = (player.cellPosition.id === data.game.game.challenger[entityResume.teamIndex].cellPosition.id && index !== entityResume.teamIndex)
+            if (isFitghtOrNot) teamIndexChallenger = index
+        })
 
+        if(!isFitghtOrNot) {
+            data.game.sessionStatusGame.entityTurn[turnListPosition].evolving = {
+                dice: entityEvolving.dice,
+                movesCansIds: entityEvolving.movesCansIds,
+                moveToId: entityEvolving.moveToId,
+                currentCan: Can.FINISH_TURN
+            }
+            return FormatRestApiModels.createFormatRestApi(200, 'Move is finish', data, null);
+        }else{
+            let tabEntityFight: Array<PlayerCardsEntity> = []
+            tabEntityFight.push(data.game.game.challenger[entityResume.teamIndex])
+            data.game.game.challenger.splice(entityResume.teamIndex, 1)
+            tabEntityFight.push(data.game.game.challenger[teamIndexChallenger])
+            data.game.game.challenger.splice(teamIndexChallenger, 1)
+            data.game.sessionStatusGame.entityTurn.forEach((entityActionMoving, index) => {
+                if(entityActionMoving.resume.teamIndex === entityResume.teamIndex || entityActionMoving.resume.teamIndex === teamIndexChallenger) {
+                    data.game.sessionStatusGame.entityTurn.splice(index, 1)
+                }
+            })
+            data.game.sessionStatusGame.currentEntityActionMovingPosition = 0
+            let fightSession = SessionModels.initFightSession()
+            let map : Map<string,FightSession> = new Map<string,FightSession>()
+            map.set(`${tabEntityFight[0].name}-VS-${tabEntityFight[1].name}`,fightSession)
+            data.game.game.fightings = map
+            return FormatRestApiModels.createFormatRestApi(200, 'Move is finish', data, null);
+        }
     }
 
-    static caseFINISH_TURN(data: SessionDto) {
-
+    static caseFINISH_TURN(data: SessionDto, entityResume: EntityResume, entityEvolving: EntityEvolving) {
+        const turnListPosition = entityResume.indexInsideArray
+        data.game.sessionStatusGame.entityTurn[turnListPosition].evolving = {
+            dice: entityEvolving.dice,
+            movesCansIds: entityEvolving.movesCansIds,
+            moveToId: entityEvolving.moveToId,
+            currentCan: Can.FINISH_TURN
+        }
+        return FormatRestApiModels.createFormatRestApi(200, 'Finish Turn', data, null);
     }
 
 
+    static pingMaidMasterSend(data: SessionDto,room:string,queueClientActionCall: Map<string,MasterMaidData>) {
+        if(!queueClientActionCall.has(room)){
+            const masterMaidData: MasterMaidData = {
+                lobbyPosition: 0,
+                valid: false,
+                countCheckError: 0
+            }
+            return FormatRestApiModels.createFormatRestApi(200, 'Lobby Position is send', masterMaidData, null);
+        }else{
+            const userMaid = queueClientActionCall.get(room)?.lobbyPosition ?? -1
+            if (userMaid === -1) return FormatRestApiModels.createFormatRestApi(400, 'Lobby Position is not found', null, null);
+            const limitLobbyPosition = data.game.sessionStatusGame.lobby.length - 1
+            const  countCheckError = queueClientActionCall.get(room)?.countCheckError ?? 0
+            if(userMaid + 1 > limitLobbyPosition) {
+                return FormatRestApiModels.createFormatRestApi(200, 'Lobby Position is send', {lobbyPosition:0,valid:false,countCheckError:countCheckError + 1}, null);
+            }else{
+                queueClientActionCall.set(room,{lobbyPosition:0,valid:false,countCheckError:countCheckError + 1})
+                return FormatRestApiModels.createFormatRestApi(200, 'Lobby Position is send', {lobbyPosition:userMaid + 1,valid:false,countCheckError:countCheckError + 1}, null);
+            }
+        }
+    }
 }

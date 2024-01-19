@@ -111,4 +111,23 @@ SocketController.post(
         response.status(received.code).json(received);
     });
 
+SocketController.post(
+    '/ping-maid-master-send', async (
+        request,
+        response) => {
+        const {room} = request.body;
+        const received = await socketService.pingMaidMasterSend(room)
+        response.status(received.code).json(received);
+    });
+
+SocketController.post(
+    '/ping-maid-master-reive', async (
+        request,
+        response) => {
+        const {room,action} = request.body;
+        const received = await socketService
+            .humainActionMoving(room,action.resume,action.evolving);
+        response.status(received.code).json(received);
+    });
+
 export default SocketController;

@@ -6,8 +6,15 @@ export enum Can {
     MOVE = "MOVE",
     FINISH_TURN = "FINISH_TURN",
     START_FIGHT = "START_FIGHT",
-    ALL_ENTITY_SEND_DICE = "ALL_ENTITY_SEND_DICE",
 
+    API_CHALLENGERS_SEND_DICE = "CHALLENGERS_SEND_DICE", // All challengers send dice for determine bonus chance or not ( luk impact result )
+    API_RETURN_RESULT_DICE = "RETURN_RESULT_DICE", // Return result dice for all challenger determine bonus chance or not ( luk impact result )
+    API_CREATE_TURN = "CREATE_TURN", // Create turn for all challenger
+    API_APPLY_EFFECTS = "APPLY_EFFECTS", // Apply effects for all challenger
+    START_TURN_FIGHT = "START_TURN_FIGHT", // Start turn for all challenger
+    RESULT_TURN_FIGHT = "RESULT_TURN_FIGHT", // Result turn for all challenger
+    END_TURN_FIGHT = "END_TURN_FIGHT", // End turn for all challenger
+    END_FIGHT = "END_FIGHT", // End fight for all challenger
 }
 
 export enum StatusGame {

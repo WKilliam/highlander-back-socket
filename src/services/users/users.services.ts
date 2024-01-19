@@ -8,7 +8,6 @@ import {CardEntitySimplify} from "../../models/cards.models";
 import {DecksRestApiUser} from "../../models/decks.models";
 import {FormatRestApiModels} from "../../models/formatRestApi";
 import {EnumString, TYPE} from "../../models/enums";
-import {Utils} from "../../utils/utils";
 
 export class UsersServices {
 

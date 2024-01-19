@@ -4,7 +4,7 @@ import {Utils} from "../../utils/utils";
 import {FormatRestApi, FormatRestApiModels} from "../../models/formatRestApi";
 import {CardByEntityPlaying, CardEntitySimplify} from "../../models/cards.models";
 import {SessionDto} from "../../dto/session.dto";
-import {PlayerModels} from "../../models/player.models";
+import {PlayerCards, PlayerModels} from "../../models/player.models";
 import {ConstantText} from "../../utils/constant.text";
 import {UsersServices} from "../users/users.services";
 import {TokenManager} from "../../utils/tokennezer/jsonwebtoken";
@@ -14,6 +14,7 @@ import {Can, EntityCategorie} from "../../models/enums";
 import {PlayerCardsEntity} from "../../models/cards.player.entity.models";
 import {Cells} from "../../models/maps.models";
 import {EntityEvolving, EntityResume} from "../../models/actions.game.models";
+import {MasterMaidData} from "../../models/users.models";
 
 export class SocketService {
     dataSourceConfig: Promise<DataSource>;
@@ -26,6 +27,7 @@ export class SocketService {
     private failledInternalServer = 'Internal server error'
     private failledUserCheckInsideSession: string = 'Error check user inside session'
     private succesUpdateSesssionJoin: string = 'Succes update session join'
+    private queueClientActionCall: Map<string, MasterMaidData> = new Map<string, MasterMaidData>()
 
     constructor(dataSourceConfig: Promise<DataSource>) {
         this.dataSourceConfig = dataSourceConfig;
@@ -77,7 +79,6 @@ export class SocketService {
                 error.message);
         }
     }
-
     async joinSession(room: string, token: string, avatar: string, pseudo: string, score: number, cards: Array<CardEntitySimplify>) {
         try {
             const dataSource: DataSource = await this.dataSourceConfig;
@@ -116,7 +117,6 @@ export class SocketService {
                 error.message);
         }
     }
-
     diceRolling(luk: number, arrayLimit: Array<number>, min: number, max: number) {
         if (!luk) return FormatRestApiModels.createFormatRestApi(400, 'Luk is empty', null, null)
         if (!min && !max) {
@@ -129,7 +129,6 @@ export class SocketService {
         const dice = Dice.diceRuning(luk, arrayLimit, min, max)[0]
         return FormatRestApiModels.createFormatRestApi(200, 'Rolling', dice, null)
     }
-
     async joinTeam(room: string, positionPlayerInLobby: number, teamSelectedPerPlayer: number, cardPositionInsideTeamCards: number) {
         try {
             const session = await this.sessionService.getSession(room);
@@ -153,7 +152,6 @@ export class SocketService {
                 error.message);
         }
     }
-
     async joinTeamWithCard(room: string, lobbyPosition: number, teamPosition: number, cardPosition: number, selectedCard: number | null) {
         if (selectedCard === null) return FormatRestApiModels.createFormatRestApi(400, 'Card is empty', null, null)
         try {
@@ -179,7 +177,6 @@ export class SocketService {
         }
 
     }
-
     async countReturn(room: string) {
         try {
             const session = await this.sessionService.getSession(room);
@@ -193,7 +190,6 @@ export class SocketService {
                 error.message);
         }
     }
-
     async whoIsPlayEntityType(room: string) {
         try {
             const session = await this.sessionService.getSession(room);
@@ -212,7 +208,6 @@ export class SocketService {
                 error.message);
         }
     }
-
     async initGame(room: string) {
         try {
             const session = await this.sessionService.getSession(room);
@@ -228,8 +223,6 @@ export class SocketService {
                 error.message);
         }
     }
-
-
     async humainActionMoving(room: string, entityResume: EntityResume, entityEvolving: EntityEvolving) {
         try {
             const session = await this.sessionService.getSession(room);
@@ -252,10 +245,24 @@ export class SocketService {
                     if (Utils.codeErrorChecking(canChooseMove.code)) return FormatRestApiModels.createFormatRestApi(canChooseMove.code, canChooseMove.message, canChooseMove.data, canChooseMove.error)
                     return this.updateSession(room, canChooseMove.data)
                 case Can.MOVE:
-                    return FormatRestApiModels.createFormatRestApi(400, 'Can is not valid', null, null)
+                    const canMove = Utils.caseMOVE(session.data, entityResume, entityEvolving)
+                    if (Utils.codeErrorChecking(canMove.code)) return FormatRestApiModels.createFormatRestApi(canMove.code, canMove.message, canMove.data, canMove.error)
+                    return this.updateSession(room, canMove.data)
                 case Can.FINISH_TURN:
-                    return FormatRestApiModels.createFormatRestApi(400, 'Can is not valid', null, null)
+                    const canFinishTurn = Utils.caseFINISH_TURN(session.data, entityResume, entityEvolving)
+                    if (Utils.codeErrorChecking(canFinishTurn.code)) return FormatRestApiModels.createFormatRestApi(canFinishTurn.code, canFinishTurn.message, canFinishTurn.data, canFinishTurn.error)
+                    const nextTurn = await this.whoIsPlayEntityType(room)
+                    if (Utils.codeErrorChecking(nextTurn.code)) return FormatRestApiModels.createFormatRestApi(nextTurn.code, nextTurn.message, nextTurn.data, nextTurn.error)
+                    return this.updateSession(room, nextTurn.data)
                 case Can.START_FIGHT:
+                    return FormatRestApiModels.createFormatRestApi(400, 'Can is not valid', null, null)
+                case Can.API_CHALLENGERS_SEND_DICE:
+                    return FormatRestApiModels.createFormatRestApi(400, 'Can is not valid', null, null)
+                case Can.RESULT_TURN_FIGHT:
+                    return FormatRestApiModels.createFormatRestApi(400, 'Can is not valid', null, null)
+                case Can.END_TURN_FIGHT:
+                    return FormatRestApiModels.createFormatRestApi(400, 'Can is not valid', null, null)
+                case Can.END_FIGHT:
                     return FormatRestApiModels.createFormatRestApi(400, 'Can is not valid', null, null)
                 default:
                     return FormatRestApiModels.createFormatRestApi(400, 'Can is not valid', null, null)
@@ -267,4 +274,57 @@ export class SocketService {
                 error.message);
         }
     }
+
+    async botAction(room: string, action: EntityEvolving) {
+        try {
+            const session = await this.sessionService.getSession(room);
+            if (Utils.codeErrorChecking(session.code)) return session
+            // const ping = Utils.pingMaidMasterSend(session.data, room, this.queueClientActionCall)
+            // if(Utils.codeErrorChecking(ping.code)) return FormatRestApiModels.createFormatRestApi(ping.code, ping.message, ping.data, ping.error)
+            // this.queueClientActionCall.set(room,{valid:ping.data.valid,countCheckError:ping.data.countCheckError,lobbyPosition:ping.data.lobbyPosition})
+            // return FormatRestApiModels.createFormatRestApi(200, 'Ping maid master send', this.queueClientActionCall.get(room), null)
+        } catch (error: any) {
+            return FormatRestApiModels.createFormatRestApi(500,
+                this.failledInternalServer,
+                null,
+                error.message);
+        }
+    }
+    async pingMaidMasterSend(room: string) {
+        try {
+            const session = await this.sessionService.getSession(room);
+            if (Utils.codeErrorChecking(session.code)) return session
+            const ping = Utils.pingMaidMasterSend(session.data, room, this.queueClientActionCall)
+            if(Utils.codeErrorChecking(ping.code)) return FormatRestApiModels.createFormatRestApi(ping.code, ping.message, ping.data, ping.error)
+            this.queueClientActionCall.set(room,{valid:ping.data.valid,countCheckError:ping.data.countCheckError,lobbyPosition:ping.data.lobbyPosition})
+            return FormatRestApiModels.createFormatRestApi(200, 'Ping maid master send', this.queueClientActionCall.get(room), null)
+        } catch (error: any) {
+            return FormatRestApiModels.createFormatRestApi(500,
+                this.failledInternalServer,
+                null,
+                error.message);
+        }
+    }
+
+    async pingMaidMasterReive(room: string, action: EntityEvolving) {
+        try {
+            const session = await this.sessionService.getSession(room);
+            if (Utils.codeErrorChecking(session.code)) return session
+            // const ping = Utils.pingMaidMasterSend(session.data, room, this.queueClientActionCall)
+            // if(Utils.codeErrorChecking(ping.code)) return FormatRestApiModels.createFormatRestApi(ping.code, ping.message, ping.data, ping.error)
+            // this.queueClientActionCall.set(room,{valid:ping.data.valid,countCheckError:ping.data.countCheckError,lobbyPosition:ping.data.lobbyPosition})
+            // return FormatRestApiModels.createFormatRestApi(200, 'Ping maid master send', this.queueClientActionCall.get(room), null)
+        } catch (error: any) {
+            return FormatRestApiModels.createFormatRestApi(500,
+                this.failledInternalServer,
+                null,
+                error.message);
+        }
+    }
+
+    async apiFightSystem(room: string,titleFight:string) {
+
+    }
+
+
 }

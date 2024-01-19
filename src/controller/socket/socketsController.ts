@@ -86,7 +86,7 @@ module.exports = (io: any) => {
              * @room highlander-socket-{{room}}
              * @path {{room}}-rolling **** output ***
              */
-            socket.on('rolling', async (data: DiceRolling) => {
+            socket.on('rolling-dice', async (data: DiceRolling) => {
                 const room = data.room
                 const luck = data.luk
                 const arrayLimit = data.arrayLimit

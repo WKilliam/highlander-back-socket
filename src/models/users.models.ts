@@ -1,6 +1,6 @@
 import {DecksRestApi, DecksRestApiUser} from "./decks.models";
 import {CardByEntityPlaying, CardEntitySimplify, CardsRestApi} from "./cards.models";
-import {EntityActionMoving} from "./actions.game.models";
+import {ActionGameModels, EntityActionMoving} from "./actions.game.models";
 
 export interface UsersLogin {
     email: string;
@@ -48,6 +48,12 @@ export interface UserGamePlay {
     action: EntityActionMoving;
 }
 
+export interface MasterMaidData {
+    lobbyPosition: number;
+    valid: boolean;
+    countCheckError: number;
+}
+
 export class UserModels {
 
     static initUserSubscription() :UserSubscription{
@@ -69,6 +75,42 @@ export class UserModels {
             bearcoins: 0,
             decks: [],
             cards: []
+        }
+    }
+
+    static initUserSocketConnect() :UserSocketConnect{
+        return {
+            room: '',
+            token: '',
+            pseudo: '',
+            avatar: '',
+            score: 0,
+            cards: []
+        }
+    }
+
+    static initUserIdentitiesGame() :UserIdentitiesGame{
+        return {
+            room: '',
+            positionPlayerInLobby: 0,
+            teamSelectedPerPlayer: 0,
+            cardPositionInsideTeamCards: 0,
+            cardSelectedForPlay: 0
+        }
+    }
+
+    static initUserGamePlay() :UserGamePlay{
+        return {
+            room: '',
+            action: ActionGameModels.initEntityActionMoving()
+        }
+    }
+
+    static initMasterMaidData() :MasterMaidData{
+        return {
+            lobbyPosition: -1,
+            valid: false,
+            countCheckError: 0
         }
     }
 }
