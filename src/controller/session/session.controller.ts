@@ -2,6 +2,7 @@ import {Router} from "express";
 import {SessionsServices} from "../../services/sessions/sessions.services";
 import {AppDataSource} from "../../utils/database/database.config";
 import {SessionCreated} from "../../models/room.content.models";
+import {UserFrontData} from "../../models/users.models";
 const sessionsServices: SessionsServices = new SessionsServices(AppDataSource);
 const SessionController = Router();
 
@@ -11,15 +12,16 @@ SessionController.post('/new', async (req, res) => {
         password,
         mapId,
         teamNames,
+        token
     } = req.body;
     let sessionCreated:SessionCreated = {
         name: name,
         password: password,
         mapId: mapId,
         teamNames: teamNames,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        token: token
     }
-    console.log(sessionCreated)
     const received = await sessionsServices.create(sessionCreated);
     res.status(received.code).json(received);
 });

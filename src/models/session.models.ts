@@ -54,7 +54,7 @@ export class SessionModels {
 
     static initSessionStatusGame(): SessionStatusGame{
         return {
-            room: '',
+            room: 'default',
             teamNames: [],
             status: StatusGame.NULL,
             turnCount: 0,

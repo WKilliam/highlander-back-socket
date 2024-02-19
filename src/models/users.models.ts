@@ -29,17 +29,23 @@ export interface UserSocketConnect{
     room: string;
     token: string;
     pseudo: string;
-    avatar: string;
-    score?:number;
-    cards?:Array<CardEntitySimplify>;
 }
 
 export interface UserIdentitiesGame {
     room: string;
     positionPlayerInLobby: number;
-    teamSelectedPerPlayer: number;
-    cardPositionInsideTeamCards: number;
-    cardSelectedForPlay: number
+    teamSelected: number;
+    cardPositionInTeam: number;
+    cardSelected?:number
+}
+
+
+
+export interface UserCanJoin {
+    token: string;
+    pseudo: string;
+    avatar: string;
+    room: string;
 }
 
 
@@ -82,10 +88,7 @@ export class UserModels {
         return {
             room: '',
             token: '',
-            pseudo: '',
-            avatar: '',
-            score: 0,
-            cards: []
+            pseudo: ''
         }
     }
 
@@ -93,9 +96,8 @@ export class UserModels {
         return {
             room: '',
             positionPlayerInLobby: 0,
-            teamSelectedPerPlayer: 0,
-            cardPositionInsideTeamCards: 0,
-            cardSelectedForPlay: 0
+            teamSelected: 0,
+            cardPositionInTeam: 0
         }
     }
 
@@ -111,6 +113,15 @@ export class UserModels {
             lobbyPosition: -1,
             valid: false,
             countCheckError: 0
+        }
+    }
+
+    static initUserCanJoin() :UserCanJoin{
+        return {
+            token: '',
+            pseudo: '',
+            avatar: '',
+            room: ''
         }
     }
 }

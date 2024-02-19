@@ -1,19 +1,27 @@
 {
   "sessionStatusGame": {
-    "room": "GnKso",
+    "room": "3bdxf",
     "teamNames": [
       "Alpha",
       "Beta",
-      "Gamma",
+      "Charlie",
       "Delta"
     ],
     "status": "LOBBY",
     "turnCount": 0,
     "lobby": [
       {
-        "score": 0,
-        "avatar": "avatar_par_defaut.png",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjYsImVtYWlsIjoidGVzdEB0ZXN0IiwicGFzc3dvcmQiOiJKb2UiLCJyb2xlcyI6WyJ1c2VyIl0sImlhdCI6MTcwNzgzNDIyMH0.b5pj4tlkK1WmdfhmLg0A7nZurl77cI8wii2fTD9eZkE",
         "pseudo": "Joe",
+        "avatar": "2avatar_par_defaut.png",
+        "bearcoins": 0,
+        "decks": [
+          {
+            "name": "Booster",
+            "description": "description data",
+            "image": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000"
+          }
+        ],
         "cards": [
           {
             "id": 1,
@@ -277,316 +285,25 @@
         ]
       }
     ],
-    "entityTurn": [
-      {
-        "resume": {
-          "teamIndex": 0,
-          "cardIndex": 1,
-          "entityStatus": "ALIVE",
-          "currentCellsId": 373,
-          "typeEntity": "HUMAIN",
-          "indexInsideArray": 0,
-          "cardPlaying": {
-            "player": {
-              "avatar": "avatar_par_defaut.png",
-              "pseudo": "Joe",
-              "status": "ALIVE"
-            },
-            "atk": 10,
-            "def": 20,
-            "spd": 30,
-            "luk": 7,
-            "description": "Unleash the mysteries of the arcane with this legendary card. It holds the power to manipulate luck and weave protective spells.",
-            "name": "Arcane Enigma",
-            "rarity": "LEGENDARY",
-            "imageSrc": "https://cdn.discordapp.com/attachments/1060501071056879618/1173696197211475998/kyrasw_Arcane_Enigma_Unleash_the_mysteries_of_the_arcane_with_t_2d69f2c4-c990-4db7-9917-acf61b610b4b.png?ex=6564e4c3&is=65526fc3&hm=82d7e983876a45ae83e6cb9b0ea64a2bec56db8b56fa31cec09a86a232265e4f&",
-            "effects": [
-              {
-                "id": 1,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "rarity": "COMMUN",
-                "action": "A"
-              }
-            ],
-            "capacities": [
-              {
-                "id": 1,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              },
-              {
-                "id": 2,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              }
-            ]
-          },
-          "speed": 30
-        },
-        "evolving": {
-          "dice": null,
-          "movesCansIds": null,
-          "moveToId": null,
-          "currentCan": "NULL"
-        }
-      },
-      {
-        "resume": {
-          "teamIndex": 4,
-          "cardIndex": 0,
-          "entityStatus": "ALIVE",
-          "currentCellsId": 203,
-          "typeEntity": "COMPUTER",
-          "indexInsideArray": 1,
-          "cardPlaying": {
-            "atk": 10,
-            "def": 20,
-            "spd": 30,
-            "luk": 20,
-            "rarity": "LEGENDARY",
-            "imageSrc": "https://cdn.discordapp.com/attachments/1060501071056879618/1173698394301145169/kyrasw_Soulbound_Specter_Bind_your_enemies_souls_with_this_spec_addb992a-6e44-4cc4-9bdd-4cbdb32eacbf.png?ex=6564e6cf&is=655271cf&hm=04ad2f39b9913c930e15ee10e0d643f17952c83eace5fb9bd346969c01121b6d&",
-            "description": "Bind your enemies' souls with this spectral card. It drains life force and haunts foes with ghostly apparitions.",
-            "name": "Soulbound Specter",
-            "effects": [
-              {
-                "id": 2,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "rarity": "COMMUN",
-                "action": "A"
-              }
-            ],
-            "capacities": [
-              {
-                "id": 2,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              },
-              {
-                "id": 3,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              }
-            ],
-            "player": {
-              "pseudo": "Chimère Dévoreuse",
-              "avatar": "https://fiverr-res.cloudinary.com/images/t_main1,q_auto,f_auto,q_auto,f_auto/gigs/343344341/original/f6f27d307c3080a6590744b8e093f85877939079/do-a-horror-dark-fantasy-character-or-creature-for-your-dnd-campaign.jfif",
-              "status": "ALIVE"
-            }
-          },
-          "speed": 30
-        },
-        "evolving": {
-          "dice": null,
-          "movesCansIds": null,
-          "moveToId": null,
-          "currentCan": "NULL"
-        }
-      },
-      {
-        "resume": {
-          "teamIndex": 4,
-          "cardIndex": 1,
-          "entityStatus": "ALIVE",
-          "currentCellsId": 203,
-          "typeEntity": "COMPUTER",
-          "indexInsideArray": 2,
-          "cardPlaying": {
-            "atk": 10,
-            "def": 20,
-            "spd": 30,
-            "luk": 7,
-            "rarity": "LEGENDARY",
-            "imageSrc": "https://cdn.discordapp.com/attachments/1060501071056879618/1173696197211475998/kyrasw_Arcane_Enigma_Unleash_the_mysteries_of_the_arcane_with_t_2d69f2c4-c990-4db7-9917-acf61b610b4b.png?ex=6564e4c3&is=65526fc3&hm=82d7e983876a45ae83e6cb9b0ea64a2bec56db8b56fa31cec09a86a232265e4f&",
-            "description": "Unleash the mysteries of the arcane with this legendary card. It holds the power to manipulate luck and weave protective spells.",
-            "name": "Arcane Enigma",
-            "effects": [
-              {
-                "id": 1,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "rarity": "COMMUN",
-                "action": "A"
-              }
-            ],
-            "capacities": [
-              {
-                "id": 1,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              },
-              {
-                "id": 2,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              }
-            ],
-            "player": {
-              "pseudo": "Démons Sanguinaires",
-              "avatar": "https://fiverr-res.cloudinary.com/images/t_main1,q_auto,f_auto,q_auto,f_auto/gigs/343344341/original/f6f27d307c3080a6590744b8e093f85877939079/do-a-horror-dark-fantasy-character-or-creature-for-your-dnd-campaign.jfif",
-              "status": "ALIVE"
-            }
-          },
-          "speed": 30
-        },
-        "evolving": {
-          "dice": null,
-          "movesCansIds": null,
-          "moveToId": null,
-          "currentCan": "NULL"
-        }
-      },
-      {
-        "resume": {
-          "teamIndex": 5,
-          "cardIndex": 0,
-          "entityStatus": "ALIVE",
-          "currentCellsId": 308,
-          "typeEntity": "COMPUTER",
-          "indexInsideArray": 3,
-          "cardPlaying": {
-            "atk": 10,
-            "def": 20,
-            "spd": 30,
-            "luk": 3,
-            "rarity": "LEGENDARY",
-            "imageSrc": "https://cdn.discordapp.com/attachments/1060501071056879618/1173697305828937749/kyrasw_Astral_Guardian_Summon_a_celestial_guardian_with_this_di_90be06aa-a080-481f-bcc2-54bcf383d27f.png?ex=6564e5cb&is=655270cb&hm=0c3259e2c2bd9b09fc11855e38a04627a1e44a1f47af25614a4ba1ce21faa05a&",
-            "description": "Summon a celestial guardian with this divine card. It shields its wielder from harm and retaliates with divine retribution.",
-            "name": "Astral Guardian",
-            "effects": [
-              {
-                "id": 3,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "rarity": "COMMUN",
-                "action": "A"
-              }
-            ],
-            "capacities": [
-              {
-                "id": 1,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              },
-              {
-                "id": 3,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              }
-            ],
-            "player": {
-              "pseudo": "Démons Sanguinaires",
-              "avatar": "https://fiverr-res.cloudinary.com/images/t_main1,q_auto,f_auto,q_auto,f_auto/gigs/343344341/original/f6f27d307c3080a6590744b8e093f85877939079/do-a-horror-dark-fantasy-character-or-creature-for-your-dnd-campaign.jfif",
-              "status": "ALIVE"
-            }
-          },
-          "speed": 30
-        },
-        "evolving": {
-          "dice": null,
-          "movesCansIds": null,
-          "moveToId": null,
-          "currentCan": "NULL"
-        }
-      },
-      {
-        "resume": {
-          "teamIndex": 5,
-          "cardIndex": 1,
-          "entityStatus": "ALIVE",
-          "currentCellsId": 308,
-          "typeEntity": "COMPUTER",
-          "indexInsideArray": 4,
-          "cardPlaying": {
-            "atk": 10,
-            "def": 20,
-            "spd": 30,
-            "luk": 3,
-            "rarity": "LEGENDARY",
-            "imageSrc": "https://cdn.discordapp.com/attachments/1060501071056879618/1173697305828937749/kyrasw_Astral_Guardian_Summon_a_celestial_guardian_with_this_di_90be06aa-a080-481f-bcc2-54bcf383d27f.png?ex=6564e5cb&is=655270cb&hm=0c3259e2c2bd9b09fc11855e38a04627a1e44a1f47af25614a4ba1ce21faa05a&",
-            "description": "Summon a celestial guardian with this divine card. It shields its wielder from harm and retaliates with divine retribution.",
-            "name": "Astral Guardian",
-            "effects": [
-              {
-                "id": 3,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "rarity": "COMMUN",
-                "action": "A"
-              }
-            ],
-            "capacities": [
-              {
-                "id": 1,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              },
-              {
-                "id": 3,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              }
-            ],
-            "player": {
-              "pseudo": "Banshees Hurlantes",
-              "avatar": "https://fiverr-res.cloudinary.com/images/t_main1,q_auto,f_auto,q_auto,f_auto/gigs/343344341/original/f6f27d307c3080a6590744b8e093f85877939079/do-a-horror-dark-fantasy-character-or-creature-for-your-dnd-campaign.jfif",
-              "status": "ALIVE"
-            }
-          },
-          "speed": 30
-        },
-        "evolving": {
-          "dice": null,
-          "movesCansIds": null,
-          "moveToId": null,
-          "currentCan": "NULL"
-        }
-      }
-    ],
+    "entityTurn": [],
     "currentEntityActionMovingPosition": -1
   },
   "game": {
     "challenger": [
       {
         "name": "Alpha",
-        "commonLife": 200,
-        "commonMaxLife": 200,
-        "commonAttack": 10,
-        "commonDefense": 20,
-        "commonLuck": 7,
-        "commonSpeed": 30,
+        "commonLife": -1,
+        "commonMaxLife": -1,
+        "commonAttack": -1,
+        "commonDefense": -1,
+        "commonLuck": -1,
+        "commonSpeed": -1,
         "typeEntity": "HUMAIN",
         "cellPosition": {
-          "id": 373,
-          "x": 768,
-          "y": 384,
-          "value": 1
+          "id": -1,
+          "x": -1,
+          "y": -1,
+          "value": -1
         },
         "cardsInfo": [
           {
@@ -608,44 +325,20 @@
           },
           {
             "player": {
-              "avatar": "avatar_par_defaut.png",
-              "pseudo": "Joe",
-              "status": "ALIVE"
+              "avatar": "",
+              "pseudo": "",
+              "status": "NULL"
             },
-            "atk": 10,
-            "def": 20,
-            "spd": 30,
-            "luk": 7,
-            "description": "Unleash the mysteries of the arcane with this legendary card. It holds the power to manipulate luck and weave protective spells.",
-            "name": "Arcane Enigma",
-            "rarity": "LEGENDARY",
-            "imageSrc": "https://cdn.discordapp.com/attachments/1060501071056879618/1173696197211475998/kyrasw_Arcane_Enigma_Unleash_the_mysteries_of_the_arcane_with_t_2d69f2c4-c990-4db7-9917-acf61b610b4b.png?ex=6564e4c3&is=65526fc3&hm=82d7e983876a45ae83e6cb9b0ea64a2bec56db8b56fa31cec09a86a232265e4f&",
-            "effects": [
-              {
-                "id": 1,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "rarity": "COMMUN",
-                "action": "A"
-              }
-            ],
-            "capacities": [
-              {
-                "id": 1,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              },
-              {
-                "id": 2,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              }
-            ]
+            "atk": -21,
+            "def": -21,
+            "spd": -21,
+            "luk": -21,
+            "name": "",
+            "description": "",
+            "rarity": "",
+            "imageSrc": "",
+            "effects": [],
+            "capacities": []
           }
         ]
       },
@@ -702,7 +395,7 @@
         ]
       },
       {
-        "name": "Gamma",
+        "name": "Charlie",
         "commonLife": -1,
         "commonMaxLife": -1,
         "commonAttack": -1,
@@ -802,206 +495,6 @@
             "imageSrc": "",
             "effects": [],
             "capacities": []
-          }
-        ]
-      },
-      {
-        "name": "Féroces Minotaures des Ombres",
-        "commonLife": 200,
-        "commonMaxLife": 200,
-        "commonAttack": 20,
-        "commonDefense": 40,
-        "commonLuck": 27,
-        "commonSpeed": 60,
-        "typeEntity": "COMPUTER",
-        "cellPosition": {
-          "id": 203,
-          "x": 896,
-          "y": 192,
-          "value": 1
-        },
-        "cardsInfo": [
-          {
-            "atk": 10,
-            "def": 20,
-            "spd": 30,
-            "luk": 20,
-            "rarity": "LEGENDARY",
-            "imageSrc": "https://cdn.discordapp.com/attachments/1060501071056879618/1173698394301145169/kyrasw_Soulbound_Specter_Bind_your_enemies_souls_with_this_spec_addb992a-6e44-4cc4-9bdd-4cbdb32eacbf.png?ex=6564e6cf&is=655271cf&hm=04ad2f39b9913c930e15ee10e0d643f17952c83eace5fb9bd346969c01121b6d&",
-            "description": "Bind your enemies' souls with this spectral card. It drains life force and haunts foes with ghostly apparitions.",
-            "name": "Soulbound Specter",
-            "effects": [
-              {
-                "id": 2,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "rarity": "COMMUN",
-                "action": "A"
-              }
-            ],
-            "capacities": [
-              {
-                "id": 2,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              },
-              {
-                "id": 3,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              }
-            ],
-            "player": {
-              "pseudo": "Chimère Dévoreuse",
-              "avatar": "https://fiverr-res.cloudinary.com/images/t_main1,q_auto,f_auto,q_auto,f_auto/gigs/343344341/original/f6f27d307c3080a6590744b8e093f85877939079/do-a-horror-dark-fantasy-character-or-creature-for-your-dnd-campaign.jfif",
-              "status": "ALIVE"
-            }
-          },
-          {
-            "atk": 10,
-            "def": 20,
-            "spd": 30,
-            "luk": 7,
-            "rarity": "LEGENDARY",
-            "imageSrc": "https://cdn.discordapp.com/attachments/1060501071056879618/1173696197211475998/kyrasw_Arcane_Enigma_Unleash_the_mysteries_of_the_arcane_with_t_2d69f2c4-c990-4db7-9917-acf61b610b4b.png?ex=6564e4c3&is=65526fc3&hm=82d7e983876a45ae83e6cb9b0ea64a2bec56db8b56fa31cec09a86a232265e4f&",
-            "description": "Unleash the mysteries of the arcane with this legendary card. It holds the power to manipulate luck and weave protective spells.",
-            "name": "Arcane Enigma",
-            "effects": [
-              {
-                "id": 1,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "rarity": "COMMUN",
-                "action": "A"
-              }
-            ],
-            "capacities": [
-              {
-                "id": 1,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              },
-              {
-                "id": 2,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              }
-            ],
-            "player": {
-              "pseudo": "Démons Sanguinaires",
-              "avatar": "https://fiverr-res.cloudinary.com/images/t_main1,q_auto,f_auto,q_auto,f_auto/gigs/343344341/original/f6f27d307c3080a6590744b8e093f85877939079/do-a-horror-dark-fantasy-character-or-creature-for-your-dnd-campaign.jfif",
-              "status": "ALIVE"
-            }
-          }
-        ]
-      },
-      {
-        "name": "Terrifiants Minotaures des Abysses",
-        "commonLife": 200,
-        "commonMaxLife": 200,
-        "commonAttack": 20,
-        "commonDefense": 40,
-        "commonLuck": 6,
-        "commonSpeed": 60,
-        "typeEntity": "COMPUTER",
-        "cellPosition": {
-          "id": 308,
-          "x": 544,
-          "y": 320,
-          "value": 1
-        },
-        "cardsInfo": [
-          {
-            "atk": 10,
-            "def": 20,
-            "spd": 30,
-            "luk": 3,
-            "rarity": "LEGENDARY",
-            "imageSrc": "https://cdn.discordapp.com/attachments/1060501071056879618/1173697305828937749/kyrasw_Astral_Guardian_Summon_a_celestial_guardian_with_this_di_90be06aa-a080-481f-bcc2-54bcf383d27f.png?ex=6564e5cb&is=655270cb&hm=0c3259e2c2bd9b09fc11855e38a04627a1e44a1f47af25614a4ba1ce21faa05a&",
-            "description": "Summon a celestial guardian with this divine card. It shields its wielder from harm and retaliates with divine retribution.",
-            "name": "Astral Guardian",
-            "effects": [
-              {
-                "id": 3,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "rarity": "COMMUN",
-                "action": "A"
-              }
-            ],
-            "capacities": [
-              {
-                "id": 1,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              },
-              {
-                "id": 3,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              }
-            ],
-            "player": {
-              "pseudo": "Démons Sanguinaires",
-              "avatar": "https://fiverr-res.cloudinary.com/images/t_main1,q_auto,f_auto,q_auto,f_auto/gigs/343344341/original/f6f27d307c3080a6590744b8e093f85877939079/do-a-horror-dark-fantasy-character-or-creature-for-your-dnd-campaign.jfif",
-              "status": "ALIVE"
-            }
-          },
-          {
-            "atk": 10,
-            "def": 20,
-            "spd": 30,
-            "luk": 3,
-            "rarity": "LEGENDARY",
-            "imageSrc": "https://cdn.discordapp.com/attachments/1060501071056879618/1173697305828937749/kyrasw_Astral_Guardian_Summon_a_celestial_guardian_with_this_di_90be06aa-a080-481f-bcc2-54bcf383d27f.png?ex=6564e5cb&is=655270cb&hm=0c3259e2c2bd9b09fc11855e38a04627a1e44a1f47af25614a4ba1ce21faa05a&",
-            "description": "Summon a celestial guardian with this divine card. It shields its wielder from harm and retaliates with divine retribution.",
-            "name": "Astral Guardian",
-            "effects": [
-              {
-                "id": 3,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "rarity": "COMMUN",
-                "action": "A"
-              }
-            ],
-            "capacities": [
-              {
-                "id": 1,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              },
-              {
-                "id": 3,
-                "name": "Effects Data",
-                "description": "description data",
-                "icon": "https://img.freepik.com/vecteurs-premium/effet-attaque-feu-lumiere-boule-energie-brulante_81894-10869.jpg?w=2000",
-                "action": "A"
-              }
-            ],
-            "player": {
-              "pseudo": "Banshees Hurlantes",
-              "avatar": "https://fiverr-res.cloudinary.com/images/t_main1,q_auto,f_auto,q_auto,f_auto/gigs/343344341/original/f6f27d307c3080a6590744b8e093f85877939079/do-a-horror-dark-fantasy-character-or-creature-for-your-dnd-campaign.jfif",
-              "status": "ALIVE"
-            }
           }
         ]
       }

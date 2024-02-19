@@ -1,14 +1,12 @@
 import {SocketService} from "../../services/socket/socket.service";
 import {Socket} from 'socket.io'
 import {AppDataSource} from "../../utils/database/database.config";
-import {UserGamePlay, UserIdentitiesGame, UserSocketConnect} from "../../models/users.models";
-import {DiceRolling, PartieInitChrono, Parties, RoomContentModels} from "../../models/room.content.models";
-import {CardsModels} from "../../models/cards.models";
+import {UserCanJoin, UserGamePlay, UserIdentitiesGame, UserSocketConnect} from "../../models/users.models";
+import {DiceRolling, Parties, RoomContentModels} from "../../models/room.content.models";
 import {Utils} from "../../utils/utils";
+import {SessionModels} from "../../models/session.models";
+import {FormatRestApi, FormatRestApiModels} from "../../models/formatRestApi";
 import {SessionDto} from "../../dto/session.dto";
-import {Can, EntityCategorie} from "../../models/enums";
-import {PlayerCardsEntity} from "../../models/cards.player.entity.models";
-import {Cells} from "../../models/maps.models";
 
 module.exports = (io: any) => {
 
@@ -25,27 +23,29 @@ module.exports = (io: any) => {
                 io.emit(`test${path}`, data);
             }
 
-            function joinRoom(room: string) {
+            function joinRoom(room: string,client:String,whereCallingMethode:string) {
+                let rooms = Object.keys(socket.rooms);
                 socket.rooms.forEach(room => {
                     socket.leave(room);
                 });
                 socket.join(`${socketEndPoints}-${room}`);
-                console.log(`%c ${socket.id} joined session: ${socketEndPoints}-${room}`, 'color: blue; font-size: 20px;')
+                socket.rooms.forEach(room => {
+                    rooms.push(room);
+                })
+                console.log(`%c ${socket.id} (${client}) (${whereCallingMethode}) joined session: ${socketEndPoints}-${room} , rooms: ${rooms}`)
             }
 
             /**
-             * can-join session
-             * @path can-join  **** input ***
+             * Join session
+             * @path join-default  **** input ***
              * @room highlander-socket-{{room}}
-             * @path {{room}}-can-join **** output ***
+             * @path default **** output ***
              */
-            socket.on('can-join', async (data: UserSocketConnect) => {
-                const room = data.room
-                const token = data.token
-                const avatar = data.avatar
+            socket.on('default-join', async (data: UserSocketConnect) => {
                 const pseudo = data.pseudo
-                const canJoin = await socketService.canJoinSession(token, avatar, pseudo)
-                messageSocket(room, '-can-join', canJoin)
+                joinRoom(`${pseudo}`,pseudo,'default-join')
+                const defaultJoin = await socketService.canJoinSession(data.token)
+                messageSocket(`${pseudo}`, '-join', defaultJoin)
             })
 
             /**
@@ -54,31 +54,77 @@ module.exports = (io: any) => {
              * @room highlander-socket-{{room}}
              * @path {{room}}-join **** output ***
              */
-            socket.on('join', async (data: UserSocketConnect) => {
+            socket.on('join-room', async (data: UserSocketConnect) => {
+                const room = data.room
+                const pseudo = data.pseudo
+                const token = data.token
+                const join = await socketService.joinRoom(room,token)
+                joinRoom(room,pseudo,'join-room')
+                messageSocket(room, '-join', join)
+            })
+
+            /**
+             * Join session
+             * @path join  **** input ***
+             * @room highlander-socket-{{room}}
+             * @path {{room}}-join **** output ***
+             */
+            socket.on('join-session', async (data: UserSocketConnect) => {
                 const room = data.room
                 const token = data.token
-                const avatar = data.avatar
                 const pseudo = data.pseudo
-                const score = data.score ?? 0
-                const cards = data.cards ?? []
-                if (cards.length === 0) {
-                    joinRoom(`-default`);
-                    messageSocket(room, '-join', {
-                        code: 500,
-                        message: 'Error Internal Server',
-                        data: null,
-                        error: 'cards is empty'
-                    })
-                } else {
-                    if (room !== 'default') {
-                        joinRoom(room);
-                        messageSocket(room, '-join', {code: 200, message: 'Success', data: null, error: null})
-                    } else {
-                        const join = await socketService.joinSession(room, token, avatar, pseudo, score, cards)
-                        messageSocket(room, '-join', join)
-                    }
+                const join = await socketService.joinSession(room, token)
+                if (join.code === 200) {
+                    joinRoom(room,pseudo,'join-session')
+                    messageSocket(room, '-join', join)
                 }
             })
+
+            /**
+             * Join team
+             * @path rolling  **** input ***
+             * @room highlander-socket-{{room}}
+             * @path {{room}}-join-team **** output ***
+             */
+            socket.on('join-team', async (data: UserIdentitiesGame) => {
+                const room = data.room
+                const positionPlayerInLobby = data.positionPlayerInLobby
+                const teamSelectedPerPlayer = data.teamSelected
+                const cardPositionInsideTeamCards = data.cardPositionInTeam
+                const joinTeam = await socketService.joinTeamWithCard(
+                    room,
+                    positionPlayerInLobby,
+                    teamSelectedPerPlayer,
+                    cardPositionInsideTeamCards,
+                    -1)
+                messageSocket(data.room, '-join-team', joinTeam)
+            })
+
+            /**
+             * Join team card
+             * @path rolling  **** input ***
+             * @room highlander-socket-{{room}}
+             * @path {{room}}-join-team **** output ***
+             */
+            socket.on('join-team-card', async (data: UserIdentitiesGame) => {
+                const room = data.room
+                const positionPlayerInLobby = data.positionPlayerInLobby
+                const teamSelectedPerPlayer = data.teamSelected
+                const cardPositionInsideTeamCards = data.cardPositionInTeam
+                const cardSelected = data.cardSelected ?? -1
+                if (cardSelected === -1) {
+                    messageSocket(data.room, '-join-team-card', FormatRestApiModels.createFormatRestApi(400, 'Card is empty', null, null))
+                }else{
+                    const joinTeam = await socketService.joinTeamWithCard(
+                        room,
+                        positionPlayerInLobby,
+                        teamSelectedPerPlayer,
+                        cardPositionInsideTeamCards,
+                        cardSelected)
+                    messageSocket(data.room, '-join-team-card', joinTeam)
+                }
+            })
+
 
             /**
              * rolling dice
@@ -96,46 +142,6 @@ module.exports = (io: any) => {
                 messageSocket(data.room, '-rolling', rolling)
             })
 
-
-            /**
-             * Join team
-             * @path rolling  **** input ***
-             * @room highlander-socket-{{room}}
-             * @path {{room}}-join-team **** output ***
-             */
-            socket.on('join-team', async (data: UserIdentitiesGame) => {
-                const room = data.room
-                const positionPlayerInLobby = data.positionPlayerInLobby
-                const teamSelectedPerPlayer = data.teamSelectedPerPlayer
-                const cardPositionInsideTeamCards = data.cardPositionInsideTeamCards
-                const joinTeam = await socketService.joinTeam(
-                    room,
-                    positionPlayerInLobby,
-                    teamSelectedPerPlayer,
-                    cardPositionInsideTeamCards)
-                messageSocket(data.room, '-join-team', joinTeam)
-            })
-
-            /**
-             * Join team card
-             * @path rolling  **** input ***
-             * @room highlander-socket-{{room}}
-             * @path {{room}}-join-team **** output ***
-             */
-            socket.on('join-team-card', async (data: UserIdentitiesGame) => {
-                const room = data.room
-                const positionPlayerInLobby = data.positionPlayerInLobby
-                const teamSelectedPerPlayer = data.teamSelectedPerPlayer
-                const cardPositionInsideTeamCards = data.cardPositionInsideTeamCards
-                const cardSelectedForPlay = data.cardSelectedForPlay
-                const joinTeam = await socketService.joinTeamWithCard(
-                    room,
-                    positionPlayerInLobby,
-                    teamSelectedPerPlayer,
-                    cardPositionInsideTeamCards,
-                    cardSelectedForPlay)
-                messageSocket(data.room, '-join-team', joinTeam)
-            })
 
             function initChronoStartGame(room: string) {
                 // No timer exists for this room, create a new one
@@ -167,7 +173,7 @@ module.exports = (io: any) => {
                 const room = data.room
                 console.log(data.room)
                 const joinTeam = await socketService.initGame(room)
-                messageSocket(data.room, '-join-team', joinTeam)
+                messageSocket(data.room, '-start-game', joinTeam)
                 initPartie(room)
                 initChronoStartGame(room)
             })

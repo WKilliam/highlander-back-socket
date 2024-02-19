@@ -1,16 +1,14 @@
 import {Cells} from "../models/maps.models";
 import {SessionDto} from "../dto/session.dto";
-import {FormatRestApi, FormatRestApiModels} from "../models/formatRestApi";
-import {CardByEntityPlaying, CardsModels} from "../models/cards.models";
+import {FormatRestApiModels} from "../models/formatRestApi";
+import {CardByEntityPlaying, CardEntitySimplify, CardsModels} from "../models/cards.models";
 import {CardPlayerEntityModels, PlayerCardsEntity} from "../models/cards.player.entity.models";
-import {PlayerLobby, PlayerModels} from "../models/player.models";
+import {PlayerLobby} from "../models/player.models";
 import {CardsDto} from "../dto/cards.dto";
 import {Can, EntityCategorie, EntityStatus} from "../models/enums";
 import {EntityActionMoving, EntityEvolving, EntityResume} from "../models/actions.game.models";
 import {FightSession, SessionGame, SessionModels} from "../models/session.models";
-import {CellsDto} from "../dto/cells.dto";
-import {MasterMaidData} from "../models/users.models";
-import {pipeline} from "stream";
+import {MasterMaidData, UserModels} from "../models/users.models";
 
 export class Utils {
 
@@ -174,84 +172,102 @@ export class Utils {
         return code < 200 || code > 299;
     }
 
-    static setPlayerTeam(data: SessionDto, lobbyPosition: number, teamPosition: number, cardPosition: number, cardByPlayer: number | null = null) {
-        // Check if teams[teamPosition].cardsPlayer[cardPosition] is not already taken
-        let userInformation: PlayerLobby = data.game.sessionStatusGame.lobby[lobbyPosition];
-        let challenger: PlayerCardsEntity = (data.game && data.game.game && data.game.game.challenger && data.game.game.challenger[teamPosition]) ?? PlayerModels.initPlayerCards();
-        let cardInfo: CardByEntityPlaying = (challenger.cardsInfo && challenger.cardsInfo[cardPosition]) ?? CardsModels.initCardByEntityPlaying();
-        if (
-            cardInfo.player.avatar !== '' &&
-            cardInfo.player.pseudo !== '' &&
-            cardInfo.player.avatar !== userInformation.avatar &&
-            cardInfo.player.pseudo !== userInformation.pseudo) {
-            // card is already taken by another player
-            return FormatRestApiModels.createFormatRestApi(400, 'The seat is already taken.', null, null);
-        }
-        // set the card to the player
-        const challenge = this.setOnlyPlayerInChallenger(data.game.game.challenger, userInformation, cardByPlayer, teamPosition, cardPosition)
-        data.game.game.challenger = challenge
-        // check if another team has the card
-        data.game.game.challenger = this.checkAnotherTeamRefresh(data.game.game.challenger, teamPosition, cardPosition, userInformation);
-        return FormatRestApiModels.createFormatRestApi(200, 'Card Change', data, null);
-    }
-
-    static setOnlyPlayerInChallenger(challenger: Array<PlayerCardsEntity>, playerLobby: PlayerLobby, cardByPlayer: number | null, teamPosition: number, cardPosition: number): Array<PlayerCardsEntity> {
-        return challenger.map((team, currentTeamIndex) => {
-            if (currentTeamIndex === teamPosition) {
-                team.cardsInfo = team.cardsInfo?.map((card, currentCardIndex) => {
-                    if (typeof cardByPlayer === 'number' && currentCardIndex === cardPosition) {
-                        // Mettre à jour la carte spécifique avec les informations du joueur
-                        return {
-                            player: {
-                                avatar: playerLobby.avatar,
-                                pseudo: playerLobby.pseudo,
-                                status: EntityStatus.ALIVE
-                            },
-                            atk: playerLobby.cards[cardByPlayer].atk,
-                            def: playerLobby.cards[cardByPlayer].def,
-                            spd: playerLobby.cards[cardByPlayer].spd,
-                            luk: playerLobby.cards[cardByPlayer].luk,
-                            description: playerLobby.cards[cardByPlayer].description,
-                            name: playerLobby.cards[cardByPlayer].name,
-                            rarity: playerLobby.cards[cardByPlayer].rarity,
-                            imageSrc: playerLobby.cards[cardByPlayer].image,
-                            effects: playerLobby.cards[cardByPlayer].effects,
-                            capacities: playerLobby.cards[cardByPlayer].capacities,
-                        };
-                    } else if (cardByPlayer === null) {
-                        // Mettre à jour toutes les cartes de l'équipe avec les informations du joueur
-                        return {
-                            ...card,
-                            player: {
-                                avatar: playerLobby.avatar,
-                                pseudo: playerLobby.pseudo,
-                                status: EntityStatus.ALIVE
-                            },
-                        };
-                    }
-                    return card;
-                });
+    static setPlayerTeamWithCard(data: SessionDto, positionPlayerInLobby: number, teamSelected: number, cardPositionInTeam: number, cardSelected: number) {
+        try {
+            const playerInsideLooby = data.game.sessionStatusGame.lobby[positionPlayerInLobby]
+            const challengers = data.game.game.challenger
+            const cardSelectedInsideLobby = data.game.sessionStatusGame.lobby[positionPlayerInLobby].cards[cardSelected]
+            let isPlayerInsideTeam = {
+                status: false,
+                indexTeam: -1,
+                indexCard: -1
             }
-            return team;
-        });
-    }
+            let positionIsEmpty = false
+            // Parcourir les challengers pour vérifier si le joueur est déjà dans une équipe
+            challengers.forEach((player, indexTeam) => {
+                player.cardsInfo?.forEach((card, indexCard) => {
+                    // Vérifier si le joueur est le même que celui dans le lobby
+                    const isSamePlayer = card.player.pseudo === playerInsideLooby.pseudo && card.player.avatar === playerInsideLooby.avatar;
 
-    static checkAnotherTeamRefresh(challenger: Array<PlayerCardsEntity>, teamPosition: number, cardPosition: number, userInformation: PlayerLobby) {
-        let refreshChallenger: Array<PlayerCardsEntity> = challenger.map((player, teamIndex) => {
-            // Cloner les informations du joueur
-            let updatedPlayer = {...player};
-            // Réinitialiser les cartes correspondant aux critères, sauf à la position spécifiée
-            updatedPlayer.cardsInfo = player.cardsInfo?.map((card, indexCard) => {
-                if (teamIndex !== teamPosition || indexCard !== cardPosition) {
-                    if (card.player.avatar === userInformation.avatar && card.player.pseudo === userInformation.pseudo) {
-                        return CardsModels.initCardByEntityPlaying(); // Réinitialisation de la carte
+                    // Si c'est le même joueur mais pas dans la position/team sélectionnée
+                    if (isSamePlayer && (indexTeam !== teamSelected || indexCard !== cardPositionInTeam)) {
+                        isPlayerInsideTeam = {
+                            status: true,
+                            indexTeam: indexTeam,
+                            indexCard: indexCard
+                        };
                     }
-                }
-                return card; // Conserver la carte telle quelle
+
+                    // Vérifier si la position sélectionnée est vide ou déjà occupée par le joueur
+                    if (indexTeam === teamSelected && indexCard === cardPositionInTeam &&
+                        (card.player.pseudo === "" || isSamePlayer)) {
+                        positionIsEmpty = true;
+                    }
+                });
+
+                // Si le joueur est déjà trouvé dans une autre équipe/position, pas besoin de continuer
+                if (isPlayerInsideTeam.status) return;
             });
-            return updatedPlayer;
-        });
-        return refreshChallenger;
+            if (isPlayerInsideTeam.status) {
+                // player is already in team
+                if (isPlayerInsideTeam.indexTeam === -1 || isPlayerInsideTeam.indexCard === -1) return FormatRestApiModels.createFormatRestApi(400, 'Player is not found in team', null, null);
+                if (positionIsEmpty) {
+                    // position is empty
+                    const defaultCard: CardEntitySimplify = CardsModels.initCardEntitySimplify();
+                    (data.game.game.challenger[teamSelected] as PlayerCardsEntity).cardsInfo![cardPositionInTeam] = {
+                        atk: cardSelected === -1 ? defaultCard.atk : cardSelectedInsideLobby.atk,
+                        def: cardSelected === -1 ? defaultCard.def : cardSelectedInsideLobby.def,
+                        spd: cardSelected === -1 ? defaultCard.spd : cardSelectedInsideLobby.spd,
+                        luk: cardSelected === -1 ? defaultCard.luk : cardSelectedInsideLobby.luk,
+                        rarity: cardSelected === -1 ? defaultCard.rarity : cardSelectedInsideLobby.rarity,
+                        imageSrc: cardSelected === -1 ? defaultCard.image : cardSelectedInsideLobby.image,
+                        description: cardSelected === -1 ? defaultCard.description : cardSelectedInsideLobby.description,
+                        name: cardSelected === -1 ? defaultCard.name : cardSelectedInsideLobby.name,
+                        effects: cardSelected === -1 ? defaultCard.effects : cardSelectedInsideLobby.effects,
+                        capacities: cardSelected === -1 ? defaultCard.capacities : cardSelectedInsideLobby.capacities,
+                        player: {
+                            pseudo: playerInsideLooby.pseudo,
+                            avatar: playerInsideLooby.avatar,
+                            status: EntityStatus.ALIVE
+                        }
+                    };
+                    (data.game.game.challenger[isPlayerInsideTeam.indexTeam] as PlayerCardsEntity) = CardPlayerEntityModels.initPlayerCardsEntity(
+                        true,
+                        data.game.sessionStatusGame.teamNames[isPlayerInsideTeam.indexTeam],
+                        [
+                            CardsModels.initCardByEntityPlaying(),
+                            CardsModels.initCardByEntityPlaying()
+                        ]);
+                    return FormatRestApiModels.createFormatRestApi(200, 'Player is set in team', data, null);
+                } else {
+                    // position is not empty
+                    return FormatRestApiModels.createFormatRestApi(400, 'Position is not empty', null, null);
+                }
+            } else {
+                // player is not in team
+                const defaultCard: CardEntitySimplify = CardsModels.initCardEntitySimplify();
+                (data.game.game.challenger[teamSelected] as PlayerCardsEntity).cardsInfo![cardPositionInTeam] = {
+                    atk: cardSelected === -1 ? defaultCard.atk : cardSelectedInsideLobby.atk,
+                    def: cardSelected === -1 ? defaultCard.def : cardSelectedInsideLobby.def,
+                    spd: cardSelected === -1 ? defaultCard.spd : cardSelectedInsideLobby.spd,
+                    luk: cardSelected === -1 ? defaultCard.luk : cardSelectedInsideLobby.luk,
+                    rarity: cardSelected === -1 ? defaultCard.rarity : cardSelectedInsideLobby.rarity,
+                    imageSrc: cardSelected === -1 ? defaultCard.image : cardSelectedInsideLobby.image,
+                    description: cardSelected === -1 ? defaultCard.description : cardSelectedInsideLobby.description,
+                    name: cardSelected === -1 ? defaultCard.name : cardSelectedInsideLobby.name,
+                    effects: cardSelected === -1 ? defaultCard.effects : cardSelectedInsideLobby.effects,
+                    capacities: cardSelected === -1 ? defaultCard.capacities : cardSelectedInsideLobby.capacities,
+                    player: {
+                        pseudo: playerInsideLooby.pseudo,
+                        avatar: playerInsideLooby.avatar,
+                        status: EntityStatus.ALIVE
+                    }
+                };
+                return FormatRestApiModels.createFormatRestApi(200, 'Player is set in team', data, null);
+            }
+        } catch (error: any) {
+            return FormatRestApiModels.createFormatRestApi(400, error.message, null, null);
+        }
     }
 
     static countReturn(data: SessionDto) {
@@ -465,7 +481,7 @@ export class Utils {
 
     static caseCHOOSE_MOVE(data: SessionDto, entityResume: EntityResume, entityEvolving: EntityEvolving) {
         const turnListPosition = entityResume.indexInsideArray
-        const valueMoveToId = entityEvolving.moveToId  ?? -1
+        const valueMoveToId = entityEvolving.moveToId ?? -1
         if (valueMoveToId === -1 && entityEvolving.movesCansIds === null) {
             return FormatRestApiModels.createFormatRestApi(400, 'MoveToId and MovesCansIds is null', null, null);
         } else {
@@ -498,7 +514,7 @@ export class Utils {
             if (isFitghtOrNot) teamIndexChallenger = index
         })
 
-        if(!isFitghtOrNot) {
+        if (!isFitghtOrNot) {
             data.game.sessionStatusGame.entityTurn[turnListPosition].evolving = {
                 dice: entityEvolving.dice,
                 movesCansIds: entityEvolving.movesCansIds,
@@ -506,21 +522,21 @@ export class Utils {
                 currentCan: Can.FINISH_TURN
             }
             return FormatRestApiModels.createFormatRestApi(200, 'Move is finish', data, null);
-        }else{
+        } else {
             let tabEntityFight: Array<PlayerCardsEntity> = []
             tabEntityFight.push(data.game.game.challenger[entityResume.teamIndex])
             data.game.game.challenger.splice(entityResume.teamIndex, 1)
             tabEntityFight.push(data.game.game.challenger[teamIndexChallenger])
             data.game.game.challenger.splice(teamIndexChallenger, 1)
             data.game.sessionStatusGame.entityTurn.forEach((entityActionMoving, index) => {
-                if(entityActionMoving.resume.teamIndex === entityResume.teamIndex || entityActionMoving.resume.teamIndex === teamIndexChallenger) {
+                if (entityActionMoving.resume.teamIndex === entityResume.teamIndex || entityActionMoving.resume.teamIndex === teamIndexChallenger) {
                     data.game.sessionStatusGame.entityTurn.splice(index, 1)
                 }
             })
             data.game.sessionStatusGame.currentEntityActionMovingPosition = 0
             let fightSession = SessionModels.initFightSession()
-            let map : Map<string,FightSession> = new Map<string,FightSession>()
-            map.set(`${tabEntityFight[0].name}-VS-${tabEntityFight[1].name}`,fightSession)
+            let map: Map<string, FightSession> = new Map<string, FightSession>()
+            map.set(`${tabEntityFight[0].name}-VS-${tabEntityFight[1].name}`, fightSession)
             data.game.game.fightings = map
             return FormatRestApiModels.createFormatRestApi(200, 'Move is finish', data, null);
         }
@@ -538,25 +554,35 @@ export class Utils {
     }
 
 
-    static pingMaidMasterSend(data: SessionDto,room:string,queueClientActionCall: Map<string,MasterMaidData>) {
-        if(!queueClientActionCall.has(room)){
+    static pingMaidMasterSend(data: SessionDto, room: string, queueClientActionCall: Map<string, MasterMaidData>) {
+        if (!queueClientActionCall.has(room)) {
             const masterMaidData: MasterMaidData = {
                 lobbyPosition: 0,
                 valid: false,
                 countCheckError: 0
             }
             return FormatRestApiModels.createFormatRestApi(200, 'Lobby Position is send', masterMaidData, null);
-        }else{
+        } else {
             const userMaid = queueClientActionCall.get(room)?.lobbyPosition ?? -1
             if (userMaid === -1) return FormatRestApiModels.createFormatRestApi(400, 'Lobby Position is not found', null, null);
             const limitLobbyPosition = data.game.sessionStatusGame.lobby.length - 1
-            const  countCheckError = queueClientActionCall.get(room)?.countCheckError ?? 0
-            if(userMaid + 1 > limitLobbyPosition) {
-                return FormatRestApiModels.createFormatRestApi(200, 'Lobby Position is send', {lobbyPosition:0,valid:false,countCheckError:countCheckError + 1}, null);
-            }else{
-                queueClientActionCall.set(room,{lobbyPosition:0,valid:false,countCheckError:countCheckError + 1})
-                return FormatRestApiModels.createFormatRestApi(200, 'Lobby Position is send', {lobbyPosition:userMaid + 1,valid:false,countCheckError:countCheckError + 1}, null);
+            const countCheckError = queueClientActionCall.get(room)?.countCheckError ?? 0
+            if (userMaid + 1 > limitLobbyPosition) {
+                return FormatRestApiModels.createFormatRestApi(200, 'Lobby Position is send', {
+                    lobbyPosition: 0,
+                    valid: false,
+                    countCheckError: countCheckError + 1
+                }, null);
+            } else {
+                queueClientActionCall.set(room, {lobbyPosition: 0, valid: false, countCheckError: countCheckError + 1})
+                return FormatRestApiModels.createFormatRestApi(200, 'Lobby Position is send', {
+                    lobbyPosition: userMaid + 1,
+                    valid: false,
+                    countCheckError: countCheckError + 1
+                }, null);
             }
         }
     }
+
+
 }

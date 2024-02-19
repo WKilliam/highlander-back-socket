@@ -1,3 +1,5 @@
+import {TokenManager} from "../utils/tokennezer/jsonwebtoken";
+import {UserFrontData, UserModels} from "./users.models";
 
 export interface SessionCreated {
     createdAt: string
@@ -5,6 +7,7 @@ export interface SessionCreated {
     password: string,
     mapId: number,
     teamNames: Array<string>;
+    token: string
 }
 
 export interface DiceRolling {
@@ -42,7 +45,8 @@ export class RoomContentModels {
             name: '',
             password: '',
             mapId: 0,
-            teamNames: []
+            teamNames: [],
+            token: ''
         }
     }
 

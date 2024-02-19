@@ -15,6 +15,7 @@ import {PlayerCardsEntity} from "../../models/cards.player.entity.models";
 import {Cells} from "../../models/maps.models";
 import {EntityEvolving, EntityResume} from "../../models/actions.game.models";
 import {MasterMaidData} from "../../models/users.models";
+import {SessionModels} from "../../models/session.models";
 
 export class SocketService {
     dataSourceConfig: Promise<DataSource>;
@@ -41,7 +42,7 @@ export class SocketService {
         return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error);
     }
 
-    async canJoinSession(token: string, avatar: string, pseudo: string) {
+    async canJoinSession(token: string) {
         try {
             const tokenManager = new TokenManager('votre_clé_secrète');
             const tokenData = tokenManager.verifyToken(token);
@@ -50,27 +51,15 @@ export class SocketService {
                 password: tokenData.data.password
             })
             if (Utils.codeErrorChecking(login.code)) return login;
-            const checkSimilarityAvatarAndPseudo = (login.data.avatar === avatar && login.data.pseudo === pseudo)
-            if (!checkSimilarityAvatarAndPseudo) {
-                return FormatRestApiModels.createFormatRestApi(400,
-                    this.failledAvartarAndPseudoNotMatch,
-                    null,
-                    null);
+            const ckeckIfUserInsideSession: FormatRestApi = await this.sessionService.checkIfUserInsideSession(login.data.avatar, login.data.pseudo);
+            if (Utils.codeErrorChecking(ckeckIfUserInsideSession.code)) {
+                return FormatRestApiModels.createFormatRestApi(ckeckIfUserInsideSession.code, ckeckIfUserInsideSession.message, ckeckIfUserInsideSession.data, ckeckIfUserInsideSession.error);
+            }
+            if (ckeckIfUserInsideSession.message === "Player already inside session") {
+                return FormatRestApiModels.createFormatRestApi(200, this.textSuccesCanJoinRoom0, ckeckIfUserInsideSession.data, null);
             } else {
-                const ckeckIfUserInsideSession: FormatRestApi = await this.sessionService.checkIfUserInsideSession(avatar, pseudo);
-                if (Utils.codeErrorChecking(ckeckIfUserInsideSession.code)) {
-                    return FormatRestApiModels.createFormatRestApi(
-                        ckeckIfUserInsideSession.code,
-                        this.failledUserCheckInsideSession,
-                        ckeckIfUserInsideSession.data,
-                        ckeckIfUserInsideSession.error);
-                } else {
-                    return FormatRestApiModels.createFormatRestApi(
-                        ckeckIfUserInsideSession.code,
-                        ckeckIfUserInsideSession.message,
-                        ckeckIfUserInsideSession.data,
-                        ckeckIfUserInsideSession.error);
-                }
+                const sessionDtoInit: SessionDto = {id: -1, game: SessionModels.initSessionGame()}
+                return FormatRestApiModels.createFormatRestApi(200, 'Default Session Connect', sessionDtoInit, null)
             }
         } catch (error: any) {
             return FormatRestApiModels.createFormatRestApi(500,
@@ -79,36 +68,54 @@ export class SocketService {
                 error.message);
         }
     }
-    async joinSession(room: string, token: string, avatar: string, pseudo: string, score: number, cards: Array<CardEntitySimplify>) {
+
+    async joinRoom(room: string,token: string) {
+        try {
+            const session = await this.sessionService.getSession(room);
+            if (Utils.codeErrorChecking(session.code)) return session;
+            const jointesting = await this.joinSession(room, token)
+            if (Utils.codeErrorChecking(jointesting.code)) return jointesting;
+            return FormatRestApiModels.createFormatRestApi(200, this.textSuccesCanJoinRoom, jointesting.data, null);
+        } catch (error: any) {
+            return FormatRestApiModels.createFormatRestApi(500,
+                this.failledInternalServer,
+                null,
+                error.message);
+        }
+    }
+
+    async joinSession(
+        room: string,
+        token: string,
+    ) {
         try {
             const dataSource: DataSource = await this.dataSourceConfig;
             const sessionRepository: Repository<SessionDto> = dataSource.getRepository(SessionDto);
-            const canJoin = await this.canJoinSession(token, avatar, pseudo);
-            if (Utils.codeErrorChecking(canJoin.code)) return canJoin;
-            if (canJoin.message === this.textSuccesCanJoinRoom && canJoin.data) {
-                // add session
-                let lobbyInit = PlayerModels.initPlayerLobby()
-                lobbyInit.avatar = avatar
-                lobbyInit.pseudo = pseudo
-                lobbyInit.score = score
-                lobbyInit.cards = cards
-                const session = await this.sessionService.getSession(room);
-                if (Utils.codeErrorChecking(session.code)) return session;
-                let sessionDto = session.data
-                sessionDto.game.sessionStatusGame.lobby.push(lobbyInit)
-                await sessionRepository.update(sessionDto.id, sessionDto);
-                const updatedSession = await sessionRepository.findOne({
-                    where: {id: sessionDto.id},
-                });
-                return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, updatedSession, null);
-            } else if (canJoin.message === this.textSuccesCanJoinRoom0) {
-                // return session
-                return FormatRestApiModels.createFormatRestApi(canJoin.code, canJoin.message, canJoin.data, canJoin.error);
+            const tokenManager = new TokenManager('votre_clé_secrète');
+            const tokenData = tokenManager.verifyToken(token);
+            const login = await this.usersService.login({
+                email: tokenData.data.email,
+                password: tokenData.data.password
+            })
+            if (Utils.codeErrorChecking(login.code)) return login;
+            const ckeckIfUserInsideSession: FormatRestApi = await this.sessionService.checkIfUserInsideSession(login.data.avatar, login.data.pseudo);
+            if (Utils.codeErrorChecking(ckeckIfUserInsideSession.code)) {
+                return FormatRestApiModels.createFormatRestApi(ckeckIfUserInsideSession.code, ckeckIfUserInsideSession.message, ckeckIfUserInsideSession.data, ckeckIfUserInsideSession.error);
+            }
+            if (ckeckIfUserInsideSession.message === "Player already inside session") {
+                return FormatRestApiModels.createFormatRestApi(200, this.textSuccesCanJoinRoom0, ckeckIfUserInsideSession.data, null);
             } else {
-                return FormatRestApiModels.createFormatRestApi(500,
-                    this.failledInternalServer,
-                    null,
-                    'Error');
+                const session = await this.sessionService.getSession(room);
+                let lobbyInit = PlayerModels.initPlayerLobby()
+                lobbyInit.avatar = login.data.avatar
+                lobbyInit.pseudo = login.data.pseudo
+                lobbyInit.score = 0
+                lobbyInit.cards = login.data.cards
+                const sessionDto = session.data
+                sessionDto.game.sessionStatusGame.lobby.push(lobbyInit)
+                const update = await this.sessionService.updateSession(room, sessionDto)
+                if (Utils.codeErrorChecking(update.code)) return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error);
+                return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, update.data, null);
             }
         } catch (error: any) {
             return FormatRestApiModels.createFormatRestApi(500,
@@ -117,6 +124,8 @@ export class SocketService {
                 error.message);
         }
     }
+
+
     diceRolling(luk: number, arrayLimit: Array<number>, min: number, max: number) {
         if (!luk) return FormatRestApiModels.createFormatRestApi(400, 'Luk is empty', null, null)
         if (!min && !max) {
@@ -129,22 +138,27 @@ export class SocketService {
         const dice = Dice.diceRuning(luk, arrayLimit, min, max)[0]
         return FormatRestApiModels.createFormatRestApi(200, 'Rolling', dice, null)
     }
-    async joinTeam(room: string, positionPlayerInLobby: number, teamSelectedPerPlayer: number, cardPositionInsideTeamCards: number) {
+
+    async joinTeamWithCard(room :string,
+                           positionPlayerInLobby:number,
+                           teamSelected:number,
+                           cardPositionInTeam:number,
+                           cardSelected:number) {
         try {
             const session = await this.sessionService.getSession(room);
             if (Utils.codeErrorChecking(session.code)) return session;
-            const changeCard = Utils.setPlayerTeam(
+            // console.log(session.data)
+            const changeCard = Utils.setPlayerTeamWithCard(
                 session.data,
                 positionPlayerInLobby,
-                teamSelectedPerPlayer,
-                cardPositionInsideTeamCards,
-                null)
+                teamSelected,
+                cardPositionInTeam,
+                cardSelected)
             if (changeCard.code !== 200) return FormatRestApiModels.createFormatRestApi(changeCard.code, changeCard.message, changeCard.data, changeCard.error)
-            return this.updateSession(room, changeCard.data)
-            // const sessionDto = changeCard.data
-            // const update = await this.sessionService.updateSession(room,sessionDto)
-            // if (Utils.codeErrorChecking(update.code)) return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error)
-            // return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, update.data, null);
+            const sessionDto = changeCard.data
+            const update = await this.sessionService.updateSession(room,sessionDto)
+            if (Utils.codeErrorChecking(update.code)) return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error)
+            return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, update.data, null);
         } catch (error: any) {
             return FormatRestApiModels.createFormatRestApi(500,
                 this.failledInternalServer,
@@ -152,31 +166,7 @@ export class SocketService {
                 error.message);
         }
     }
-    async joinTeamWithCard(room: string, lobbyPosition: number, teamPosition: number, cardPosition: number, selectedCard: number | null) {
-        if (selectedCard === null) return FormatRestApiModels.createFormatRestApi(400, 'Card is empty', null, null)
-        try {
-            const session = await this.sessionService.getSession(room);
-            if (Utils.codeErrorChecking(session.code)) return session;
-            const changeCard = Utils.setPlayerTeam(
-                session.data,
-                lobbyPosition,
-                teamPosition,
-                cardPosition,
-                selectedCard)
-            if (Utils.codeErrorChecking(changeCard.code)) return FormatRestApiModels.createFormatRestApi(changeCard.code, changeCard.message, changeCard.data, changeCard.error)
-            return this.updateSession(room, changeCard.data)
-            // const sessionDto = changeCard.data
-            // const update = await this.sessionService.updateSession(room,sessionDto)
-            // if (Utils.codeErrorChecking(update.code)) return FormatRestApiModels.createFormatRestApi(update.code, update.message, update.data, update.error)
-            // return FormatRestApiModels.createFormatRestApi(200, this.succesUpdateSesssionJoin, update, null);
-        } catch (error: any) {
-            return FormatRestApiModels.createFormatRestApi(500,
-                this.failledInternalServer,
-                null,
-                error.message);
-        }
 
-    }
     async countReturn(room: string) {
         try {
             const session = await this.sessionService.getSession(room);
@@ -190,6 +180,7 @@ export class SocketService {
                 error.message);
         }
     }
+
     async whoIsPlayEntityType(room: string) {
         try {
             const session = await this.sessionService.getSession(room);
@@ -208,6 +199,7 @@ export class SocketService {
                 error.message);
         }
     }
+
     async initGame(room: string) {
         try {
             const session = await this.sessionService.getSession(room);
@@ -223,6 +215,7 @@ export class SocketService {
                 error.message);
         }
     }
+
     async humainActionMoving(room: string, entityResume: EntityResume, entityEvolving: EntityEvolving) {
         try {
             const session = await this.sessionService.getSession(room);
@@ -290,13 +283,18 @@ export class SocketService {
                 error.message);
         }
     }
+
     async pingMaidMasterSend(room: string) {
         try {
             const session = await this.sessionService.getSession(room);
             if (Utils.codeErrorChecking(session.code)) return session
             const ping = Utils.pingMaidMasterSend(session.data, room, this.queueClientActionCall)
-            if(Utils.codeErrorChecking(ping.code)) return FormatRestApiModels.createFormatRestApi(ping.code, ping.message, ping.data, ping.error)
-            this.queueClientActionCall.set(room,{valid:ping.data.valid,countCheckError:ping.data.countCheckError,lobbyPosition:ping.data.lobbyPosition})
+            if (Utils.codeErrorChecking(ping.code)) return FormatRestApiModels.createFormatRestApi(ping.code, ping.message, ping.data, ping.error)
+            this.queueClientActionCall.set(room, {
+                valid: ping.data.valid,
+                countCheckError: ping.data.countCheckError,
+                lobbyPosition: ping.data.lobbyPosition
+            })
             return FormatRestApiModels.createFormatRestApi(200, 'Ping maid master send', this.queueClientActionCall.get(room), null)
         } catch (error: any) {
             return FormatRestApiModels.createFormatRestApi(500,
@@ -322,7 +320,7 @@ export class SocketService {
         }
     }
 
-    async apiFightSystem(room: string,titleFight:string) {
+    async apiFightSystem(room: string, titleFight: string) {
 
     }
 
