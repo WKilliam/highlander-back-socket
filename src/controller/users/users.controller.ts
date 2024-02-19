@@ -41,4 +41,8 @@ UsersController.post('/login', async (request, response) => {
     response.status(received.code).json(received);
 })
 
+UsersController.post('/test', async (request, response) => {
+    response.status(200).json(JSON.stringify(request.body));
+})
+
 export default UsersController;
