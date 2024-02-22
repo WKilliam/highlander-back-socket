@@ -3,12 +3,11 @@ import {SessionDto} from "../dto/session.dto";
 import {FormatRestApiModels} from "../models/formatRestApi";
 import {CardByEntityPlaying, CardEntitySimplify, CardsModels} from "../models/cards.models";
 import {CardPlayerEntityModels, PlayerCardsEntity} from "../models/cards.player.entity.models";
-import {PlayerLobby} from "../models/player.models";
 import {CardsDto} from "../dto/cards.dto";
-import {Can, EntityCategorie, EntityStatus} from "../models/enums";
+import {Can, EntityCategorie, EntityStatus, StatusGame} from "../models/enums";
 import {EntityActionMoving, EntityEvolving, EntityResume} from "../models/actions.game.models";
-import {FightSession, SessionGame, SessionModels} from "../models/session.models";
-import {MasterMaidData, UserModels} from "../models/users.models";
+import {FightSession, SessionModels} from "../models/session.models";
+import {MasterMaidData} from "../models/users.models";
 
 export class Utils {
 
@@ -435,12 +434,16 @@ export class Utils {
         const challenger = data.game.game.challenger.concat(monsterCreate)
         data.game.game.challenger = this.initializeChallenger(challenger, data.game.maps.cellsGrid)
         data.game.sessionStatusGame.entityTurn = this.rollingTunrBySpeedEntity(data)
+        data.game.sessionStatusGame.status = StatusGame.GAME
         return data
     }
 
 
     static caseNULL(data: SessionDto, entityResume: EntityResume) {
         const turnListPosition = entityResume.indexInsideArray
+        if(data.game.sessionStatusGame.status === "LOBBY"){
+            data.game.sessionStatusGame.status = StatusGame.GAME
+        }
         data.game.sessionStatusGame.entityTurn[turnListPosition].evolving = {
             dice: null,
             movesCansIds: null,

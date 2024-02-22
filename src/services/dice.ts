@@ -8,7 +8,7 @@ export class Dice {
         let tabAllValue: Array<number> = [];
         let totalElements = 0;
         if (arrayLimited.length === 0) {
-            for (let i = 1; i <= 20; i++) {
+            for (let i = 1; i <= 6; i++) {
                 let percentOfValue = this.calculateLuckPercentage(luckFactor - i + 10);
                 let numberOfTimes = Math.round(1000 * percentOfValue / 100);
                 totalElements += numberOfTimes;

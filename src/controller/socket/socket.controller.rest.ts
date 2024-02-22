@@ -107,7 +107,7 @@ SocketController.post(
         response) => {
         const {room,action} = request.body;
         const received = await socketService
-            .humainActionMoving(room,action.resume,action.evolving);
+            .actionMoving(room,action.resume,action.evolving);
         response.status(received.code).json(received);
     });
 
@@ -126,7 +126,7 @@ SocketController.post(
         response) => {
         const {room,action} = request.body;
         const received = await socketService
-            .humainActionMoving(room,action.resume,action.evolving);
+            .actionMoving(room,action.resume,action.evolving);
         response.status(received.code).json(received);
     });
 

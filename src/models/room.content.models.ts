@@ -36,6 +36,16 @@ export interface Parties {
     partiesFight : PartieFightChrono
 }
 
+export interface RoomQueue {
+    queue: boolean,
+    user : string
+}
+
+export interface RoomBotAction {
+    queue: boolean,
+    user : string
+}
+
 
 
 export class RoomContentModels {
@@ -83,4 +93,19 @@ export class RoomContentModels {
             partiesFight: RoomContentModels.initPartieFightChrono()
         }
     }
+
+    static initRoomQueue(): RoomQueue {
+        return {
+            queue: false,
+            user: ''
+        }
+    }
+
+    static initRoomBotAction(): RoomBotAction {
+        return {
+            queue: false,
+            user: '',
+        }
+    }
+
 }
